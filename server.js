@@ -227,20 +227,42 @@ async function refreshSeoCacheIfNeeded() {
   const nextCitySlugs = new Set(FIXED_CITY_SLUGS);
   const nextBlogSlugs = new Set(DEFAULT_BLOG_SLUGS);
 
+  function addLocationSlugCandidates(source) {
+    const fromName = slugify(source?.name);
+    const fromCity = slugify(source?.city);
+    if (fromName) nextCitySlugs.add(fromName);
+    if (fromCity) nextCitySlugs.add(fromCity);
+  }
+
+  function addWeeklySettingsSlugs(weeklySettingsData) {
+    if (!Array.isArray(weeklySettingsData)) return;
+    for (const dayEntry of weeklySettingsData) {
+      const services =
+        Array.isArray(dayEntry?.services) && dayEntry.services.length > 0
+          ? dayEntry.services
+          : dayEntry?.isOpen && dayEntry?.location
+            ? [{ location: dayEntry.location }]
+            : [];
+
+      for (const service of services) {
+        addLocationSlugCandidates(service?.location || {});
+      }
+    }
+  }
+
   try {
-    const [locationsData, blogSlugsData] = await Promise.all([
+    const [locationsData, weeklySettingsData, blogSlugsData] = await Promise.all([
       fetchJsonWithTimeout(buildApiUrl("/locations?active=true")),
+      fetchJsonWithTimeout(buildApiUrl("/timeslots/public-weekly-settings")),
       fetchJsonWithTimeout(buildApiUrl("/seo/blog-slugs")),
     ]);
 
     if (Array.isArray(locationsData)) {
       for (const location of locationsData) {
-        const fromName = slugify(location?.name);
-        const fromCity = slugify(location?.city);
-        if (fromName) nextCitySlugs.add(fromName);
-        if (fromCity) nextCitySlugs.add(fromCity);
+        addLocationSlugCandidates(location);
       }
     }
+    addWeeklySettingsSlugs(weeklySettingsData);
 
     if (Array.isArray(blogSlugsData?.slugs)) {
       nextBlogSlugs.clear();
