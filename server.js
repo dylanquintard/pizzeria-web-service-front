@@ -220,9 +220,10 @@ async function fetchJsonWithTimeout(url) {
   }
 }
 
-async function refreshSeoCacheIfNeeded() {
+async function refreshSeoCacheIfNeeded(options = {}) {
+  const force = Boolean(options?.force);
   const now = Date.now();
-  if (seoCache.expiresAt > now) return seoCache;
+  if (!force && seoCache.expiresAt > now) return seoCache;
 
   const nextCitySlugs = new Set(FIXED_CITY_SLUGS);
   const nextBlogSlugs = new Set(DEFAULT_BLOG_SLUGS);
@@ -279,10 +280,20 @@ async function refreshSeoCacheIfNeeded() {
     seoCache.blogSlugs = nextBlogSlugs;
     seoCache.expiresAt = now + SEO_CACHE_TTL_MS;
   } catch (_error) {
-    seoCache.expiresAt = now + Math.min(SEO_CACHE_TTL_MS, 60000);
+    // Keep fallback cache windows short so dynamic routes recover quickly
+    // after transient API cold starts/timeouts.
+    seoCache.expiresAt = now + Math.min(SEO_CACHE_TTL_MS, 15000);
   }
 
   return seoCache;
+}
+
+function isDynamicSeoPath(pathname) {
+  return (
+    /^\/blog\/[^/]+$/.test(pathname) ||
+    /^\/pizza-[a-z0-9-]+$/.test(pathname) ||
+    /^\/pizza\/[^/]+$/.test(pathname)
+  );
 }
 
 function buildSeoMeta(pathname, cache) {
@@ -449,6 +460,13 @@ app.use(async (req, res) => {
 
   const pathname = req.path || "/";
 
+  if (pathname.length > 1 && pathname.endsWith("/")) {
+    const normalizedPath = pathname.replace(/\/+$/, "");
+    const queryIndex = req.url.indexOf("?");
+    const search = queryIndex >= 0 ? req.url.slice(queryIndex) : "";
+    return res.redirect(301, `${normalizedPath}${search}`);
+  }
+
   if (
     EXACT_SPA_ROUTES.has(pathname) ||
     PREFIX_SPA_ROUTES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`))
@@ -462,6 +480,14 @@ app.use(async (req, res) => {
   const dynamicMeta = buildSeoMeta(pathname, cache);
   if (dynamicMeta) {
     return sendSpaWithSeo(req, res, dynamicMeta);
+  }
+
+  if (isDynamicSeoPath(pathname)) {
+    const forcedCache = await refreshSeoCacheIfNeeded({ force: true });
+    const forcedDynamicMeta = buildSeoMeta(pathname, forcedCache);
+    if (forcedDynamicMeta) {
+      return sendSpaWithSeo(req, res, forcedDynamicMeta);
+    }
   }
 
   return sendNoindex404(res);
