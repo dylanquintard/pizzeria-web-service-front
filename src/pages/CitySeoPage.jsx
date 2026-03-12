@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, Navigate, useParams } from "react-router-dom";
+import { Link, Navigate, useLocation, useParams } from "react-router-dom";
 import { getLocations } from "../api/location.api";
+import { getSeoLocations } from "../api/seo.api";
 import { getPublicWeeklySettings } from "../api/timeslot.api";
 import SeoHead from "../components/seo/SeoHead";
 import SeoInternalLinks from "../components/seo/SeoInternalLinks";
@@ -56,6 +57,63 @@ function getSeoLocationLabel(location) {
   return String(location?.name || location?.city || "").trim();
 }
 
+function normalizeSeoCatalogEntries(entries) {
+  const source = Array.isArray(entries) ? entries : [];
+  const bySlug = new Map();
+
+  for (const item of source) {
+    const slug = slugifyCity(item?.slug);
+    if (!slug) continue;
+
+    const label = String(item?.label || "").trim() || toDisplayCity(slug);
+    const locationId = Number(item?.locationId);
+    const path = String(item?.path || `/pizza-${slug}`).trim() || `/pizza-${slug}`;
+    const existing = bySlug.get(slug);
+
+    if (!existing) {
+      bySlug.set(slug, {
+        slug,
+        label,
+        path,
+        locationId: Number.isFinite(locationId) && locationId > 0 ? locationId : null,
+      });
+      continue;
+    }
+
+    bySlug.set(slug, {
+      ...existing,
+      label: existing.label || label,
+      path: existing.path || path,
+      locationId:
+        Number.isFinite(locationId) && locationId > 0
+          ? locationId
+          : existing.locationId,
+    });
+  }
+
+  return [...bySlug.values()].sort((a, b) => a.path.localeCompare(b.path, "fr"));
+}
+
+function buildCatalogFromLocations(entries) {
+  const source = Array.isArray(entries) ? entries : [];
+  const fallback = [];
+  for (const location of source) {
+    const locationId = Number(location?.id);
+    const labelCandidates = [location?.city, location?.name].filter(Boolean);
+    for (const candidate of labelCandidates) {
+      const slug = slugifyCity(candidate);
+      if (!slug) continue;
+      fallback.push({
+        slug,
+        label: String(candidate).trim(),
+        path: `/pizza-${slug}`,
+        locationId: Number.isFinite(locationId) && locationId > 0 ? locationId : null,
+      });
+    }
+  }
+  return normalizeSeoCatalogEntries(fallback);
+}
+
 function CityPageNotFound({ citySlug }) {
   const pathname = citySlug ? `/pizza-${citySlug}` : "/404";
   return (
@@ -91,11 +149,19 @@ function CityPageNotFound({ citySlug }) {
 }
 
 export default function CitySeoPage({ forcedCitySlug = "" }) {
+  const location = useLocation();
   const params = useParams();
   const rawCity = forcedCitySlug || params.city || params["*"] || "";
-  const citySlug = slugifyCity(rawCity);
+  const citySlugFromPath = slugifyCity(rawCity);
+  const queryLocationId = useMemo(() => {
+    const search = new URLSearchParams(location.search);
+    const value =
+      search.get("locationId") || search.get("locationID") || search.get("locationid");
+    const parsed = Number(value);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+  }, [location.search]);
   const [weeklySettings, setWeeklySettings] = useState([]);
-  const [allowedCitySlugs, setAllowedCitySlugs] = useState(() => new Set(FIXED_LOCAL_CITY_SLUGS));
+  const [seoCatalog, setSeoCatalog] = useState([]);
   const [allowedLoaded, setAllowedLoaded] = useState(false);
 
   useEffect(() => {
@@ -121,25 +187,35 @@ export default function CitySeoPage({ forcedCitySlug = "" }) {
   useEffect(() => {
     let cancelled = false;
 
-    getLocations({ active: true })
-      .then((data) => {
+    const loadCatalog = async () => {
+      try {
+        const data = await getSeoLocations();
         if (cancelled) return;
-        const nextAllowed = new Set(FIXED_LOCAL_CITY_SLUGS);
-        const entries = Array.isArray(data) ? data : [];
-        for (const location of entries) {
-          const locationNameSlug = slugifyCity(location?.name);
-          const locationCitySlug = slugifyCity(location?.city);
-          if (locationNameSlug) nextAllowed.add(locationNameSlug);
-          if (locationCitySlug) nextAllowed.add(locationCitySlug);
+        const normalized = normalizeSeoCatalogEntries(data?.locations);
+        if (normalized.length > 0) {
+          setSeoCatalog(normalized);
+          setAllowedLoaded(true);
+          return;
         }
-        setAllowedCitySlugs(nextAllowed);
-        setAllowedLoaded(true);
-      })
-      .catch(() => {
+      } catch (_error) {
+        // Backward compatibility while backend SEO route is deploying.
+      }
+
+      try {
+        const fallbackLocations = await getLocations({ active: true });
         if (cancelled) return;
-        setAllowedCitySlugs(new Set(FIXED_LOCAL_CITY_SLUGS));
-        setAllowedLoaded(true);
-      });
+        setSeoCatalog(buildCatalogFromLocations(fallbackLocations));
+      } catch (_error) {
+        if (cancelled) return;
+        setSeoCatalog([]);
+      } finally {
+        if (!cancelled) {
+          setAllowedLoaded(true);
+        }
+      }
+    };
+
+    loadCatalog();
 
     return () => {
       cancelled = true;
@@ -200,11 +276,38 @@ export default function CitySeoPage({ forcedCitySlug = "" }) {
     return [...map.values()].sort((a, b) => a.label.localeCompare(b.label, "fr"));
   }, [weeklySettings]);
 
+  const catalogBySlug = useMemo(() => {
+    const map = new Map();
+    for (const item of seoCatalog) {
+      if (item?.slug) map.set(item.slug, item);
+    }
+    return map;
+  }, [seoCatalog]);
+
+  const catalogByLocationId = useMemo(() => {
+    const map = new Map();
+    for (const item of seoCatalog) {
+      if (Number.isFinite(item?.locationId) && item.locationId > 0) {
+        map.set(Number(item.locationId), item);
+      }
+    }
+    return map;
+  }, [seoCatalog]);
+
+  const resolvedCitySlug = useMemo(() => {
+    if (citySlugFromPath) return citySlugFromPath;
+    if (queryLocationId && catalogByLocationId.has(queryLocationId)) {
+      return catalogByLocationId.get(queryLocationId)?.slug || "";
+    }
+    return "";
+  }, [citySlugFromPath, queryLocationId, catalogByLocationId]);
+
   const currentBucket = useMemo(
-    () => locationBuckets.find((bucket) => bucket.slug === citySlug),
-    [citySlug, locationBuckets]
+    () => locationBuckets.find((bucket) => bucket.slug === resolvedCitySlug),
+    [resolvedCitySlug, locationBuckets]
   );
-  const cityDisplay = currentBucket?.label || toDisplayCity(citySlug);
+  const catalogEntry = catalogBySlug.get(resolvedCitySlug);
+  const cityDisplay = catalogEntry?.label || currentBucket?.label || toDisplayCity(resolvedCitySlug);
   const content = useMemo(
     () =>
       buildDynamicCityContent(cityDisplay, {
@@ -212,20 +315,18 @@ export default function CitySeoPage({ forcedCitySlug = "" }) {
       }),
     [cityDisplay, currentBucket]
   );
+  const canonicalPath = catalogEntry?.path || content.pathname;
 
   const effectiveAllowedSlugs = useMemo(() => {
-    const combined = new Set(allowedCitySlugs);
+    const combined = new Set(FIXED_LOCAL_CITY_SLUGS);
+    for (const item of seoCatalog) {
+      if (item?.slug) combined.add(item.slug);
+    }
     for (const bucket of locationBuckets) {
-      if (bucket?.slug) {
-        combined.add(bucket.slug);
-      }
+      if (bucket?.slug) combined.add(bucket.slug);
     }
     return combined;
-  }, [allowedCitySlugs, locationBuckets]);
-
-  if (!citySlug) {
-    return <CityPageNotFound citySlug="" />;
-  }
+  }, [seoCatalog, locationBuckets]);
 
   if (!allowedLoaded) {
     return (
@@ -235,13 +336,32 @@ export default function CitySeoPage({ forcedCitySlug = "" }) {
     );
   }
 
-  if (!effectiveAllowedSlugs.has(citySlug)) {
-    return <CityPageNotFound citySlug={citySlug} />;
+  if (!resolvedCitySlug) {
+    return <CityPageNotFound citySlug="" />;
   }
 
-  const fixedPath = getFixedCityPathBySlug(citySlug);
+  if (queryLocationId && catalogByLocationId.size > 0) {
+    const locationEntry = catalogByLocationId.get(queryLocationId);
+    if (!locationEntry || locationEntry.slug !== resolvedCitySlug) {
+      return <CityPageNotFound citySlug={resolvedCitySlug} />;
+    }
+  }
+
+  if (!effectiveAllowedSlugs.has(resolvedCitySlug)) {
+    return <CityPageNotFound citySlug={resolvedCitySlug} />;
+  }
+
+  const fixedPath = getFixedCityPathBySlug(resolvedCitySlug);
   if (fixedPath) {
     return <Navigate to={fixedPath} replace />;
+  }
+
+  if (citySlugFromPath && canonicalPath && canonicalPath !== `/pizza-${resolvedCitySlug}`) {
+    return <Navigate to={canonicalPath} replace />;
+  }
+
+  if (!citySlugFromPath && canonicalPath) {
+    return <Navigate to={canonicalPath} replace />;
   }
 
   return (
@@ -249,9 +369,9 @@ export default function CitySeoPage({ forcedCitySlug = "" }) {
       <SeoHead
         title={content.title}
         description={content.description}
-        pathname={content.pathname}
+        pathname={canonicalPath}
         jsonLd={buildBaseFoodEstablishmentJsonLd({
-          pagePath: content.pathname,
+          pagePath: canonicalPath,
           pageName: content.title,
           description: content.description,
         })}

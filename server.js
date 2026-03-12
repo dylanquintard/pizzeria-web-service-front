@@ -10,7 +10,12 @@ const INDEX_FILE = path.join(BUILD_DIR, "index.html");
 const SEO_CACHE_TTL_MS = Number(process.env.SEO_CACHE_TTL_MS || 300000);
 const SEO_FETCH_TIMEOUT_MS = Number(process.env.SEO_FETCH_TIMEOUT_MS || 6000);
 
-const FIXED_CITY_SLUGS = new Set(["thionville", "metz", "moselle"]);
+const FIXED_CITY_CATALOG = [
+  { slug: "thionville", label: "Thionville" },
+  { slug: "metz", label: "Metz" },
+  { slug: "moselle", label: "Moselle" },
+];
+const FIXED_CITY_SLUGS = new Set(FIXED_CITY_CATALOG.map((item) => item.slug));
 const DEFAULT_BLOG_SLUGS = new Set([
   "pourquoi-la-pizza-napolitaine-est-differente",
   "la-cuisson-au-feu-de-bois",
@@ -123,6 +128,8 @@ const PREFIX_SPA_ROUTES = ["/admin"];
 const seoCache = {
   expiresAt: 0,
   citySlugs: new Set(FIXED_CITY_SLUGS),
+  cityLabelsBySlug: new Map(FIXED_CITY_CATALOG.map((entry) => [entry.slug, entry.label])),
+  citySlugByLocationId: new Map(),
   blogSlugs: new Set(DEFAULT_BLOG_SLUGS),
 };
 
@@ -184,6 +191,33 @@ function titleizeSlug(slug) {
     .join(" ");
 }
 
+function normalizeSeoLocationCatalog(payload) {
+  const source = Array.isArray(payload?.locations) ? payload.locations : [];
+  if (!source.length) return [];
+
+  const deduped = new Map();
+  for (const row of source) {
+    const slug = slugify(row?.slug);
+    const locationId = Number(row?.locationId);
+    const label = String(row?.label || "").trim();
+    if (!slug) continue;
+
+    const existing = deduped.get(slug) || {};
+    deduped.set(slug, {
+      slug,
+      label: label || existing.label || titleizeSlug(slug),
+      locationId:
+        Number.isFinite(locationId) && locationId > 0
+          ? locationId
+          : Number.isFinite(existing.locationId)
+            ? existing.locationId
+            : null,
+    });
+  }
+
+  return [...deduped.values()];
+}
+
 function escapeHtml(value) {
   return String(value || "")
     .replaceAll("&", "&amp;")
@@ -226,13 +260,32 @@ async function refreshSeoCacheIfNeeded(options = {}) {
   if (!force && seoCache.expiresAt > now) return seoCache;
 
   const nextCitySlugs = new Set(FIXED_CITY_SLUGS);
+  const nextCityLabelsBySlug = new Map(FIXED_CITY_CATALOG.map((entry) => [entry.slug, entry.label]));
+  const nextCitySlugByLocationId = new Map();
   const nextBlogSlugs = new Set(DEFAULT_BLOG_SLUGS);
 
-  function addLocationSlugCandidates(source) {
+  function addLocationSlugCandidates(source, preferredLabel = "") {
     const fromName = slugify(source?.name);
     const fromCity = slugify(source?.city);
-    if (fromName) nextCitySlugs.add(fromName);
-    if (fromCity) nextCitySlugs.add(fromCity);
+    const sourceId = Number(source?.id);
+    if (fromName) {
+      nextCitySlugs.add(fromName);
+      if (!nextCityLabelsBySlug.has(fromName)) {
+        nextCityLabelsBySlug.set(fromName, String(preferredLabel || source?.name || "").trim() || titleizeSlug(fromName));
+      }
+      if (Number.isFinite(sourceId) && sourceId > 0 && !nextCitySlugByLocationId.has(sourceId)) {
+        nextCitySlugByLocationId.set(sourceId, fromName);
+      }
+    }
+    if (fromCity) {
+      nextCitySlugs.add(fromCity);
+      if (!nextCityLabelsBySlug.has(fromCity)) {
+        nextCityLabelsBySlug.set(fromCity, String(preferredLabel || source?.city || "").trim() || titleizeSlug(fromCity));
+      }
+      if (Number.isFinite(sourceId) && sourceId > 0) {
+        nextCitySlugByLocationId.set(sourceId, fromCity);
+      }
+    }
   }
 
   function addWeeklySettingsSlugs(weeklySettingsData) {
@@ -251,19 +304,39 @@ async function refreshSeoCacheIfNeeded(options = {}) {
     }
   }
 
+  function addSeoLocationCatalog(catalogPayload) {
+    const entries = normalizeSeoLocationCatalog(catalogPayload);
+    for (const entry of entries) {
+      nextCitySlugs.add(entry.slug);
+      if (entry.label) {
+        nextCityLabelsBySlug.set(entry.slug, entry.label);
+      }
+      if (Number.isFinite(entry.locationId) && entry.locationId > 0) {
+        nextCitySlugByLocationId.set(entry.locationId, entry.slug);
+      }
+    }
+    return entries.length > 0;
+  }
+
   try {
-    const [locationsData, weeklySettingsData, blogSlugsData] = await Promise.all([
-      fetchJsonWithTimeout(buildApiUrl("/locations?active=true")),
-      fetchJsonWithTimeout(buildApiUrl("/timeslots/public-weekly-settings")),
+    const [seoLocationsData, blogSlugsData] = await Promise.all([
+      fetchJsonWithTimeout(buildApiUrl("/seo/locations")),
       fetchJsonWithTimeout(buildApiUrl("/seo/blog-slugs")),
     ]);
 
-    if (Array.isArray(locationsData)) {
-      for (const location of locationsData) {
-        addLocationSlugCandidates(location);
+    const hasCatalogData = addSeoLocationCatalog(seoLocationsData);
+    if (!hasCatalogData) {
+      const [locationsData, weeklySettingsData] = await Promise.all([
+        fetchJsonWithTimeout(buildApiUrl("/locations?active=true")),
+        fetchJsonWithTimeout(buildApiUrl("/timeslots/public-weekly-settings")),
+      ]);
+      if (Array.isArray(locationsData)) {
+        for (const location of locationsData) {
+          addLocationSlugCandidates(location);
+        }
       }
+      addWeeklySettingsSlugs(weeklySettingsData);
     }
-    addWeeklySettingsSlugs(weeklySettingsData);
 
     if (Array.isArray(blogSlugsData?.slugs)) {
       nextBlogSlugs.clear();
@@ -277,6 +350,8 @@ async function refreshSeoCacheIfNeeded(options = {}) {
     }
 
     seoCache.citySlugs = nextCitySlugs;
+    seoCache.cityLabelsBySlug = nextCityLabelsBySlug;
+    seoCache.citySlugByLocationId = nextCitySlugByLocationId;
     seoCache.blogSlugs = nextBlogSlugs;
     seoCache.expiresAt = now + SEO_CACHE_TTL_MS;
   } catch (_error) {
@@ -297,6 +372,16 @@ function isDynamicSeoPath(pathname) {
 }
 
 function buildSeoMeta(pathname, cache) {
+  if (pathname === "/pizza") {
+    return {
+      title: "Redirection vers la page locale",
+      description: "Choisissez un emplacement actif pour acceder a la page locale.",
+      robots: "noindex,follow",
+      ogType: "website",
+      pathname,
+    };
+  }
+
   if (STATIC_PAGE_META[pathname]) {
     return {
       ...STATIC_PAGE_META[pathname],
@@ -326,7 +411,7 @@ function buildSeoMeta(pathname, cache) {
   if (pizzaDashMatch) {
     const slug = slugify(pizzaDashMatch[1]);
     if (!cache.citySlugs.has(slug)) return null;
-    const city = titleizeSlug(slug);
+    const city = cache.cityLabelsBySlug.get(slug) || titleizeSlug(slug);
     return {
       title: `Pizza napolitaine a ${city} | Camion pizza artisanal`,
       description:
@@ -465,6 +550,34 @@ app.use(async (req, res) => {
     const queryIndex = req.url.indexOf("?");
     const search = queryIndex >= 0 ? req.url.slice(queryIndex) : "";
     return res.redirect(301, `${normalizedPath}${search}`);
+  }
+
+  if (pathname === "/pizza") {
+    const locationIdParam = String(
+      req.query?.locationId || req.query?.locationID || req.query?.locationid || ""
+    ).trim();
+    if (!locationIdParam) {
+      return sendNoindex404(res);
+    }
+
+    const locationId = Number(locationIdParam);
+    if (!Number.isFinite(locationId) || locationId <= 0) {
+      return sendNoindex404(res);
+    }
+
+    const cache = await refreshSeoCacheIfNeeded();
+    const slug = cache.citySlugByLocationId.get(locationId);
+    if (slug) {
+      return res.redirect(302, `/pizza-${slug}`);
+    }
+
+    const forcedCache = await refreshSeoCacheIfNeeded({ force: true });
+    const forcedSlug = forcedCache.citySlugByLocationId.get(locationId);
+    if (forcedSlug) {
+      return res.redirect(302, `/pizza-${forcedSlug}`);
+    }
+
+    return sendNoindex404(res);
   }
 
   if (
