@@ -507,6 +507,9 @@ function sendNoindex404(res) {
   res
     .status(404)
     .set("Content-Type", "text/html; charset=utf-8")
+    .set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate")
+    .set("Pragma", "no-cache")
+    .set("Expires", "0")
     .set("X-Robots-Tag", "noindex, nofollow")
     .send(`<!doctype html>
 <html lang="fr">
@@ -528,7 +531,13 @@ function sendNoindex404(res) {
 
 function sendSpaWithSeo(req, res, meta) {
   const html = renderHtmlWithSeo(req, meta);
-  res.status(200).set("Content-Type", "text/html; charset=utf-8").send(html);
+  res
+    .status(200)
+    .set("Content-Type", "text/html; charset=utf-8")
+    .set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate")
+    .set("Pragma", "no-cache")
+    .set("Expires", "0")
+    .send(html);
 }
 
 app.disable("x-powered-by");
