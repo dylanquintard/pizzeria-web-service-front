@@ -1,5 +1,5 @@
 import { Suspense, lazy, useContext } from "react";
-import { BrowserRouter, Navigate, Outlet, Route, Routes, useParams } from "react-router-dom";
+import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation, useParams } from "react-router-dom";
 import Header from "./components/layout/Header";
 import MainContent from "./components/layout/MainContent";
 import { AuthContext, AuthProvider } from "./context/AuthContext";
@@ -76,6 +76,15 @@ const LegacyPizzaCityRoute = () => {
   return <Navigate to={`/pizza-${slug}`} replace />;
 };
 
+const PizzaSlugRoute = () => {
+  const location = useLocation();
+  const match = /^\/pizza-([a-z0-9-]+)$/.exec(String(location.pathname || "").toLowerCase());
+  if (!match) {
+    return <NotFound />;
+  }
+  return <CitySeoPage forcedCitySlug={match[1]} />;
+};
+
 function AppRoutes() {
   const { tr } = useLanguage();
   const loadingFallback = (
@@ -102,7 +111,6 @@ function AppRoutes() {
           <Route path="/food-truck-pizza-moselle" element={<LocalSeoPage cityKey="moselle" />} />
           <Route path="/pizza" element={<CitySeoPage />} />
           <Route path="/pizza/:city" element={<LegacyPizzaCityRoute />} />
-          <Route path="/pizza-*" element={<CitySeoPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
@@ -268,7 +276,7 @@ function AppRoutes() {
           />
         </Route>
 
-        <Route path="*" element={<NotFound />} />
+        <Route path="*" element={<PizzaSlugRoute />} />
       </Routes>
     </Suspense>
   );
