@@ -274,9 +274,8 @@ function AppRoutes() {
               </AdminRoute>
             }
           />
+          <Route path="*" element={<PizzaSlugRoute />} />
         </Route>
-
-        <Route path="*" element={<PizzaSlugRoute />} />
       </Routes>
     </Suspense>
   );
