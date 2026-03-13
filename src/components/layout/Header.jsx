@@ -103,6 +103,7 @@ export default function Header() {
   const isAdminUser = user?.role === "ADMIN";
   const seoPageLinks = [
     { to: "/", label: tr("Accueil", "Home") },
+    { to: "/gallery", label: tr("Galerie", "Gallery") },
     { to: "/menu", label: tr("Menu", "Menu") },
     { to: "/planing", label: tr("Horaires d'ouvertures", "Opening hours") },
     { to: "/a-propos", label: tr("A propos", "About") },

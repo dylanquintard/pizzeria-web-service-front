@@ -11,6 +11,7 @@ import { slugifyCity } from "./seo/localLandingContent";
 const Categories = lazy(() => import("./pages/Categories"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const EditProduct = lazy(() => import("./pages/EditProduct"));
+const Gallery = lazy(() => import("./pages/Gallery"));
 const GalleryAdmin = lazy(() => import("./pages/GalleryAdmin"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const Home = lazy(() => import("./pages/Home"));
@@ -98,6 +99,7 @@ function AppRoutes() {
       <Routes>
         <Route element={<AppLayout />}>
           <Route path="/" element={<Home />} />
+          <Route path="/gallery" element={<Gallery />} />
           <Route path="/menu" element={<Menu />} />
           <Route path="/planing" element={<TourneeCamion />} />
           <Route path="/tournee-camion" element={<Navigate to="/planing" replace />} />

@@ -21,6 +21,8 @@ const emptyImageForm = {
   sortOrder: 0,
   active: true,
 };
+const MIN_HOME_GALLERY_IMAGE_WIDTH = 1920;
+const MIN_HOME_GALLERY_IMAGE_HEIGHT = 1080;
 
 function normalizeImagePayload(form) {
   return {
@@ -40,6 +42,10 @@ function formatFileSize(value) {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+}
+
+function getMinimumGallerySizeLabel() {
+  return `${MIN_HOME_GALLERY_IMAGE_WIDTH} x ${MIN_HOME_GALLERY_IMAGE_HEIGHT}px`;
 }
 
 function ImagePreviewCard({ previewUrl, file, onClear, tr }) {
@@ -207,6 +213,17 @@ export default function GalleryAdmin() {
   const handleToggleActive = async (image) => {
     try {
       await activateGalleryImage(token, image.id, !image.active);
+      setMessage(
+        !image.active
+          ? tr(
+              "Image ajoutee au hero et a la page Gallery.",
+              "Image added to the hero and Gallery page."
+            )
+          : tr(
+              "Image retiree du hero et de la page Gallery.",
+              "Image removed from the hero and Gallery page."
+            )
+      );
       fetchImages();
     } catch (err) {
       setMessage(
@@ -231,12 +248,20 @@ export default function GalleryAdmin() {
     try {
       setBackgroundSettingId(image.id);
       await setGalleryHomeBackground(token, image.id);
-      setMessage(tr("Image de fond Home mise a jour.", "Home background image updated."));
+      setMessage(
+        tr(
+          "Premiere image du hero mise a jour.",
+          "Hero first image updated."
+        )
+      );
       fetchImages();
     } catch (err) {
       setMessage(
         err.response?.data?.error ||
-          tr("Erreur lors du changement de fond Home", "Error while updating Home background")
+          tr(
+            "Erreur lors du changement de la premiere image Home",
+            "Error while updating the first home image"
+          )
       );
     } finally {
       setBackgroundSettingId(null);
@@ -251,7 +276,7 @@ export default function GalleryAdmin() {
   return (
     <div className="space-y-5">
       <h2 className="text-2xl font-bold text-white">
-        {tr("Gestion de la galerie d'accueil", "Homepage gallery management")}
+        {tr("Gestion de la galerie Home", "Home gallery management")}
       </h2>
       {message && (
         <p className="rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-stone-200">{message}</p>
@@ -259,6 +284,12 @@ export default function GalleryAdmin() {
 
       <form onSubmit={handleCreate} className="space-y-3 rounded-2xl border border-white/10 bg-black/20 p-3 sm:p-4">
         <h3 className="text-lg font-semibold text-white">{tr("Ajouter une image", "Add image")}</h3>
+        <div className="theme-light-keep-dark rounded-xl border border-amber-300/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
+          {tr(
+            `ATTENTION : les images activees ici alimentent le hero defilant de la Home et la page Gallery. Mettez uniquement des images d'au minimum ${getMinimumGallerySizeLabel()} pour un bon rendu sur les ecrans users.`,
+            `WARNING: active images here feed the Home rotating hero and the Gallery page. Only use images of at least ${getMinimumGallerySizeLabel()} for a good display on user screens.`
+          )}
+        </div>
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
@@ -346,6 +377,12 @@ export default function GalleryAdmin() {
 
       <div className="space-y-3">
         <h3 className="text-lg font-semibold text-white">{tr("Images enregistrees", "Saved images")}</h3>
+        <div className="theme-light-keep-dark rounded-xl border border-amber-300/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
+          {tr(
+            `Avant de cocher une image en actif, verifiez bien qu'elle fait au moins ${getMinimumGallerySizeLabel()}. L'image definie comme premiere apparait en premier dans le hero.`,
+            `Before checking an image as active, make sure it is at least ${getMinimumGallerySizeLabel()}. The image set as first appears first in the hero.`
+          )}
+        </div>
         <div className="overflow-x-auto">
           <table>
             <thead>
@@ -355,7 +392,7 @@ export default function GalleryAdmin() {
                 <th>{tr("Description", "Description")}</th>
                 <th>{tr("Ordre", "Order")}</th>
                 <th>{tr("Actif", "Active")}</th>
-                <th>{tr("Fond Home", "Home background")}</th>
+                <th>{tr("Premiere image", "First image")}</th>
                 <th>{tr("Actions", "Actions")}</th>
               </tr>
             </thead>
@@ -381,10 +418,10 @@ export default function GalleryAdmin() {
                   <td>
                     {image.isHomeBackground ? (
                       <span className="rounded-full border border-emerald-300/40 bg-emerald-500/10 px-2 py-1 text-xs font-semibold text-emerald-200">
-                        {tr("Actif", "Active")}
+                        {tr("En premier", "First")}
                       </span>
                     ) : (
-                      <span className="text-xs text-stone-400">{tr("Non defini", "Not set")}</span>
+                      <span className="text-xs text-stone-400">{tr("Ordre normal", "Default order")}</span>
                     )}
                   </td>
                   <td>
@@ -405,10 +442,10 @@ export default function GalleryAdmin() {
                         className="rounded-md border border-saffron/40 bg-saffron/15 px-2 py-1 text-xs font-semibold text-saffron transition hover:bg-saffron/30 disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         {image.isHomeBackground
-                          ? tr("Fond Home", "Home background")
+                          ? tr("Premiere image", "First image")
                           : backgroundSettingId === image.id
                             ? tr("En cours...", "Updating...")
-                            : tr("Definir fond", "Set background")}
+                            : tr("Mettre en premier", "Set first")}
                       </button>
                       <ActionIconButton onClick={() => handleDelete(image.id)} label={tr("Supprimer", "Delete")} variant="danger">
                         <DeleteIcon />

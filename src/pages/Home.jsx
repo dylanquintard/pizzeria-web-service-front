@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { getCategories } from "../api/category.api";
 import { getPublicGallery } from "../api/gallery.api";
@@ -70,8 +70,7 @@ const DAY_LABELS = {
   SUNDAY: { fr: "Dimanche", en: "Sunday" },
 };
 const DEFAULT_HOME_BACKGROUND = "/pizza-background-1920.webp";
-const FOCUSABLE_SELECTOR =
-  "button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])";
+const HERO_AUTOPLAY_DELAY_MS = 5000;
 
 function formatLocationAddress(location, tr) {
   if (!location) return tr("Adresse non renseignee", "Address not available");
@@ -104,43 +103,44 @@ export default function Home() {
   const [categories, setCategories] = useState([]);
   const [galleryImages, setGalleryImages] = useState([]);
   const [weeklySettings, setWeeklySettings] = useState([]);
-  const [isGalleryModalOpen, setIsGalleryModalOpen] = useState(false);
-  const [activeGalleryIndex, setActiveGalleryIndex] = useState(0);
-  const galleryModalRef = useRef(null);
+  const [activeHeroIndex, setActiveHeroIndex] = useState(0);
 
-useEffect(() => {
-  let cancelled = false;
+  useEffect(() => {
+    let cancelled = false;
 
-  async function fetchHomeData() {
-    try {
-      const [productData, categoryData, galleryData, weeklySettingsData] = await Promise.all([
-        getAllProductsClient(),
-        getCategories({ active: true, kind: "PRODUCT" }),
-        getPublicGallery({ active: true }),
-        getPublicWeeklySettings(),
-      ]);
+    async function fetchHomeData() {
+      try {
+        const [productData, categoryData, galleryData, weeklySettingsData] =
+          await Promise.all([
+            getAllProductsClient(),
+            getCategories({ active: true, kind: "PRODUCT" }),
+            getPublicGallery({ active: true }),
+            getPublicWeeklySettings(),
+          ]);
 
-      if (!cancelled) {
-        setProducts(Array.isArray(productData) ? productData : []);
-        setCategories(Array.isArray(categoryData) ? categoryData : []);
-        setGalleryImages(Array.isArray(galleryData) ? galleryData : []);
-        setWeeklySettings(Array.isArray(weeklySettingsData) ? weeklySettingsData : []);
-      }
-    } catch (_err) {
-      if (!cancelled) {
-        setProducts([]);
-        setCategories([]);
-        setGalleryImages([]);
-        setWeeklySettings([]);
+        if (!cancelled) {
+          setProducts(Array.isArray(productData) ? productData : []);
+          setCategories(Array.isArray(categoryData) ? categoryData : []);
+          setGalleryImages(Array.isArray(galleryData) ? galleryData : []);
+          setWeeklySettings(
+            Array.isArray(weeklySettingsData) ? weeklySettingsData : []
+          );
+        }
+      } catch (_err) {
+        if (!cancelled) {
+          setProducts([]);
+          setCategories([]);
+          setGalleryImages([]);
+          setWeeklySettings([]);
+        }
       }
     }
-  }
 
-  fetchHomeData();
-  return () => {
-    cancelled = true;
-  };
-}, []);
+    fetchHomeData();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
 const truckTourSchedule = useMemo(
   () => {
@@ -290,132 +290,56 @@ const truckTourSchedule = useMemo(
       .map(({ entry }) => entry);
   }, [categories, products, tr]);
 
-  const galleryFallback = [
-    {
-      id: "fallback-1",
-      imageUrl: DEFAULT_HOME_BACKGROUND,
-      title: tr("Four dore", "Golden oven"),
-      description: tr("Image de reference", "Reference image"),
-    },
-  ];
+  const heroGalleryImages = useMemo(() => {
+    const validImages = galleryImages.filter((image) => image?.imageUrl);
 
-  const heroBackgroundUrl = useMemo(() => {
-    const selectedBackground = galleryImages.find(
-      (image) => image?.isHomeBackground && image?.imageUrl
-    );
-    return selectedBackground?.imageUrl || DEFAULT_HOME_BACKGROUND;
+    if (validImages.length === 0) {
+      return [{ id: "fallback-hero", imageUrl: DEFAULT_HOME_BACKGROUND }];
+    }
+
+    return [...validImages].sort((left, right) => {
+      const leftPriority = left?.isHomeBackground ? 0 : 1;
+      const rightPriority = right?.isHomeBackground ? 0 : 1;
+      if (leftPriority !== rightPriority) return leftPriority - rightPriority;
+
+      const leftOrder = Number(left?.sortOrder ?? 0);
+      const rightOrder = Number(right?.sortOrder ?? 0);
+      if (leftOrder !== rightOrder) return leftOrder - rightOrder;
+
+      return String(left?.id ?? "").localeCompare(String(right?.id ?? ""));
+    });
   }, [galleryImages]);
 
   const heroOverlay = theme === "light"
     ? "linear-gradient(118deg, rgba(246,235,221,0.90) 6%, rgba(246,235,221,0.68) 42%, rgba(58,38,28,0.48) 100%)"
     : "linear-gradient(120deg, rgba(18,16,13,0.88) 5%, rgba(18,16,13,0.62) 40%, rgba(18,16,13,0.92) 100%)";
 
-  const displayedGallery = galleryImages.length > 0 ? galleryImages : galleryFallback;
-  const visibleGallery = displayedGallery.slice(0, 3);
-
-  const openGalleryAt = (index) => {
-    setActiveGalleryIndex(index);
-    setIsGalleryModalOpen(true);
-  };
-
-  const closeGallery = useCallback(() => setIsGalleryModalOpen(false), []);
-
-  const showPreviousInGallery = useCallback(() => {
-    setActiveGalleryIndex((prev) => (prev - 1 + displayedGallery.length) % displayedGallery.length);
-  }, [displayedGallery.length]);
-
-  const showNextInGallery = useCallback(() => {
-    setActiveGalleryIndex((prev) => (prev + 1) % displayedGallery.length);
-  }, [displayedGallery.length]);
+  useEffect(() => {
+    setActiveHeroIndex((prev) => {
+      if (heroGalleryImages.length === 0) return 0;
+      return prev % heroGalleryImages.length;
+    });
+  }, [heroGalleryImages.length]);
 
   useEffect(() => {
-    if (!isGalleryModalOpen) return;
-    const modalElement = galleryModalRef.current;
-    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    if (heroGalleryImages.length <= 1) return undefined;
 
-    const getFocusableElements = () => {
-      if (!modalElement) return [];
-      return Array.from(modalElement.querySelectorAll(FOCUSABLE_SELECTOR)).filter(
-        (element) => element instanceof HTMLElement && !element.hasAttribute("disabled")
-      );
-    };
+    const intervalId = window.setInterval(() => {
+      setActiveHeroIndex((prev) => (prev + 1) % heroGalleryImages.length);
+    }, HERO_AUTOPLAY_DELAY_MS);
 
-    const focusableElements = getFocusableElements();
-    if (focusableElements.length > 0) {
-      focusableElements[0].focus();
-    } else {
-      modalElement?.focus();
-    }
+    return () => window.clearInterval(intervalId);
+  }, [heroGalleryImages.length]);
 
-    const onKeyDown = (event) => {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        closeGallery();
-        return;
-      }
+  const showPreviousHeroImage = () => {
+    setActiveHeroIndex(
+      (prev) => (prev - 1 + heroGalleryImages.length) % heroGalleryImages.length
+    );
+  };
 
-      if (event.key === "Tab") {
-        const elements = getFocusableElements();
-        if (elements.length === 0) {
-          event.preventDefault();
-          modalElement?.focus();
-          return;
-        }
-
-        const first = elements[0];
-        const last = elements[elements.length - 1];
-        const active = document.activeElement;
-
-        if (!event.shiftKey && active === last) {
-          event.preventDefault();
-          first.focus();
-        } else if (event.shiftKey && active === first) {
-          event.preventDefault();
-          last.focus();
-        }
-        return;
-      }
-
-      if (displayedGallery.length <= 1) return;
-      if (event.key === "ArrowLeft") {
-        event.preventDefault();
-        showPreviousInGallery();
-      }
-      if (event.key === "ArrowRight") {
-        event.preventDefault();
-        showNextInGallery();
-      }
-    };
-
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("keydown", onKeyDown);
-      if (previousFocus && typeof previousFocus.focus === "function") {
-        previousFocus.focus();
-      }
-    };
-  }, [closeGallery, displayedGallery.length, isGalleryModalOpen, showNextInGallery, showPreviousInGallery]);
-
-  const activeGalleryImage = displayedGallery[activeGalleryIndex] || null;
-
-  const renderGalleryCard = (image, index, heightClass) => (
-    <button
-      key={image.id || `${image.imageUrl}-${index}`}
-      type="button"
-      onClick={() => openGalleryAt(index)}
-      className={`group relative overflow-hidden rounded-2xl border border-white/10 text-left ${heightClass}`}
-    >
-      <img
-        src={image.imageUrl}
-        alt={image.altText || image.title || tr("Image galerie", "Gallery image")}
-        className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-      />
-      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-charcoal/90 to-transparent p-3">
-        <p className="theme-light-keep-white text-sm font-semibold text-white">{image.title || tr("Galerie", "Gallery")}</p>
-        <p className="theme-light-keep-white text-xs text-stone-300">{image.description || tr("Qualite artisanale", "Craft quality")}</p>
-      </div>
-    </button>
-  );
+  const showNextHeroImage = () => {
+    setActiveHeroIndex((prev) => (prev + 1) % heroGalleryImages.length);
+  };
 
   return (
     <div className="space-y-20 pb-24">
@@ -427,15 +351,20 @@ const truckTourSchedule = useMemo(
       />
       <section className="relative overflow-hidden">
         <div className="absolute inset-0">
-          <img
-            src={heroBackgroundUrl}
-            alt=""
-            aria-hidden="true"
-            fetchPriority="high"
-            loading="eager"
-            decoding="async"
-            className="h-full w-full object-cover"
-          />
+          {heroGalleryImages.map((image, index) => (
+            <img
+              key={image.id || `${image.imageUrl}-${index}`}
+              src={image.imageUrl}
+              alt=""
+              aria-hidden="true"
+              fetchPriority={index === 0 ? "high" : undefined}
+              loading={index === 0 ? "eager" : "lazy"}
+              decoding="async"
+              className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ${
+                index === activeHeroIndex ? "opacity-100" : "opacity-0"
+              }`}
+            />
+          ))}
           <div
             className="absolute inset-0"
             style={{
@@ -482,6 +411,16 @@ const truckTourSchedule = useMemo(
               >
                 {tr("Voir les horaires d'ouvertures", "See opening hours")}
               </Link>
+              <Link
+                to="/gallery"
+                className={`rounded-full px-6 py-3 text-sm font-semibold uppercase tracking-wide transition ${
+                  isLightTheme
+                    ? "border border-[#3A261C]/15 bg-white/70 text-[#3A261C] hover:bg-white"
+                    : "theme-light-keep-white border border-white/30 text-white hover:bg-white/10"
+                }`}
+              >
+                {tr("Voir la galerie", "See gallery")}
+              </Link>
               {token ? (
                 <Link
                   to="/order"
@@ -506,24 +445,68 @@ const truckTourSchedule = useMemo(
                 </Link>
               )}
             </div>
-          </div>
-        </div>
-      </section>
-      <section id="galerie" className="section-shell space-y-6">
-        <div>
-          <p className="theme-light-keep-dark text-sm uppercase tracking-[0.25em] text-white">
-            {tr("Le camion, le four dore, nos pizzas, etc...", "The truck, the golden oven, our pizzas, and more...")}
-          </p>
-        </div>
-        <div className="mx-auto grid w-[90%] gap-4">
-          {visibleGallery[0] && renderGalleryCard(visibleGallery[0], 0, "h-80 lg:h-[32rem]")}
+            {heroGalleryImages.length > 1 && (
+              <div className="mt-8 flex flex-wrap items-center gap-3">
+                <div
+                  className={`inline-flex items-center rounded-full px-2 py-2 ${
+                    isLightTheme
+                      ? "border border-[#3A261C]/15 bg-white/75"
+                      : "border border-white/20 bg-black/30"
+                  }`}
+                >
+                  <button
+                    type="button"
+                    onClick={showPreviousHeroImage}
+                    className={`rounded-full px-3 py-1 text-sm font-semibold transition ${
+                      isLightTheme
+                        ? "text-[#3A261C] hover:bg-[#3A261C]/10"
+                        : "theme-light-keep-white text-white hover:bg-white/10"
+                    }`}
+                    aria-label={tr("Image precedente", "Previous image")}
+                  >
+                    {"<"}
+                  </button>
+                  <span
+                    className={`px-2 text-xs font-semibold uppercase tracking-[0.25em] ${
+                      isLightTheme ? "text-[#3A261C]/75" : "text-stone-200"
+                    }`}
+                  >
+                    {activeHeroIndex + 1} / {heroGalleryImages.length}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={showNextHeroImage}
+                    className={`rounded-full px-3 py-1 text-sm font-semibold transition ${
+                      isLightTheme
+                        ? "text-[#3A261C] hover:bg-[#3A261C]/10"
+                        : "theme-light-keep-white text-white hover:bg-white/10"
+                    }`}
+                    aria-label={tr("Image suivante", "Next image")}
+                  >
+                    {">"}
+                  </button>
+                </div>
 
-          {(visibleGallery[1] || visibleGallery[2]) && (
-            <div className={`grid gap-4 ${visibleGallery[2] ? "sm:grid-cols-2" : ""}`}>
-              {visibleGallery[1] && renderGalleryCard(visibleGallery[1], 1, "h-64 lg:h-[22rem]")}
-              {visibleGallery[2] && renderGalleryCard(visibleGallery[2], 2, "h-64 lg:h-[22rem]")}
-            </div>
-          )}
+                <div className="flex items-center gap-2">
+                  {heroGalleryImages.map((image, index) => (
+                    <button
+                      key={`hero-dot-${image.id || index}`}
+                      type="button"
+                      onClick={() => setActiveHeroIndex(index)}
+                      className={`h-2.5 rounded-full transition-all ${
+                        index === activeHeroIndex
+                          ? "w-10 bg-saffron"
+                          : isLightTheme
+                            ? "w-2.5 bg-[#3A261C]/25 hover:bg-[#3A261C]/40"
+                            : "w-2.5 bg-white/35 hover:bg-white/60"
+                      }`}
+                      aria-label={`${tr("Aller a l'image", "Go to image")} ${index + 1}`}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </section>
 
@@ -759,92 +742,6 @@ const truckTourSchedule = useMemo(
       <section className="section-shell">
         <SeoInternalLinks />
       </section>
-
-      {isGalleryModalOpen && activeGalleryImage && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/90 p-4">
-          <div
-            ref={galleryModalRef}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="gallery-modal-title"
-            tabIndex={-1}
-            className="w-full max-w-6xl rounded-2xl border border-white/20 bg-charcoal/95 p-4 sm:p-6"
-          >
-            <div className="mb-3 flex items-center justify-between">
-              <p className="text-xs uppercase tracking-wider text-stone-400">
-                {tr("Photo", "Photo")} {activeGalleryIndex + 1} / {displayedGallery.length}
-              </p>
-              <button
-                type="button"
-                onClick={closeGallery}
-                className="rounded-full border border-white/25 px-3 py-1 text-xs font-semibold text-white transition hover:bg-white/10"
-              >
-                {tr("Fermer", "Close")}
-              </button>
-            </div>
-            <h2 id="gallery-modal-title" className="sr-only">
-              {tr("Galerie en plein ecran", "Fullscreen gallery")}
-            </h2>
-
-            <div className="relative">
-              <div className="relative mx-auto w-fit overflow-hidden rounded-xl">
-                <img
-                  src={activeGalleryImage.imageUrl}
-                  alt={activeGalleryImage.altText || activeGalleryImage.title || tr("Image galerie", "Gallery image")}
-                  className="block max-h-[68vh] w-auto max-w-full object-contain"
-                />
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-charcoal/90 to-transparent p-3">
-                  <p className="theme-light-keep-white text-sm font-semibold text-white">{activeGalleryImage.title || tr("Galerie", "Gallery")}</p>
-                  <p className="theme-light-keep-white text-xs text-stone-300">
-                    {activeGalleryImage.description || tr("Qualite artisanale", "Craft quality")}
-                  </p>
-                </div>
-              </div>
-
-              {displayedGallery.length > 1 && (
-                <>
-                  <button
-                    type="button"
-                    onClick={showPreviousInGallery}
-                    className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-charcoal/80 p-2 text-white transition hover:bg-charcoal"
-                    aria-label={tr("Image precedente", "Previous image")}
-                  >
-                    {"<"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={showNextInGallery}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-charcoal/80 p-2 text-white transition hover:bg-charcoal"
-                    aria-label={tr("Image suivante", "Next image")}
-                  >
-                    {">"}
-                  </button>
-                </>
-              )}
-            </div>
-
-            <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
-              {displayedGallery.map((image, index) => (
-                <button
-                  key={image.id || `${image.imageUrl}-${index}`}
-                  type="button"
-                  onClick={() => setActiveGalleryIndex(index)}
-                  className={`shrink-0 overflow-hidden rounded-lg border ${
-                    index === activeGalleryIndex ? "border-saffron" : "border-white/20"
-                  }`}
-                  aria-label={`${tr("Aller a l'image", "Go to image")} ${index + 1}`}
-                >
-                  <img
-                    src={image.imageUrl}
-                    alt={image.altText || image.title || `${tr("Miniature", "Thumbnail")} ${index + 1}`}
-                    className="h-16 w-24 object-cover"
-                  />
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

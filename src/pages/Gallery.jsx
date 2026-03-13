@@ -1,0 +1,46 @@
+import { useEffect, useState } from "react";
+import { getPublicGallery } from "../api/gallery.api";
+import GalleryShowcase from "../components/gallery/GalleryShowcase";
+import SeoHead from "../components/seo/SeoHead";
+import { useLanguage } from "../context/LanguageContext";
+
+export default function Gallery() {
+  const { tr } = useLanguage();
+  const [galleryImages, setGalleryImages] = useState([]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchGalleryImages() {
+      try {
+        const data = await getPublicGallery({ active: true });
+        if (!cancelled) {
+          setGalleryImages(Array.isArray(data) ? data : []);
+        }
+      } catch (_err) {
+        if (!cancelled) {
+          setGalleryImages([]);
+        }
+      }
+    }
+
+    fetchGalleryImages();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return (
+    <div className="section-shell pb-20 pt-10">
+      <SeoHead
+        title="Galerie | Pizza Truck"
+        description={tr(
+          "Galerie photo du camion pizza, du four et des pizzas artisanales.",
+          "Photo gallery of the pizza truck, oven and craft pizzas."
+        )}
+        pathname="/gallery"
+      />
+      <GalleryShowcase images={galleryImages} />
+    </div>
+  );
+}
