@@ -163,7 +163,6 @@ export default function BlogArticle({ forcedSlug = "" }) {
   }
 
   const publishedLabel = formatArticleDate(article.publishedAt || article.createdAt);
-  const galleryImages = Array.isArray(article.images) ? article.images : [];
 
   return (
     <div className="section-shell space-y-8 pb-20 pt-10">
@@ -206,55 +205,58 @@ export default function BlogArticle({ forcedSlug = "" }) {
         </div>
       </header>
 
-      {galleryImages.length > 0 ? (
-        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {galleryImages.map((image, index) => (
-            <figure
-              key={image.id || `${image.imageUrl}-${index}`}
-              className={`overflow-hidden rounded-[1.75rem] border border-white/10 bg-white/5 ${
-                index === 0 ? "md:col-span-2 xl:col-span-2" : ""
-              }`}
-            >
-              <img
-                src={image.imageUrl}
-                alt={image.altText || article.title}
-                className={`w-full object-cover ${index === 0 ? "h-[360px]" : "h-64"}`}
-              />
-              {image.caption ? (
-                <figcaption className="border-t border-white/10 px-4 py-3 text-sm text-stone-300">
-                  {image.caption}
-                </figcaption>
-              ) : null}
-            </figure>
-          ))}
-        </section>
-      ) : null}
-
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
         <div className="space-y-5">
           {article.paragraphs.map((paragraph, index) => (
             <section
               key={paragraph.id || `${paragraph.title}-${index}`}
               id={`section-${paragraph.id || index}`}
-              className="glass-panel rounded-[1.75rem] p-6 sm:p-7"
+              className={`grid gap-5 lg:items-stretch ${
+                paragraph.image?.imageUrl ? "lg:grid-cols-[minmax(0,1fr)_minmax(300px,420px)]" : ""
+              }`}
             >
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-saffron/35 bg-saffron/10 text-sm font-bold text-saffron">
-                  {index + 1}
-                </span>
-                <h2 className="text-2xl font-bold text-white">{paragraph.title}</h2>
+              <div
+                className={`glass-panel rounded-[1.75rem] p-6 sm:p-7 ${
+                  paragraph.image?.imageUrl && index % 2 === 1 ? "lg:order-2" : "lg:order-1"
+                }`}
+              >
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-saffron/35 bg-saffron/10 text-sm font-bold text-saffron">
+                    {index + 1}
+                  </span>
+                  <h2 className="text-2xl font-bold text-white">{paragraph.title}</h2>
+                </div>
+
+                <div className="mt-5 space-y-4">
+                  {splitContentBlocks(paragraph.content).map((block, blockIndex) => (
+                    <p
+                      key={`${paragraph.id || index}-block-${blockIndex}`}
+                      className="text-sm leading-8 text-stone-300 sm:text-[15px]"
+                    >
+                      {block}
+                    </p>
+                  ))}
+                </div>
               </div>
 
-              <div className="mt-5 space-y-4">
-                {splitContentBlocks(paragraph.content).map((block, blockIndex) => (
-                  <p
-                    key={`${paragraph.id || index}-block-${blockIndex}`}
-                    className="text-sm leading-8 text-stone-300 sm:text-[15px]"
-                  >
-                    {block}
-                  </p>
-                ))}
-              </div>
+              {paragraph.image?.imageUrl ? (
+                <figure
+                  className={`overflow-hidden rounded-[1.75rem] border border-white/10 bg-black/20 ${
+                    index % 2 === 1 ? "lg:order-1" : "lg:order-2"
+                  }`}
+                >
+                  <img
+                    src={paragraph.image.imageUrl}
+                    alt={paragraph.image.altText || paragraph.image.caption || paragraph.title}
+                    className="h-64 w-full object-cover sm:h-72 lg:h-full lg:min-h-[320px]"
+                  />
+                  {paragraph.image.caption ? (
+                    <figcaption className="border-t border-white/10 px-4 py-3 text-sm text-stone-300">
+                      {paragraph.image.caption}
+                    </figcaption>
+                  ) : null}
+                </figure>
+              ) : null}
             </section>
           ))}
         </div>

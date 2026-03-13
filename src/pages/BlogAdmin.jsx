@@ -16,6 +16,7 @@ function createParagraph(seed = {}) {
     id: seed.id || `paragraph-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     title: seed.title || "",
     content: seed.content || "",
+    image: seed.image?.imageUrl ? createImage(seed.image) : null,
   };
 }
 
@@ -24,7 +25,6 @@ function createImage(seed = {}) {
   return {
     id: seed.id || `image-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     imageUrl: seed.imageUrl || "",
-    thumbnailUrl: seed.thumbnailUrl || "",
     altText: legend,
     caption: legend,
     file: null,
@@ -37,9 +37,8 @@ function createEmptyArticleForm() {
     title: "",
     slug: "",
     description: "",
-    published: true,
+    published: false,
     paragraphs: [createParagraph()],
-    images: [],
   };
 }
 
@@ -51,12 +50,13 @@ function createArticleFormFromRecord(article) {
     published: Boolean(article.published),
     paragraphs:
       Array.isArray(article.paragraphs) && article.paragraphs.length > 0
-        ? article.paragraphs.map((paragraph) => createParagraph(paragraph))
+        ? article.paragraphs.map((paragraph, index) =>
+            createParagraph({
+              ...paragraph,
+              image: paragraph.image || article.images?.[index] || null,
+            })
+          )
         : [createParagraph()],
-    images:
-      Array.isArray(article.images) && article.images.length > 0
-        ? article.images.map((image) => createImage(image))
-        : [],
   };
 }
 
@@ -97,14 +97,9 @@ function validateArticleForm(form, tr) {
     }
   }
 
-  for (const image of form.images || []) {
-    if (!image.imageUrl && !image.file) {
-      return tr(
-        "Chaque image doit avoir un fichier ou une URL.",
-        "Each image needs a file or image URL."
-      );
-    }
-    if (!String(image.altText || image.caption || "").trim()) {
+  for (const paragraph of form.paragraphs) {
+    const hasImage = Boolean(paragraph.image?.file || String(paragraph.image?.imageUrl || "").trim());
+    if (hasImage && !String(paragraph.image?.altText || paragraph.image?.caption || "").trim()) {
       return tr(
         "Chaque image doit avoir une legende d'image.",
         "Each image needs an image caption."
@@ -115,36 +110,31 @@ function validateArticleForm(form, tr) {
   return "";
 }
 
-async function resolveImagesForSave(images, token) {
-  const resolved = [];
-
-  for (const image of images || []) {
-    const legend = String(image.altText || image.caption || "").trim() || null;
-
-    if (image.file) {
-      const uploaded = await uploadGalleryImage(token, image.file);
-      resolved.push({
-        imageUrl: uploaded.imageUrl,
-        thumbnailUrl: uploaded.thumbnailUrl,
-        altText: legend,
-        caption: legend,
-      });
-      continue;
-    }
-
-    if (!String(image.imageUrl || "").trim()) {
-      continue;
-    }
-
-    resolved.push({
-      imageUrl: String(image.imageUrl || "").trim(),
-      thumbnailUrl: String(image.thumbnailUrl || "").trim() || null,
-      altText: legend,
-      caption: legend,
-    });
+async function resolveParagraphImageForSave(image, token) {
+  if (!image) {
+    return null;
   }
 
-  return resolved;
+  const legend = String(image.altText || image.caption || "").trim() || null;
+
+  if (image.file) {
+    const uploaded = await uploadGalleryImage(token, image.file);
+    return {
+      imageUrl: uploaded.imageUrl,
+      altText: legend,
+      caption: legend,
+    };
+  }
+
+  if (!String(image.imageUrl || "").trim()) {
+    return null;
+  }
+
+  return {
+    imageUrl: String(image.imageUrl || "").trim(),
+    altText: legend,
+    caption: legend,
+  };
 }
 
 async function normalizeArticlePayload(form, token) {
@@ -153,11 +143,13 @@ async function normalizeArticlePayload(form, token) {
     slug: slugify(form.slug || form.title),
     description: form.description.trim(),
     published: Boolean(form.published),
-    paragraphs: form.paragraphs.map((paragraph) => ({
-      title: paragraph.title.trim(),
-      content: paragraph.content.trim(),
-    })),
-    images: await resolveImagesForSave(form.images, token),
+    paragraphs: await Promise.all(
+      form.paragraphs.map(async (paragraph) => ({
+        title: paragraph.title.trim(),
+        content: paragraph.content.trim(),
+        image: await resolveParagraphImageForSave(paragraph.image, token),
+      }))
+    ),
   };
 }
 
@@ -171,142 +163,26 @@ function EditorSectionTitle({ eyebrow, title, description }) {
   );
 }
 
-function ImageEditorCard({ image, index, total, onUpdate, onMove, onRemove, tr }) {
-  return (
-    <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <div className="inline-flex items-center gap-2">
-          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-saffron/35 bg-saffron/10 text-xs font-bold text-saffron">
-            {index + 1}
-          </span>
-          <p className="text-sm font-semibold text-white">
-            {tr("Image", "Image")} {index + 1}
-          </p>
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => onMove(index, "up")}
-            disabled={index === 0}
-            className="rounded-full border border-white/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-stone-200 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            {tr("Monter", "Move up")}
-          </button>
-          <button
-            type="button"
-            onClick={() => onMove(index, "down")}
-            disabled={index === total - 1}
-            className="rounded-full border border-white/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-stone-200 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            {tr("Descendre", "Move down")}
-          </button>
-          <button
-            type="button"
-            onClick={() => onRemove(index)}
-            className="rounded-full border border-red-300/25 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-red-200 transition hover:bg-red-500/10"
-          >
-            {tr("Supprimer", "Delete")}
-          </button>
-        </div>
-      </div>
-
-      <div className="grid gap-4 lg:grid-cols-[240px_1fr]">
-        <div className="overflow-hidden rounded-[1.25rem] border border-white/10 bg-charcoal/60">
-          {image.previewUrl || image.imageUrl ? (
-            <img
-              src={image.previewUrl || image.imageUrl}
-              alt={image.altText || image.caption || tr("Image du blog", "Blog image")}
-              className="h-56 w-full object-cover"
-            />
-          ) : (
-            <div className="flex h-56 items-center justify-center px-4 text-center text-sm text-stone-400">
-              {tr("Aucune image selectionnee.", "No image selected.")}
-            </div>
-          )}
-        </div>
-
-        <div className="grid gap-3">
-          <label className="grid gap-1 text-xs text-stone-300">
-            <span>{tr("Uploader une image", "Upload image")}</span>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(event) => {
-                const file = event.target.files?.[0] || null;
-                if (!file) return;
-                const previewUrl = URL.createObjectURL(file);
-                onUpdate(index, { file, previewUrl });
-              }}
-              className="rounded-2xl border border-white/15 bg-charcoal/70 px-4 py-3 text-sm text-white file:mr-3 file:rounded-full file:border-0 file:bg-saffron file:px-3 file:py-2 file:text-xs file:font-bold file:text-charcoal"
-            />
-          </label>
-
-          <label className="grid gap-1 text-xs text-stone-300">
-            <span>{tr("URL image", "Image URL")}</span>
-            <input
-              value={image.imageUrl}
-              onChange={(event) =>
-                onUpdate(index, {
-                  imageUrl: event.target.value,
-                  previewUrl: event.target.value,
-                })
-              }
-              className="rounded-2xl border border-white/15 bg-charcoal/70 px-4 py-3 text-sm text-white"
-            />
-          </label>
-
-          <label className="grid gap-1 text-xs text-stone-300">
-            <span>{tr("URL miniature", "Thumbnail URL")}</span>
-            <input
-              value={image.thumbnailUrl}
-              onChange={(event) => onUpdate(index, { thumbnailUrl: event.target.value })}
-              className="rounded-2xl border border-white/15 bg-charcoal/70 px-4 py-3 text-sm text-white"
-            />
-          </label>
-
-          <label className="grid gap-1 text-xs text-stone-300">
-            <span>{tr("Legende de l'image", "Image caption")}</span>
-            <input
-              value={image.altText || image.caption}
-              onChange={(event) =>
-                onUpdate(index, {
-                  altText: event.target.value,
-                  caption: event.target.value,
-                })
-              }
-              className="rounded-2xl border border-white/15 bg-charcoal/70 px-4 py-3 text-sm text-white"
-              required
-            />
-          </label>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function ArticleEditor({
   form,
   setForm,
   onSubmit,
   onCancel,
+  slugLocked,
   saving,
   submitLabel,
   title,
   subtitle,
   tr,
 }) {
-  const publicPathPreview = `/${slugify(form.slug || form.title || "article") || "article"}`;
+  const publicPathPreview = `/${form.slug || slugify(form.title || "article") || "article"}`;
 
   const updateTitle = (value) => {
     setForm((prev) => {
-      const previousAutoSlug = slugify(prev.title);
-      const shouldSyncSlug = !prev.slug || prev.slug === previousAutoSlug;
-
       return {
         ...prev,
         title: value,
-        slug: shouldSyncSlug ? slugify(value) : prev.slug,
+        slug: slugLocked ? prev.slug : slugify(value),
       };
     });
   };
@@ -358,49 +234,35 @@ function ArticleEditor({
     });
   };
 
-  const updateImage = (index, patch) => {
+  const updateParagraphImage = (index, patch) => {
     setForm((prev) => ({
       ...prev,
-      images: prev.images.map((image, imageIndex) => {
-        if (imageIndex !== index) return image;
-        return {
-          ...image,
-          ...patch,
-        };
-      }),
+      paragraphs: prev.paragraphs.map((paragraph, paragraphIndex) =>
+        paragraphIndex === index
+          ? {
+              ...paragraph,
+              image: {
+                ...(paragraph.image || createImage()),
+                ...patch,
+              },
+            }
+          : paragraph
+      ),
     }));
   };
 
-  const addImage = () => {
+  const removeParagraphImage = (index) => {
     setForm((prev) => ({
       ...prev,
-      images: [...prev.images, createImage()],
+      paragraphs: prev.paragraphs.map((paragraph, paragraphIndex) =>
+        paragraphIndex === index
+          ? {
+              ...paragraph,
+              image: null,
+            }
+          : paragraph
+      ),
     }));
-  };
-
-  const removeImage = (index) => {
-    setForm((prev) => ({
-      ...prev,
-      images: prev.images.filter((_, imageIndex) => imageIndex !== index),
-    }));
-  };
-
-  const moveImage = (index, direction) => {
-    setForm((prev) => {
-      const targetIndex = direction === "up" ? index - 1 : index + 1;
-      if (targetIndex < 0 || targetIndex >= prev.images.length) {
-        return prev;
-      }
-
-      const nextImages = [...prev.images];
-      const [current] = nextImages.splice(index, 1);
-      nextImages.splice(targetIndex, 0, current);
-
-      return {
-        ...prev,
-        images: nextImages,
-      };
-    });
   };
 
   return (
@@ -424,26 +286,6 @@ function ArticleEditor({
             onChange={(event) => updateTitle(event.target.value)}
             className="rounded-2xl border border-white/15 bg-charcoal/70 px-4 py-3 text-sm text-white"
           />
-        </label>
-
-        <label className="grid gap-1 text-xs text-stone-300">
-          <span>{tr("Slug public", "Public slug")}</span>
-          <div className="flex gap-2">
-            <input
-              value={form.slug}
-              onChange={(event) =>
-                setForm((prev) => ({ ...prev, slug: slugify(event.target.value) }))
-              }
-              className="flex-1 rounded-2xl border border-white/15 bg-charcoal/70 px-4 py-3 text-sm text-white"
-            />
-            <button
-              type="button"
-              onClick={() => setForm((prev) => ({ ...prev, slug: slugify(prev.title) }))}
-              className="rounded-2xl border border-saffron/40 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-saffron transition hover:bg-saffron/10"
-            >
-              {tr("Generer", "Generate")}
-            </button>
-          </div>
         </label>
 
         <label className="grid gap-1 text-xs text-stone-300 lg:col-span-2">
@@ -550,53 +392,106 @@ function ArticleEditor({
                   className="rounded-[1.5rem] border border-white/15 bg-charcoal/70 px-4 py-3 text-sm leading-7 text-white"
                 />
               </label>
+
+              <div className="rounded-[1.25rem] border border-white/10 bg-charcoal/40 p-4">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold text-white">
+                      {tr("Image du paragraphe", "Paragraph image")}
+                    </p>
+                    <p className="mt-1 text-xs leading-6 text-stone-400">
+                      {tr(
+                        "Cette image s'affichera directement dans ce bloc de contenu. Une image maximum par paragraphe.",
+                        "This image will appear directly inside this content block. One image max per paragraph."
+                      )}
+                    </p>
+                  </div>
+
+                  {paragraph.image?.imageUrl || paragraph.image?.previewUrl ? (
+                    <button
+                      type="button"
+                      onClick={() => removeParagraphImage(index)}
+                      className="rounded-full border border-red-300/25 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-red-200 transition hover:bg-red-500/10"
+                    >
+                      {tr("Retirer l'image", "Remove image")}
+                    </button>
+                  ) : null}
+                </div>
+
+                <div className="mt-4 grid gap-4 lg:grid-cols-[220px_1fr]">
+                  <div className="overflow-hidden rounded-[1.25rem] border border-white/10 bg-black/20">
+                    {paragraph.image?.previewUrl || paragraph.image?.imageUrl ? (
+                      <img
+                        src={paragraph.image.previewUrl || paragraph.image.imageUrl}
+                        alt={
+                          paragraph.image.altText ||
+                          paragraph.image.caption ||
+                          paragraph.title ||
+                          tr("Image du paragraphe", "Paragraph image")
+                        }
+                        className="h-48 w-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-48 items-center justify-center px-4 text-center text-sm text-stone-400">
+                        {tr("Aucune image selectionnee.", "No image selected.")}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="grid gap-3">
+                    <label className="grid gap-1 text-xs text-stone-300">
+                      <span>{tr("Uploader une image", "Upload image")}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(event) => {
+                          const file = event.target.files?.[0] || null;
+                          if (!file) return;
+                          const previewUrl = URL.createObjectURL(file);
+                          updateParagraphImage(index, {
+                            file,
+                            previewUrl,
+                          });
+                        }}
+                        className="rounded-2xl border border-white/15 bg-charcoal/70 px-4 py-3 text-sm text-white file:mr-3 file:rounded-full file:border-0 file:bg-saffron file:px-3 file:py-2 file:text-xs file:font-bold file:text-charcoal"
+                      />
+                      <span className="text-[11px] leading-5 text-stone-500">
+                        {tr(
+                          "Import direct uniquement. Les URL externes ne sont pas utilisees ici.",
+                          "Direct upload only. External image URLs are not used here."
+                        )}
+                      </span>
+                    </label>
+
+                    {paragraph.image?.imageUrl || paragraph.image?.previewUrl ? (
+                      <label className="grid gap-1 text-xs text-stone-300">
+                        <span>{tr("Legende de l'image", "Image caption")}</span>
+                        <input
+                          value={paragraph.image?.altText || paragraph.image?.caption || ""}
+                          onChange={(event) =>
+                            updateParagraphImage(index, {
+                              altText: event.target.value,
+                              caption: event.target.value,
+                            })
+                          }
+                          className="rounded-2xl border border-white/15 bg-charcoal/70 px-4 py-3 text-sm text-white"
+                          required
+                        />
+                      </label>
+                    ) : (
+                      <p className="rounded-2xl border border-dashed border-white/10 px-4 py-3 text-xs leading-6 text-stone-400">
+                        {tr(
+                          "Ajoute une image pour afficher automatiquement ce visuel dans cette section de l'article.",
+                          "Add an image to automatically show this visual in this article section."
+                        )}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         ))}
-      </div>
-
-      <div className="mt-6 space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <EditorSectionTitle
-            eyebrow={tr("Media", "Media")}
-            title={tr("Images de l'article", "Article images")}
-            description={tr(
-              "Ajoutez une ou plusieurs images. La premiere image sert d'image principale sur la page et pour le partage social.",
-              "Add one or more images. The first image is used as the main page image and for social sharing."
-            )}
-          />
-          <button
-            type="button"
-            onClick={addImage}
-            className="rounded-full border border-emerald-300/40 bg-emerald-500/10 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-emerald-200 transition hover:bg-emerald-500/20"
-          >
-            {tr("Ajouter une image", "Add image")}
-          </button>
-        </div>
-
-        {form.images.length === 0 ? (
-          <div className="rounded-[1.5rem] border border-dashed border-white/15 bg-black/20 p-6 text-sm text-stone-400">
-            {tr(
-              "Aucune image pour cet article pour le moment.",
-              "No image for this article yet."
-            )}
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {form.images.map((image, index) => (
-              <ImageEditorCard
-                key={image.id}
-                image={image}
-                index={index}
-                total={form.images.length}
-                onUpdate={updateImage}
-                onMove={moveImage}
-                onRemove={removeImage}
-                tr={tr}
-              />
-            ))}
-          </div>
-        )}
       </div>
 
       <div className="mt-6 flex flex-wrap gap-2">
@@ -778,8 +673,8 @@ export default function BlogAdmin() {
             </h2>
             <p className="mt-3 text-sm leading-7 text-stone-300">
               {tr(
-                "Creez des articles avec plusieurs paragraphes, des meta SEO dediees et une ou plusieurs images en URL courte du type /la-pizza-italienne.",
-                "Create multi-paragraph articles with dedicated SEO meta and one or more images using short URLs like /la-pizza-italienne."
+                "Creez des articles avec plusieurs paragraphes et des images directement rattachees a chaque section, en URL courte du type /la-pizza-italienne.",
+                "Create multi-paragraph articles with images attached directly to each section using short URLs like /la-pizza-italienne."
               )}
             </p>
           </div>
@@ -823,6 +718,7 @@ export default function BlogAdmin() {
         form={createForm}
         setForm={setCreateForm}
         onSubmit={handleCreate}
+        slugLocked={false}
         saving={saving && !editingId}
         submitLabel={tr("Creer l'article", "Create article")}
         title={tr("Nouvel article", "New article")}
@@ -836,6 +732,7 @@ export default function BlogAdmin() {
           setForm={setEditForm}
           onSubmit={handleUpdate}
           onCancel={cancelEditing}
+          slugLocked
           saving={saving && Boolean(editingId)}
           submitLabel={tr("Mettre a jour", "Update article")}
           title={tr("Edition de l'article", "Edit article")}
@@ -891,10 +788,10 @@ export default function BlogAdmin() {
                 key={article.id}
                 className="rounded-[1.5rem] border border-white/10 bg-black/20 p-5"
               >
-                {article.featuredImage?.thumbnailUrl || article.featuredImage?.imageUrl ? (
+                {article.featuredImage?.imageUrl ? (
                   <img
-                    src={article.featuredImage.thumbnailUrl || article.featuredImage.imageUrl}
-                    alt={article.featuredImage.altText || article.title}
+                    src={article.featuredImage.imageUrl}
+                    alt={article.featuredImage.altText || article.featuredImage.caption || article.title}
                     className="mb-4 h-52 w-full rounded-[1.25rem] object-cover"
                   />
                 ) : null}
@@ -917,7 +814,7 @@ export default function BlogAdmin() {
                         {article.paragraphCount} {tr("paragraphes", "paragraphs")}
                       </span>
                       <span className="rounded-full border border-white/10 px-3 py-1 text-stone-300">
-                        {article.imageCount || 0} {tr("images", "images")}
+                        {article.imageCount || 0} {tr("visuels lies", "linked visuals")}
                       </span>
                     </div>
                     <h4 className="mt-4 text-xl font-bold text-white">{article.title}</h4>

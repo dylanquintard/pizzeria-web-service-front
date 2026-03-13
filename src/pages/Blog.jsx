@@ -143,8 +143,8 @@ export default function Blog() {
             >
               {article.featuredImage?.imageUrl ? (
                 <img
-                  src={article.featuredImage.thumbnailUrl || article.featuredImage.imageUrl}
-                  alt={article.featuredImage.altText || article.title}
+                  src={article.featuredImage.imageUrl}
+                  alt={article.featuredImage.altText || article.featuredImage.caption || article.title}
                   className="h-56 w-full object-cover"
                 />
               ) : null}
@@ -158,7 +158,7 @@ export default function Blog() {
                   {article.paragraphCount} section{article.paragraphCount > 1 ? "s" : ""}
                 </span>
                 <span className="rounded-full border border-white/10 px-3 py-1">
-                  {article.imageCount || 0} image{article.imageCount > 1 ? "s" : ""}
+                  {article.imageCount || 0} visuel{article.imageCount > 1 ? "x" : ""}
                 </span>
               </div>
 
