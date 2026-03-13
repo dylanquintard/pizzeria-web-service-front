@@ -20,12 +20,13 @@ function createParagraph(seed = {}) {
 }
 
 function createImage(seed = {}) {
+  const legend = seed.caption || seed.altText || "";
   return {
     id: seed.id || `image-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     imageUrl: seed.imageUrl || "",
     thumbnailUrl: seed.thumbnailUrl || "",
-    altText: seed.altText || "",
-    caption: seed.caption || "",
+    altText: legend,
+    caption: legend,
     file: null,
     previewUrl: seed.imageUrl || "",
   };
@@ -36,8 +37,6 @@ function createEmptyArticleForm() {
     title: "",
     slug: "",
     description: "",
-    metaTitle: "",
-    metaDescription: "",
     published: true,
     paragraphs: [createParagraph()],
     images: [],
@@ -49,8 +48,6 @@ function createArticleFormFromRecord(article) {
     title: article.title || "",
     slug: article.slug || "",
     description: article.description || "",
-    metaTitle: article.metaTitle || "",
-    metaDescription: article.metaDescription || "",
     published: Boolean(article.published),
     paragraphs:
       Array.isArray(article.paragraphs) && article.paragraphs.length > 0
@@ -107,6 +104,12 @@ function validateArticleForm(form, tr) {
         "Each image needs a file or image URL."
       );
     }
+    if (!String(image.altText || image.caption || "").trim()) {
+      return tr(
+        "Chaque image doit avoir une legende d'image.",
+        "Each image needs an image caption."
+      );
+    }
   }
 
   return "";
@@ -116,13 +119,15 @@ async function resolveImagesForSave(images, token) {
   const resolved = [];
 
   for (const image of images || []) {
+    const legend = String(image.altText || image.caption || "").trim() || null;
+
     if (image.file) {
       const uploaded = await uploadGalleryImage(token, image.file);
       resolved.push({
         imageUrl: uploaded.imageUrl,
         thumbnailUrl: uploaded.thumbnailUrl,
-        altText: String(image.altText || "").trim() || null,
-        caption: String(image.caption || "").trim() || null,
+        altText: legend,
+        caption: legend,
       });
       continue;
     }
@@ -134,8 +139,8 @@ async function resolveImagesForSave(images, token) {
     resolved.push({
       imageUrl: String(image.imageUrl || "").trim(),
       thumbnailUrl: String(image.thumbnailUrl || "").trim() || null,
-      altText: String(image.altText || "").trim() || null,
-      caption: String(image.caption || "").trim() || null,
+      altText: legend,
+      caption: legend,
     });
   }
 
@@ -147,8 +152,6 @@ async function normalizeArticlePayload(form, token) {
     title: form.title.trim(),
     slug: slugify(form.slug || form.title),
     description: form.description.trim(),
-    metaTitle: String(form.metaTitle || "").trim() || null,
-    metaDescription: String(form.metaDescription || "").trim() || null,
     published: Boolean(form.published),
     paragraphs: form.paragraphs.map((paragraph) => ({
       title: paragraph.title.trim(),
@@ -213,7 +216,7 @@ function ImageEditorCard({ image, index, total, onUpdate, onMove, onRemove, tr }
           {image.previewUrl || image.imageUrl ? (
             <img
               src={image.previewUrl || image.imageUrl}
-              alt={image.altText || tr("Image du blog", "Blog image")}
+              alt={image.altText || image.caption || tr("Image du blog", "Blog image")}
               className="h-56 w-full object-cover"
             />
           ) : (
@@ -263,21 +266,17 @@ function ImageEditorCard({ image, index, total, onUpdate, onMove, onRemove, tr }
           </label>
 
           <label className="grid gap-1 text-xs text-stone-300">
-            <span>{tr("Texte alternatif", "Alt text")}</span>
+            <span>{tr("Legende de l'image", "Image caption")}</span>
             <input
-              value={image.altText}
-              onChange={(event) => onUpdate(index, { altText: event.target.value })}
+              value={image.altText || image.caption}
+              onChange={(event) =>
+                onUpdate(index, {
+                  altText: event.target.value,
+                  caption: event.target.value,
+                })
+              }
               className="rounded-2xl border border-white/15 bg-charcoal/70 px-4 py-3 text-sm text-white"
-            />
-          </label>
-
-          <label className="grid gap-1 text-xs text-stone-300">
-            <span>{tr("Legende", "Caption")}</span>
-            <textarea
-              rows={3}
-              value={image.caption}
-              onChange={(event) => onUpdate(index, { caption: event.target.value })}
-              className="rounded-[1.25rem] border border-white/15 bg-charcoal/70 px-4 py-3 text-sm leading-7 text-white"
+              required
             />
           </label>
         </div>
@@ -458,42 +457,6 @@ function ArticleEditor({
             className="rounded-[1.5rem] border border-white/15 bg-charcoal/70 px-4 py-3 text-sm leading-7 text-white"
           />
         </label>
-      </div>
-
-      <div className="mt-6 rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
-        <EditorSectionTitle
-          eyebrow={tr("SEO", "SEO")}
-          title={tr("Balises meta", "Meta tags")}
-          description={tr(
-            "Ces champs pilotent le titre et la description SEO de la page article. Si laisses vides, le systeme reprend le titre et la description de l'article.",
-            "These fields control the article page SEO title and description. If left empty, the system falls back to the article title and description."
-          )}
-        />
-
-        <div className="mt-4 grid gap-4">
-          <label className="grid gap-1 text-xs text-stone-300">
-            <span>{tr("Meta title", "Meta title")}</span>
-            <input
-              value={form.metaTitle}
-              onChange={(event) =>
-                setForm((prev) => ({ ...prev, metaTitle: event.target.value }))
-              }
-              className="rounded-2xl border border-white/15 bg-charcoal/70 px-4 py-3 text-sm text-white"
-            />
-          </label>
-
-          <label className="grid gap-1 text-xs text-stone-300">
-            <span>{tr("Meta description", "Meta description")}</span>
-            <textarea
-              rows={3}
-              value={form.metaDescription}
-              onChange={(event) =>
-                setForm((prev) => ({ ...prev, metaDescription: event.target.value }))
-              }
-              className="rounded-[1.25rem] border border-white/15 bg-charcoal/70 px-4 py-3 text-sm leading-7 text-white"
-            />
-          </label>
-        </div>
       </div>
 
       <label className="mt-6 inline-flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-stone-100">
@@ -966,23 +929,6 @@ export default function BlogAdmin() {
                 </div>
 
                 <p className="mt-4 text-sm leading-7 text-stone-300">{article.description}</p>
-
-                {(article.metaTitle || article.metaDescription) && (
-                  <div className="mt-4 rounded-[1.25rem] border border-white/10 bg-charcoal/50 p-4 text-xs text-stone-300">
-                    {article.metaTitle ? (
-                      <p>
-                        <span className="font-semibold text-stone-100">Meta title: </span>
-                        {article.metaTitle}
-                      </p>
-                    ) : null}
-                    {article.metaDescription ? (
-                      <p className="mt-2">
-                        <span className="font-semibold text-stone-100">Meta description: </span>
-                        {article.metaDescription}
-                      </p>
-                    ) : null}
-                  </div>
-                )}
 
                 <div className="mt-5 grid gap-2 text-xs text-stone-400 sm:grid-cols-2">
                   <div>

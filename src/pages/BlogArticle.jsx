@@ -82,8 +82,8 @@ export default function BlogArticle({ forcedSlug = "" }) {
 
   const pathname = article ? `/${article.slug}` : resolvedSlug ? `/${resolvedSlug}` : "/blog";
   const articleImage = article?.featuredImage?.imageUrl || "/pizza-background-1920.webp";
-  const articleSeoTitle = article?.metaTitle || article?.title || "Article";
-  const articleSeoDescription = article?.metaDescription || article?.description || "";
+  const articleSeoTitle = article?.title || "Article";
+  const articleSeoDescription = article?.description || "";
 
   const articleJsonLd = useMemo(() => {
     if (!article) return null;
