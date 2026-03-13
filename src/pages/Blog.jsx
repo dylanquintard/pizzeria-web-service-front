@@ -112,16 +112,16 @@ export default function Blog() {
       ) : null}
 
       {loading ? (
-        <section className="grid gap-4 md:grid-cols-2">
+        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {Array.from({ length: 4 }).map((_, index) => (
             <div
               key={`blog-skeleton-${index}`}
-              className="glass-panel animate-pulse space-y-4 p-6"
+              className="glass-panel animate-pulse space-y-4 p-5"
             >
-              <div className="h-3 w-24 rounded bg-white/10" />
-              <div className="h-8 w-4/5 rounded bg-white/10" />
-              <div className="h-16 rounded bg-white/10" />
-              <div className="h-10 w-36 rounded-full bg-white/10" />
+              <div className="h-3 w-28 rounded bg-white/10" />
+              <div className="h-7 w-4/5 rounded bg-white/10" />
+              <div className="h-20 rounded bg-white/10" />
+              <div className="h-9 w-32 rounded-full bg-white/10" />
             </div>
           ))}
         </section>
@@ -135,51 +135,34 @@ export default function Blog() {
           </p>
         </section>
       ) : (
-        <section className="grid gap-5 md:grid-cols-2">
+        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {articles.map((article) => (
             <article
               key={article.id}
-              className="glass-panel group flex h-full flex-col overflow-hidden p-0"
+              className="group flex h-full flex-col rounded-[1.6rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.03))] p-5 transition hover:border-saffron/30 hover:bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.04))]"
             >
-              {article.featuredImage?.imageUrl ? (
-                <img
-                  src={article.featuredImage.imageUrl}
-                  alt={article.featuredImage.altText || article.featuredImage.caption || article.title}
-                  className="h-56 w-full object-cover"
-                />
-              ) : null}
+              <div className="mb-4 h-px w-16 bg-gradient-to-r from-saffron via-saffron/50 to-transparent" />
 
-              <div className="p-6">
-              <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.18em] text-stone-400">
+              <div className="flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-stone-400">
                 <span className="rounded-full border border-white/10 px-3 py-1">
                   {formatPublishDate(article.publishedAt || article.updatedAt) || "Article"}
                 </span>
-                <span className="rounded-full border border-saffron/30 px-3 py-1 text-saffron">
-                  {article.paragraphCount} section{article.paragraphCount > 1 ? "s" : ""}
-                </span>
-                <span className="rounded-full border border-white/10 px-3 py-1">
-                  {article.imageCount || 0} visuel{article.imageCount > 1 ? "x" : ""}
-                </span>
               </div>
 
-              <h2 className="mt-4 text-2xl font-bold text-white transition group-hover:text-saffron">
+              <h2 className="mt-4 text-xl font-bold leading-tight text-white transition group-hover:text-saffron">
                 {article.title}
               </h2>
               <p className="mt-3 flex-1 text-sm leading-7 text-stone-300">
                 {article.description}
               </p>
 
-              <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-                <code className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs text-stone-300">
-                  /{article.slug}
-                </code>
+              <div className="mt-6">
                 <Link
                   to={`/${article.slug}`}
-                  className="rounded-full border border-saffron/60 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-saffron transition hover:bg-saffron/10"
+                  className="inline-flex rounded-full border border-saffron/60 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-saffron transition hover:bg-saffron/10"
                 >
                   Lire l'article
                 </Link>
-              </div>
               </div>
             </article>
           ))}
