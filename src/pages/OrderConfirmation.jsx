@@ -66,13 +66,13 @@ export default function OrderConfirmation() {
             to="/userorders"
             className="rounded-full bg-saffron px-6 py-3 text-sm font-bold uppercase tracking-wide text-charcoal transition hover:bg-yellow-300"
           >
-            {tr("Voir mes commandes", "See my orders")}
+            {tr("Voir mes commandes", "View my orders")}
           </Link>
           <Link
             to="/order"
             className="rounded-full border border-white/25 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-stone-100 transition hover:bg-white/10"
           >
-            {tr("Retour commande", "Back to order")}
+            {tr("Retour commande", "Order again")}
           </Link>
         </div>
       </div>

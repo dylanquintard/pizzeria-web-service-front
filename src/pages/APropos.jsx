@@ -2,12 +2,19 @@ import { Link } from "react-router-dom";
 import SeoHead from "../components/seo/SeoHead";
 import SeoInternalLinks from "../components/seo/SeoInternalLinks";
 import { SITE_URL } from "../config/env";
+import { useLanguage } from "../context/LanguageContext";
 
 export default function APropos() {
+  const { tr } = useLanguage();
   const companyName = "Pizza Truck";
-  const title = `A propos | ${companyName}, camion pizza napolitaine en Moselle`;
-  const description =
-    `${companyName} est un camion pizza en Moselle, actif autour de Metz et Thionville, avec une carte courte, une cuisson bois-gaz et un retrait organise.`;
+  const title = tr(
+    `A propos | ${companyName}, camion pizza napolitaine en Moselle`,
+    `About | ${companyName}, Neapolitan pizza truck in Moselle`
+  );
+  const description = tr(
+    `${companyName} est un camion pizza en Moselle, actif autour de Metz et Thionville, avec une carte courte, une cuisson bois-gaz et un retrait organise.`,
+    `${companyName} is a pizza truck in Moselle, active around Metz and Thionville, with a focused menu, wood-gas baking and organized pickup.`
+  );
   const rootUrl = new URL("/", `${SITE_URL}/`).toString();
   const menuUrl = new URL("/menu", `${SITE_URL}/`).toString();
 
@@ -15,8 +22,10 @@ export default function APropos() {
     "@context": "https://schema.org",
     "@type": "FoodTruck",
     name: companyName,
-    description:
+    description: tr(
       "Camion pizza en Moselle, proche Metz et Thionville, proposant des pizzas a emporter avec cuisson bois-gaz.",
+      "Pizza truck in Moselle, near Metz and Thionville, serving takeaway pizzas baked in a wood-gas oven."
+    ),
     servesCuisine: "Pizza Napolitaine",
     areaServed: [
       {
@@ -47,181 +56,228 @@ export default function APropos() {
       />
 
       <header className="space-y-3">
-        <p className="text-xs uppercase tracking-[0.25em] text-saffron">A propos</p>
+        <p className="text-xs uppercase tracking-[0.25em] text-saffron">{tr("A propos", "About")}</p>
         <h1 className="font-display text-4xl uppercase tracking-wide text-white sm:text-5xl">
-          {companyName}, un camion pizza pense pour bien servir la Moselle
+          {tr(
+            `${companyName}, un camion pizza pense pour bien servir la Moselle`,
+            `${companyName}, a pizza truck built to serve Moselle well`
+          )}
         </h1>
         <p className="max-w-3xl text-sm text-stone-300 sm:text-base">
-          {companyName} est une structure mobile qui travaille la pizza avec une logique simple: une pate preparee
-          serieusement, une cuisson vive et un service organise pour le retrait.
+          {tr(
+            `${companyName} est une structure mobile qui travaille la pizza avec une logique simple: une pate preparee serieusement, une cuisson vive et un service organise pour le retrait.`,
+            `${companyName} is a mobile setup built around a simple idea: serious dough work, lively baking and a service designed for smooth pickup.`
+          )}
         </p>
         <p className="max-w-3xl text-sm text-stone-300 sm:text-base">
-          Le camion se deplace chaque semaine autour de Thionville, Metz et d autres communes de Moselle pour proposer
-          une offre plus nette que la restauration rapide standard.
+          {tr(
+            "Le camion se deplace chaque semaine autour de Thionville, Metz et d autres communes de Moselle pour proposer une offre plus nette que la restauration rapide standard.",
+            "The truck moves every week around Thionville, Metz and other towns in Moselle to offer something sharper than standard fast food."
+          )}
         </p>
         <p className="max-w-3xl text-sm text-stone-300 sm:text-base">
-          L objectif n est pas d en faire trop. Il est de sortir une pizza reguliere, chaude et bien tenue au moment
-          ou le client la recupere.
+          {tr(
+            "L objectif n est pas d en faire trop. Il est de sortir une pizza reguliere, chaude et bien tenue au moment ou le client la recupere.",
+            "The goal is not to overdo it. The goal is to serve a consistent, hot pizza that still holds together when the customer picks it up."
+          )}
         </p>
         <Link
           to="/planing"
           className="inline-flex rounded-full border border-saffron/70 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-saffron transition hover:bg-saffron/10"
         >
-          Voir les emplacements et horaires
+          {tr("Voir les emplacements et horaires", "See locations and opening hours")}
         </Link>
       </header>
 
       <section className="glass-panel p-6">
-        <h2 className="text-xl font-bold text-white">Une presence mobile, pas un point fixe</h2>
+        <h2 className="text-xl font-bold text-white">{tr("Une presence mobile, pas un point fixe", "A mobile setup, not a fixed shop")}</h2>
         <p className="mt-3 text-sm text-stone-300">
-          Le camion n est pas pense comme une simple version roulante d une pizzeria classique. Le format mobile impose
-          un autre rythme, une autre organisation et une autre lecture du service.
+          {tr(
+            "Le camion n est pas pense comme une simple version roulante d une pizzeria classique. Le format mobile impose un autre rythme, une autre organisation et une autre lecture du service.",
+            "The truck is not just a rolling version of a classic pizzeria. The mobile format requires a different pace, a different organization and a different service flow."
+          )}
         </p>
         <p className="mt-3 text-sm text-stone-300">
-          La tournee permet de venir au plus pres des clients, sans sacrifier la cuisson minute ni la qualite de
-          sortie du four.
+          {tr(
+            "La tournee permet de venir au plus pres des clients, sans sacrifier la cuisson minute ni la qualite de sortie du four.",
+            "The weekly route brings the truck closer to customers without sacrificing last-minute baking or the quality coming out of the oven."
+          )}
         </p>
         <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-stone-300">
-          <li>passages hebdomadaires en Moselle</li>
-          <li>secteurs proches de Thionville et Metz</li>
-          <li>retrait direct sur les points annonces dans le planning</li>
+          <li>{tr("passages hebdomadaires en Moselle", "weekly stops across Moselle")}</li>
+          <li>{tr("secteurs proches de Thionville et Metz", "areas around Thionville and Metz")}</li>
+          <li>{tr("retrait direct sur les points annonces dans le planning", "direct pickup at the stops announced in the schedule")}</li>
         </ul>
       </section>
 
       <section className="glass-panel p-6">
-        <h2 className="text-xl font-bold text-white">Une inspiration napolitaine prise au serieux</h2>
+        <h2 className="text-xl font-bold text-white">{tr("Une inspiration napolitaine prise au serieux", "A serious Neapolitan influence")}</h2>
         <p className="mt-3 text-sm text-stone-300">
-          La reference napolitaine ne sert pas ici d emballage marketing. Elle guide surtout la maniere de travailler
-          la pate, de doser la garniture et de gerer le four.
+          {tr(
+            "La reference napolitaine ne sert pas ici d emballage marketing. Elle guide surtout la maniere de travailler la pate, de doser la garniture et de gerer le four.",
+            "The Neapolitan reference is not just marketing here. It mainly shapes how the dough is made, how toppings are balanced and how the oven is managed."
+          )}
         </p>
         <p className="mt-3 text-sm text-stone-300">
-          Cela passe par une pate souple, une cuisson courte, une bordure bien developpee et une recette qui reste
-          lisible jusqu a la derniere bouchee.
+          {tr(
+            "Cela passe par une pate souple, une cuisson courte, une bordure bien developpee et une recette qui reste lisible jusqu a la derniere bouchee.",
+            "That means supple dough, a short bake, a well-developed crust and a recipe that stays clear through the last bite."
+          )}
         </p>
         <p className="mt-3 text-sm text-stone-300">
-          Le but n est pas de reproduire un folklore. Le but est de garder un produit coherent, bien execute et
-          regulier.
+          {tr(
+            "Le but n est pas de reproduire un folklore. Le but est de garder un produit coherent, bien execute et regulier.",
+            "The aim is not to imitate folklore. The aim is to keep the product coherent, well-executed and consistent."
+          )}
         </p>
       </section>
 
       <section className="glass-panel p-6">
-        <h2 className="text-xl font-bold text-white">Une pate preparee pour tenir le service</h2>
+        <h2 className="text-xl font-bold text-white">{tr("Une pate preparee pour tenir le service", "Dough prepared to handle service")}</h2>
         <p className="mt-3 text-sm text-stone-300">
-          La qualite d une pizza commence longtemps avant la cuisson. La pate est preparee en amont pour gagner en
-          souplesse, en regularite et en confort de degustation.
+          {tr(
+            "La qualite d une pizza commence longtemps avant la cuisson. La pate est preparee en amont pour gagner en souplesse, en regularite et en confort de degustation.",
+            "The quality of a pizza starts long before baking. The dough is prepared ahead of time to improve flexibility, consistency and eating comfort."
+          )}
         </p>
         <p className="mt-3 text-sm text-stone-300">
-          Cette methode permet de garder un meilleur equilibre entre legerete, tenue et reactivite au four.
+          {tr(
+            "Cette methode permet de garder un meilleur equilibre entre legerete, tenue et reactivite au four.",
+            "This method helps keep a better balance between lightness, structure and oven response."
+          )}
         </p>
         <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-stone-300">
-          <li>texture plus aerienne</li>
-          <li>faconnage plus stable</li>
-          <li>meilleure regularite pendant la tournee</li>
+          <li>{tr("texture plus aerienne", "lighter texture")}</li>
+          <li>{tr("faconnage plus stable", "more stable shaping")}</li>
+          <li>{tr("meilleure regularite pendant la tournee", "better consistency during service")}</li>
         </ul>
       </section>
 
       <section className="grid gap-4 md:grid-cols-2">
         <article className="glass-panel p-6">
-          <h2 className="text-xl font-bold text-white">Une carte courte pour mieux tenir la qualite</h2>
+          <h2 className="text-xl font-bold text-white">{tr("Une carte courte pour mieux tenir la qualite", "A focused menu to protect quality")}</h2>
           <p className="mt-3 text-sm text-stone-300">
-            Une carte trop large fatigue la production et brouille le produit. Ici, le choix est inverse.
+            {tr(
+              "Une carte trop large fatigue la production et brouille le produit. Ici, le choix est inverse.",
+              "A menu that is too large weakens production and blurs the product. Here, the choice goes the other way."
+            )}
           </p>
           <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-stone-300">
-            <li>produits italiens selectionnes pour leur tenue</li>
-            <li>recettes construites avec plus de retenue</li>
-            <li>execution plus fiable d un service a l autre</li>
+            <li>{tr("produits italiens selectionnes pour leur tenue", "Italian products selected for their consistency")}</li>
+            <li>{tr("recettes construites avec plus de retenue", "recipes built with more restraint")}</li>
+            <li>{tr("execution plus fiable d un service a l autre", "more reliable execution from one service to the next")}</li>
           </ul>
         </article>
         <article className="glass-panel p-6">
-          <h2 className="text-xl font-bold text-white">Un retrait simple a suivre</h2>
+          <h2 className="text-xl font-bold text-white">{tr("Un retrait simple a suivre", "A simple pickup flow")}</h2>
           <p className="mt-3 text-sm text-stone-300">
-            Le fonctionnement par creneaux permet de mieux organiser la cuisson et de limiter l attente autour du
-            camion.
+            {tr(
+              "Le fonctionnement par creneaux permet de mieux organiser la cuisson et de limiter l attente autour du camion.",
+              "The timeslot system helps organize baking and reduce waiting time around the truck."
+            )}
           </p>
           <ol className="mt-3 list-decimal space-y-1 pl-5 text-sm text-stone-300">
-            <li>Choisissez votre pizza</li>
-            <li>Selectionnez votre creneau</li>
-            <li>Recuperez la commande directement au camion</li>
+            <li>{tr("Choisissez votre pizza", "Choose your pizza")}</li>
+            <li>{tr("Selectionnez votre creneau", "Select your timeslot")}</li>
+            <li>{tr("Recuperez la commande directement au camion", "Pick up your order directly at the truck")}</li>
           </ol>
           <p className="mt-3 text-sm text-stone-300">
-            Ce format protege a la fois le rythme du service et la qualite de la pizza remise au client.
+            {tr(
+              "Ce format protege a la fois le rythme du service et la qualite de la pizza remise au client.",
+              "This format protects both the service rhythm and the quality of the pizza handed to the customer."
+            )}
           </p>
         </article>
       </section>
 
       <section className="glass-panel p-6">
-        <h2 className="text-xl font-bold text-white">Ou trouver le camion en Moselle ?</h2>
+        <h2 className="text-xl font-bold text-white">{tr("Ou trouver le camion en Moselle ?", "Where can you find the truck in Moselle?")}</h2>
         <p className="mt-3 text-sm text-stone-300">
-          {companyName} se deplace chaque semaine sur plusieurs communes de Moselle, autour de Thionville, Metz et des
-          secteurs voisins.
+          {tr(
+            `${companyName} se deplace chaque semaine sur plusieurs communes de Moselle, autour de Thionville, Metz et des secteurs voisins.`,
+            `${companyName} moves every week across several towns in Moselle, around Thionville, Metz and nearby areas.`
+          )}
         </p>
         <p className="mt-3 text-sm text-stone-300">
-          Les lieux de passage et les horaires ne sont pas figes. Ils suivent la tournee publiee sur le planning.
+          {tr(
+            "Les lieux de passage et les horaires ne sont pas figes. Ils suivent la tournee publiee sur le planning.",
+            "Locations and opening hours are not fixed. They follow the route published in the weekly schedule."
+          )}
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
           <Link
             to="/planing"
             className="rounded-full border border-saffron/70 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-saffron transition hover:bg-saffron/10"
           >
-            Voir la tournee de la semaine
+            {tr("Voir la tournee de la semaine", "See this week's route")}
           </Link>
           <Link
             to="/menu"
             className="rounded-full bg-saffron px-4 py-2 text-xs font-bold uppercase tracking-wide text-charcoal transition hover:bg-yellow-300"
           >
-            Voir le menu
+            {tr("Voir le menu", "See the menu")}
           </Link>
         </div>
       </section>
 
       <section className="glass-panel p-6">
-        <h2 className="text-xl font-bold text-white">Ce que les clients viennent chercher</h2>
+        <h2 className="text-xl font-bold text-white">{tr("Ce que les clients viennent chercher", "What customers come for")}</h2>
         <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-stone-300">
-          <li>une pizza plus nette et moins standardisee</li>
-          <li>un retrait simple sur les points de passage</li>
-          <li>une cuisson minute qui reste reguliere</li>
-          <li>une offre mobile serieuse autour de Metz et Thionville</li>
+          <li>{tr("une pizza plus nette et moins standardisee", "a cleaner, less standardized pizza")}</li>
+          <li>{tr("un retrait simple sur les points de passage", "simple pickup at each stop")}</li>
+          <li>{tr("une cuisson minute qui reste reguliere", "made-to-order baking that stays consistent")}</li>
+          <li>{tr("une offre mobile serieuse autour de Metz et Thionville", "a serious mobile offer around Metz and Thionville")}</li>
         </ul>
       </section>
 
       <section className="glass-panel p-6">
         <h2 className="font-display text-3xl uppercase tracking-wide text-white">
-          Questions frequentes
+          {tr("Questions frequentes", "Frequently asked questions")}
         </h2>
         <div className="mt-4 space-y-4">
           <article>
-            <h3 className="text-base font-semibold text-white">Ou trouver {companyName} cette semaine ?</h3>
+            <h3 className="text-base font-semibold text-white">{tr(`Ou trouver ${companyName} cette semaine ?`, `Where can you find ${companyName} this week?`)}</h3>
             <p className="mt-1 text-sm text-stone-300">
-              Les points de passage et les horaires sont publies sur la page planning. C est la reference a consulter
-              avant de vous deplacer.
+              {tr(
+                "Les points de passage et les horaires sont publies sur la page planning. C est la reference a consulter avant de vous deplacer.",
+                "Stops and opening hours are published on the schedule page. That is the page to check before coming."
+              )}
             </p>
           </article>
           <article>
-            <h3 className="text-base font-semibold text-white">Les pizzas sont-elles a emporter ?</h3>
+            <h3 className="text-base font-semibold text-white">{tr("Les pizzas sont-elles a emporter ?", "Are the pizzas takeaway only?")}</h3>
             <p className="mt-1 text-sm text-stone-300">
-              Oui. Le service est pense pour l emporter uniquement, afin de garder un rythme plus propre et une pizza
-              remise au bon moment.
+              {tr(
+                "Oui. Le service est pense pour l emporter uniquement, afin de garder un rythme plus propre et une pizza remise au bon moment.",
+                "Yes. The service is designed for takeaway only, so the pace stays smooth and the pizza is handed over at the right moment."
+              )}
             </p>
           </article>
           <article>
-            <h3 className="text-base font-semibold text-white">Faut-il commander a l avance ?</h3>
+            <h3 className="text-base font-semibold text-white">{tr("Faut-il commander a l avance ?", "Should you order in advance?")}</h3>
             <p className="mt-1 text-sm text-stone-300">
-              C est recommande, surtout sur les creneaux charges. Cela permet de limiter l attente et de mieux caler la
-              cuisson.
+              {tr(
+                "C est recommande, surtout sur les creneaux charges. Cela permet de limiter l attente et de mieux caler la cuisson.",
+                "Yes, especially during busy slots. It helps reduce waiting time and makes baking easier to plan."
+              )}
             </p>
           </article>
           <article>
-            <h3 className="text-base font-semibold text-white">Combien de temps dure l attente ?</h3>
+            <h3 className="text-base font-semibold text-white">{tr("Combien de temps dure l attente ?", "How long is the wait?")}</h3>
             <p className="mt-1 text-sm text-stone-300">
-              Le systeme de creneaux sert justement a reduire l attente. La commande anticipee reste la solution la
-              plus fluide.
+              {tr(
+                "Le systeme de creneaux sert justement a reduire l attente. La commande anticipee reste la solution la plus fluide.",
+                "The timeslot system is designed to reduce waiting time. Ordering in advance is still the smoothest option."
+              )}
             </p>
           </article>
           <article>
-            <h3 className="text-base font-semibold text-white">Quels moyens de paiement acceptez-vous ?</h3>
+            <h3 className="text-base font-semibold text-white">{tr("Quels moyens de paiement acceptez-vous ?", "Which payment methods do you accept?")}</h3>
             <p className="mt-1 text-sm text-stone-300">
-              Les moyens de paiement disponibles sont indiques sur le site et peuvent inclure carte bancaire, especes
-              et autres solutions selon l organisation du service.
+              {tr(
+                "Les moyens de paiement disponibles sont indiques sur le site et peuvent inclure carte bancaire, especes et autres solutions selon l organisation du service.",
+                "Available payment methods are shown on the site and may include card, cash and other options depending on the service setup."
+              )}
             </p>
           </article>
         </div>

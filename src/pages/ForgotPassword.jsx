@@ -35,7 +35,7 @@ export default function ForgotPassword() {
     } catch (err) {
       setError(
         err.response?.data?.error ||
-          tr("Impossible de lancer la recuperation du mot de passe.", "Unable to start password recovery.")
+          tr("Impossible de lancer la recuperation du mot de passe.", "Unable to send the password reset email.")
       );
     } finally {
       setLoading(false);
@@ -49,7 +49,7 @@ export default function ForgotPassword() {
           {tr("Securite compte", "Account security")}
         </p>
         <h1 className="mt-2 font-display text-4xl uppercase tracking-wide text-white">
-          {tr("Mot de passe oublie", "Forgot password")}
+          {tr("Mot de passe oublie", "Reset your password")}
         </h1>
 
         <p className="mt-3 text-sm text-stone-300">
@@ -86,7 +86,7 @@ export default function ForgotPassword() {
             disabled={loading}
             className="w-full rounded-full bg-saffron px-5 py-3 text-sm font-bold uppercase tracking-wide text-charcoal hover:bg-yellow-300 disabled:opacity-60"
           >
-            {loading ? tr("Envoi...", "Sending...") : tr("Recevoir le lien de reinitialisation", "Send reset link")}
+            {loading ? tr("Envoi...", "Sending...") : tr("Recevoir le lien de reinitialisation", "Send me a reset link")}
           </button>
         </form>
 

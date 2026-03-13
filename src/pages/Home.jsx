@@ -1,4 +1,4 @@
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { getCategories } from "../api/category.api";
 import { getPublicGallery } from "../api/gallery.api";
@@ -7,7 +7,6 @@ import { getAllProductsClient } from "../api/user.api";
 import ContactPanel from "../components/contact/ContactPanel";
 import SeoHead from "../components/seo/SeoHead";
 import SeoInternalLinks from "../components/seo/SeoInternalLinks";
-import { AuthContext } from "../context/AuthContext";
 import { useLanguage } from "../context/LanguageContext";
 import { useTheme } from "../context/ThemeContext";
 import { buildBaseFoodEstablishmentJsonLd } from "../seo/jsonLd";
@@ -96,7 +95,6 @@ function formatHourRange(startTime, endTime) {
 }
 
 export default function Home() {
-  const { token } = useContext(AuthContext);
   const { tr } = useLanguage();
   const { theme } = useTheme();
   const isLightTheme = theme === "light";
@@ -238,9 +236,14 @@ const truckTourSchedule = useMemo(
   const homeJsonLd = useMemo(() => {
     const base = buildBaseFoodEstablishmentJsonLd({
       pagePath: "/",
-      pageName: "Pizza napolitaine au feu de bois en Moselle",
-      description:
+      pageName: tr(
+        "Pizza napolitaine au feu de bois en Moselle",
+        "Wood-fired Neapolitan pizza in Moselle"
+      ),
+      description: tr(
         "Camion pizza en Moselle avec pate travaillee, cuisson bois-gaz et retrait organise autour de Thionville et Metz.",
+        "Pizza truck in Moselle with well-worked dough, wood-and-gas baking and organized pickup around Thionville and Metz."
+      ),
     });
 
     const payload = {
@@ -249,7 +252,7 @@ const truckTourSchedule = useMemo(
     };
 
     return payload;
-  }, [truckTourCities]);
+  }, [truckTourCities, tr]);
 
   const menuByCategory = useMemo(() => {
     const grouped = categories.map((category) => ({
@@ -335,8 +338,14 @@ const truckTourSchedule = useMemo(
   return (
     <div className="space-y-20 pb-24">
       <SeoHead
-        title="Pizza napolitaine au feu de bois en Moselle | Pizza Truck"
-        description="Camion pizza en Moselle avec pate travaillee, cuisson bois-gaz et retrait organise autour de Thionville et Metz."
+        title={tr(
+          "Pizza napolitaine au feu de bois en Moselle | Pizza Truck",
+          "Wood-fired Neapolitan pizza in Moselle | Pizza Truck"
+        )}
+        description={tr(
+          "Camion pizza en Moselle avec pate travaillee, cuisson bois-gaz et retrait organise autour de Thionville et Metz.",
+          "Pizza truck in Moselle with well-worked dough, wood-and-gas baking and organized pickup around Thionville and Metz."
+        )}
         pathname="/"
         jsonLd={homeJsonLd}
       />
@@ -386,55 +395,22 @@ const truckTourSchedule = useMemo(
               )}
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
+              <Link
+                to="/order"
+                className="rounded-full bg-saffron px-6 py-3 text-sm font-bold uppercase tracking-wide text-charcoal transition hover:bg-yellow-300"
+              >
+                {tr("Commander", "Order now")}
+              </Link>
               <a
                 href="#menu"
-                className="rounded-full bg-saffron px-6 py-3 text-sm font-bold uppercase tracking-wide text-charcoal transition hover:bg-yellow-300"
+                className={`rounded-full px-6 py-3 text-sm font-semibold uppercase tracking-wide transition ${
+                  isLightTheme
+                    ? "border border-[#3A261C]/15 bg-white/70 text-[#3A261C] hover:bg-white"
+                    : "theme-light-keep-white border border-white/30 text-white hover:bg-white/10"
+                }`}
               >
                 {tr("Voir le menu", "See menu")}
               </a>
-              <Link
-                to="/planing"
-                className={`rounded-full px-6 py-3 text-sm font-semibold uppercase tracking-wide transition ${
-                  isLightTheme
-                    ? "border border-[#3A261C]/15 bg-white/70 text-[#3A261C] hover:bg-white"
-                    : "theme-light-keep-white border border-white/30 text-white hover:bg-white/10"
-                }`}
-              >
-                {tr("Voir les horaires d'ouvertures", "See opening hours")}
-              </Link>
-              <Link
-                to="/gallery"
-                className={`rounded-full px-6 py-3 text-sm font-semibold uppercase tracking-wide transition ${
-                  isLightTheme
-                    ? "border border-[#3A261C]/15 bg-white/70 text-[#3A261C] hover:bg-white"
-                    : "theme-light-keep-white border border-white/30 text-white hover:bg-white/10"
-                }`}
-              >
-                {tr("Voir la galerie", "See gallery")}
-              </Link>
-              {token ? (
-                <Link
-                  to="/order"
-                  className={`rounded-full px-6 py-3 text-sm font-semibold uppercase tracking-wide transition ${
-                    isLightTheme
-                      ? "border border-[#3A261C]/15 bg-white/70 text-[#3A261C] hover:bg-white"
-                      : "theme-light-keep-white border border-white/30 text-white hover:bg-white/10"
-                  }`}
-                >
-                  {tr("Commander maintenant", "Order now")}
-                </Link>
-              ) : (
-                <Link
-                  to="/login"
-                  className={`rounded-full px-6 py-3 text-sm font-semibold uppercase tracking-wide transition ${
-                    isLightTheme
-                      ? "border border-[#3A261C]/15 bg-white/70 text-[#3A261C] hover:bg-white"
-                      : "theme-light-keep-white border border-white/30 text-white hover:bg-white/10"
-                  }`}
-                >
-                  {tr("Se connecter", "Sign in")}
-                </Link>
-              )}
             </div>
           </div>
         </div>
@@ -558,38 +534,61 @@ const truckTourSchedule = useMemo(
       <section className="section-shell space-y-6">
         <div className="grid gap-5 xl:grid-cols-12">
           <article className="glass-panel p-6 sm:p-8 xl:col-span-7">
-            <p className="text-xs uppercase tracking-[0.2em] text-saffron">Pizza truck Moselle</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-saffron">
+              {tr("Camion pizza Moselle", "Moselle pizza truck")}
+            </p>
             <h2 className="mt-2 font-display text-3xl uppercase tracking-wide text-white">
-              Une pizza pensee pour etre bonne au moment du retrait
+              {tr(
+                "Une pizza pensee pour etre bonne au moment du retrait",
+                "Pizza made to be at its best at pickup time"
+              )}
             </h2>
             <p className="mt-4 text-sm leading-7 text-stone-300 sm:text-base">
-              Le camion circule dans le nord de la Moselle avec une carte courte et une cuisson vive, pour servir une pizza propre plutot qu une offre standardisee.
+              {tr(
+                "Le camion circule dans le nord de la Moselle avec une carte courte et une cuisson vive, pour servir une pizza propre plutot qu une offre standardisee.",
+                "The truck moves around northern Moselle with a short menu and lively baking, so each pizza stays focused instead of feeling standardized."
+              )}
             </p>
             <p className="mt-2 text-sm leading-7 text-stone-300 sm:text-base">
-              Le planning change selon la semaine, mais la ligne reste la meme: une organisation simple, un retrait rapide et une execution reguliere.
+              {tr(
+                "Le planning change selon la semaine, mais la ligne reste la meme: une organisation simple, un retrait rapide et une execution reguliere.",
+                "The weekly route changes, but the approach stays the same: simple organization, fast pickup and steady execution."
+              )}
             </p>
             <p className="mt-2 text-sm leading-7 text-stone-300 sm:text-base">
-              Les pizzas sont preparees avec une pate travaillee, une garniture tenue et un four bois-gaz qui donne du rythme au service.
+              {tr(
+                "Les pizzas sont preparees avec une pate travaillee, une garniture tenue et un four bois-gaz qui donne du rythme au service.",
+                "Each pizza is built around a well-worked dough, balanced toppings and a wood-and-gas oven that keeps service moving."
+              )}
             </p>
           </article>
 
           <article className="glass-panel p-6 sm:p-8 xl:col-span-5">
             <h2 className="font-display text-3xl uppercase tracking-wide text-white">
-              Des produits choisis pour leur tenue, pas pour remplir la carte
+              {tr(
+                "Des produits choisis pour leur tenue, pas pour remplir la carte",
+                "Ingredients chosen for balance, not just to pad out the menu"
+              )}
             </h2>
             <p className="mt-3 text-sm leading-7 text-stone-300 sm:text-base">
-              La base produit reste volontairement courte pour garder des recettes plus nettes:
+              {tr(
+                "La base produit reste volontairement courte pour garder des recettes plus nettes:",
+                "The ingredient list stays intentionally short to keep the recipes clear:"
+              )}
             </p>
             <ul className="mt-4 grid gap-2 text-sm text-stone-200 sm:grid-cols-2">
-              <li className="rounded-lg border border-white/20 bg-stone-200/20 px-3 py-2">farine Nuvola Super</li>
-              <li className="rounded-lg border border-white/20 bg-stone-200/20 px-3 py-2">tomates San Marzano</li>
-              <li className="rounded-lg border border-white/20 bg-stone-200/20 px-3 py-2">mozzarella fior di latte</li>
-              <li className="rounded-lg border border-white/20 bg-stone-200/20 px-3 py-2">parmigiano reggiano</li>
-              <li className="rounded-lg border border-white/20 bg-stone-200/20 px-3 py-2">jambon de Parme</li>
-              <li className="rounded-lg border border-white/20 bg-stone-200/20 px-3 py-2">prosciutto italien</li>
+              <li className="rounded-lg border border-white/20 bg-stone-200/20 px-3 py-2">{tr("farine Nuvola Super", "Nuvola Super flour")}</li>
+              <li className="rounded-lg border border-white/20 bg-stone-200/20 px-3 py-2">{tr("tomates San Marzano", "San Marzano tomatoes")}</li>
+              <li className="rounded-lg border border-white/20 bg-stone-200/20 px-3 py-2">{tr("mozzarella fior di latte", "fior di latte mozzarella")}</li>
+              <li className="rounded-lg border border-white/20 bg-stone-200/20 px-3 py-2">{tr("parmigiano reggiano", "Parmigiano Reggiano")}</li>
+              <li className="rounded-lg border border-white/20 bg-stone-200/20 px-3 py-2">{tr("jambon de Parme", "Parma ham")}</li>
+              <li className="rounded-lg border border-white/20 bg-stone-200/20 px-3 py-2">{tr("prosciutto italien", "Italian prosciutto")}</li>
             </ul>
             <p className="mt-4 text-xs uppercase tracking-[0.22em] text-saffron">
-              pate travaillee | ingredients bien choisis | cuisson minute
+              {tr(
+                "pate travaillee | ingredients bien choisis | cuisson minute",
+                "worked dough | carefully chosen ingredients | baked to order"
+              )}
             </p>
           </article>
         </div>
@@ -597,48 +596,63 @@ const truckTourSchedule = useMemo(
         <div className="grid gap-5 lg:grid-cols-2">
           <article className="glass-panel p-6 sm:p-8">
             <h2 className="font-display text-3xl uppercase tracking-wide text-white">
-              Cuisson au four a bois et gaz
+              {tr("Cuisson au four a bois et gaz", "Wood-and-gas oven baking")}
             </h2>
             <p className="mt-3 text-sm leading-7 text-stone-300 sm:text-base">
-              Le four sert a garder une cuisson courte et lisible: un bord qui se developpe, une base qui tient et une pizza qui ne seche pas.
+              {tr(
+                "Le four sert a garder une cuisson courte et lisible: un bord qui se developpe, une base qui tient et une pizza qui ne seche pas.",
+                "The oven keeps the bake short and clean: a risen crust, a base that holds and a pizza that does not dry out."
+              )}
             </p>
             <p className="mt-2 text-sm leading-7 text-stone-300 sm:text-base">
-              Chaque pizza est lancee a la commande pour sortir au bon moment, pas pour attendre sur le cote.
+              {tr(
+                "Chaque pizza est lancee a la commande pour sortir au bon moment, pas pour attendre sur le cote.",
+                "Every pizza goes in to order so it comes out at the right moment, not to sit waiting on the side."
+              )}
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
               <span className="rounded-full border border-saffron/40 bg-saffron/10 px-3 py-1 text-[11px] uppercase tracking-wide text-saffron">
-                pizza napolitaine feu de bois
+                {tr("pizza napolitaine feu de bois", "wood-fired Neapolitan pizza")}
               </span>
               <span className="rounded-full border border-saffron/40 bg-saffron/10 px-3 py-1 text-[11px] uppercase tracking-wide text-saffron">
-                pizza feu de bois thionville
+                {tr("pizza feu de bois thionville", "wood-fired pizza Thionville")}
               </span>
               <span className="rounded-full border border-saffron/40 bg-saffron/10 px-3 py-1 text-[11px] uppercase tracking-wide text-saffron">
-                pizza artisanale moselle
+                {tr("pizza artisanale moselle", "artisan pizza Moselle")}
               </span>
               <span className="rounded-full border border-saffron/40 bg-saffron/10 px-3 py-1 text-[11px] uppercase tracking-wide text-saffron">
-                camion pizza napolitaine
+                {tr("camion pizza napolitaine", "Neapolitan pizza truck")}
               </span>
             </div>
           </article>
 
           <article className="glass-panel p-6 sm:p-8">
             <h2 className="font-display text-3xl uppercase tracking-wide text-white">
-              Ou trouver notre camion pizza
+              {tr("Ou trouver notre camion pizza", "Where to find our pizza truck")}
             </h2>
             <p className="mt-3 text-sm leading-7 text-stone-300 sm:text-base">
-              Le camion passe sur plusieurs points autour de Thionville, Metz et des communes voisines.
+              {tr(
+                "Le camion passe sur plusieurs points autour de Thionville, Metz et des communes voisines.",
+                "The truck stops at several pickup points around Thionville, Metz and nearby towns."
+              )}
             </p>
             <p className="mt-2 text-sm leading-7 text-stone-300 sm:text-base">
-              Les emplacements changent selon la tournee hebdomadaire.
+              {tr(
+                "Les emplacements changent selon la tournee hebdomadaire.",
+                "Locations change with the weekly route."
+              )}
             </p>
             <p className="mt-2 text-sm leading-7 text-stone-300 sm:text-base">
-              Consultez le planning pour connaitre les horaires et les points de retrait ouverts.
+              {tr(
+                "Consultez le planning pour connaitre les horaires et les points de retrait ouverts.",
+                "Check the schedule to see opening hours and available pickup points."
+              )}
             </p>
             <Link
               to="/planing"
               className="mt-5 inline-flex rounded-full border border-saffron/60 px-5 py-2 text-xs font-semibold uppercase tracking-wide text-saffron transition hover:bg-saffron/10"
             >
-              Voir les horaires d'ouvertures
+              {tr("Voir les horaires d'ouverture", "See opening hours")}
             </Link>
           </article>
         </div>

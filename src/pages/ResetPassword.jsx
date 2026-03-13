@@ -59,7 +59,7 @@ export default function ResetPassword() {
     } catch (err) {
       setError(
         err.response?.data?.error ||
-          tr("Lien invalide ou expire", "Invalid or expired link")
+          tr("Lien invalide ou expire", "This password reset link is invalid or has expired")
       );
     } finally {
       setLoading(false);
@@ -73,7 +73,7 @@ export default function ResetPassword() {
           {tr("Securite compte", "Account security")}
         </p>
         <h1 className="mt-2 font-display text-4xl uppercase tracking-wide text-white">
-          {tr("Nouveau mot de passe", "New password")}
+          {tr("Nouveau mot de passe", "Set a new password")}
         </h1>
 
         {error && (
@@ -142,7 +142,7 @@ export default function ResetPassword() {
             disabled={loading}
             className="w-full rounded-full bg-saffron px-5 py-3 text-sm font-bold uppercase tracking-wide text-charcoal hover:bg-yellow-300 disabled:opacity-60"
           >
-            {loading ? tr("Mise a jour...", "Updating...") : tr("Mettre a jour", "Update")}
+            {loading ? tr("Mise a jour...", "Updating...") : tr("Mettre a jour", "Save new password")}
           </button>
         </form>
 

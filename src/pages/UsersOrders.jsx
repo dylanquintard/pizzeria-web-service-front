@@ -28,8 +28,8 @@ function getOrderTotal(order) {
 function getStatusLabel(status, tr) {
   const normalized = String(status || "").trim().toUpperCase();
   if (normalized === "PENDING") return tr("En attente", "Pending");
-  if (normalized === "COMPLETED") return tr("En cours", "In progress");
-  if (normalized === "FINALIZED") return tr("Imprimee", "Printed");
+  if (normalized === "COMPLETED") return tr("En cours", "Preparing");
+  if (normalized === "FINALIZED") return tr("Imprimee", "Ready");
   if (normalized === "CANCELED") return tr("Annulee", "Canceled");
   return normalized || "-";
 }
@@ -116,7 +116,7 @@ export default function UserOrders() {
     <div className="section-shell space-y-4 py-10">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-sm uppercase tracking-[0.22em] text-saffron">{tr("Espace client", "Client area")}</p>
+          <p className="text-sm uppercase tracking-[0.22em] text-saffron">{tr("Espace client", "My account")}</p>
           <h1 className="font-display text-4xl uppercase tracking-wide text-white">{tr("Mes commandes", "My orders")}</h1>
         </div>
         <p className="text-xs uppercase tracking-wider text-stone-400">
@@ -125,7 +125,7 @@ export default function UserOrders() {
       </div>
 
       <p className="text-xs text-stone-300">
-        {tr("Mises a jour temps reel", "Realtime updates")}:{" "}
+        {tr("Mises a jour temps reel", "Live order updates")}:{" "}
         <strong className={realtimeConnected ? "text-emerald-300" : "text-amber-300"}>
           {realtimeConnected ? tr("connecte", "connected") : tr("reconnexion...", "reconnecting...")}
         </strong>
@@ -143,7 +143,7 @@ export default function UserOrders() {
 
       {!loading && !error && orders.length === 0 && (
         <p className="rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-stone-300">
-          {tr("Aucune commande trouvee.", "No orders found.")}
+          {tr("Aucune commande trouvee.", "You do not have any orders yet.")}
         </p>
       )}
 
@@ -182,8 +182,8 @@ export default function UserOrders() {
                     type="button"
                     onClick={() => toggleOrderDetails(order.id)}
                     className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/20 bg-charcoal/70 text-stone-100 transition hover:bg-charcoal"
-                    title={isExpanded ? tr("Masquer le detail", "Hide details") : tr("Afficher le detail", "Show details")}
-                    aria-label={isExpanded ? tr("Masquer le detail", "Hide details") : tr("Afficher le detail", "Show details")}
+                    title={isExpanded ? tr("Masquer le detail", "Hide order details") : tr("Afficher le detail", "Show order details")}
+                    aria-label={isExpanded ? tr("Masquer le detail", "Hide order details") : tr("Afficher le detail", "Show order details")}
                     aria-expanded={isExpanded}
                   >
                     <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.2">

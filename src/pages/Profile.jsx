@@ -76,7 +76,10 @@ export default function Profile() {
       setSuccess(tr("Profil mis a jour avec succes.", "Profile updated successfully."));
       setEditingProfile(false);
     } catch (err) {
-      setError(err.response?.data?.error || tr("Erreur lors de la mise a jour du profil", "Error while updating profile"));
+      setError(
+        err.response?.data?.error ||
+          tr("Erreur lors de la mise a jour du profil", "Unable to save your profile changes")
+      );
     } finally {
       setProfileLoading(false);
     }
@@ -107,7 +110,10 @@ export default function Profile() {
       setConfirmPassword("");
       setEditingPassword(false);
     } catch (err) {
-      setError(err.response?.data?.error || tr("Erreur lors de la mise a jour du mot de passe", "Error while updating password"));
+      setError(
+        err.response?.data?.error ||
+          tr("Erreur lors de la mise a jour du mot de passe", "Unable to change your password")
+      );
     } finally {
       setPasswordLoading(false);
     }
@@ -119,7 +125,7 @@ export default function Profile() {
     "rounded-full border border-white/20 px-5 py-2 text-xs font-semibold uppercase tracking-wide text-stone-100 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60";
   const primaryButtonClassName =
     "rounded-full bg-saffron px-5 py-2 text-xs font-bold uppercase tracking-wide text-charcoal transition hover:bg-yellow-300 disabled:cursor-not-allowed disabled:opacity-60";
-  const roleLabel = user?.role === "ADMIN" ? tr("Administrateur", "Administrator") : tr("Client", "Client");
+  const roleLabel = user?.role === "ADMIN" ? tr("Administrateur", "Administrator") : tr("Client", "Customer");
   const liveFullName = buildFullName(firstName, lastName);
   const savedName = splitPersonName(user || {});
   const displayName = (liveFullName || savedName.fullName || tr("Utilisateur", "User")).trim();
@@ -141,7 +147,7 @@ export default function Profile() {
                   {avatarLetter}
                 </div>
                 <div>
-                  <p className="theme-light-keep-dark text-xs uppercase tracking-[0.25em] text-saffron">{tr("Espace client", "Client area")}</p>
+                  <p className="theme-light-keep-dark text-xs uppercase tracking-[0.25em] text-saffron">{tr("Espace client", "My account")}</p>
                   <h1 className="font-display text-4xl uppercase tracking-wide text-white sm:text-5xl">{tr("Mon profil", "My profile")}</h1>
                 </div>
               </div>
@@ -150,7 +156,10 @@ export default function Profile() {
               </span>
             </div>
             <p className="mt-3 text-sm text-stone-300">
-              {tr("Verifiez et mettez a jour vos informations personnelles.", "Review and update your personal information.")}
+              {tr(
+                "Verifiez et mettez a jour vos informations personnelles.",
+                "Review and update your personal details."
+              )}
             </p>
           </div>
         </section>
@@ -171,7 +180,7 @@ export default function Profile() {
           <section className="rounded-3xl border border-white/10 bg-charcoal/45 p-6">
             <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
               <div>
-                <p className="theme-light-keep-dark text-xs uppercase tracking-[0.22em] text-saffron">{tr("Informations", "Information")}</p>
+                <p className="theme-light-keep-dark text-xs uppercase tracking-[0.22em] text-saffron">{tr("Informations", "Details")}</p>
                 <h2 className="mt-1 text-xl font-semibold text-white">{tr("Informations personnelles", "Personal information")}</h2>
               </div>
               {!editingProfile && (
@@ -243,7 +252,7 @@ export default function Profile() {
                   </label>
                   <input id="profile-email" type="email" value={email} disabled className={`${inputClassName} cursor-not-allowed opacity-70`} />
                   <p className="mt-1 text-xs text-stone-400">
-                    {tr("L'email ne peut pas etre modifie ici.", "Email cannot be edited here.")}
+                    {tr("L'email ne peut pas etre modifie ici.", "Your email address cannot be changed here.")}
                   </p>
                 </div>
 
@@ -309,7 +318,7 @@ export default function Profile() {
                 <p className="text-sm text-stone-300">
                   {tr(
                     "Pour renforcer la securite de votre compte, mettez a jour votre mot de passe regulierement.",
-                    "To improve account security, update your password regularly."
+                    "Use a strong password and update it regularly to keep your account secure."
                   )}
                 </p>
               </div>

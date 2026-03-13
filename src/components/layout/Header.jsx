@@ -105,10 +105,10 @@ export default function Header() {
     { to: "/", label: tr("Accueil", "Home") },
     { to: "/gallery", label: tr("Galerie", "Gallery") },
     { to: "/menu", label: tr("Menu", "Menu") },
-    { to: "/blog", label: tr("Blog", "Blog") },
     { to: "/planing", label: tr("Horaires d'ouvertures", "Opening hours") },
     { to: "/a-propos", label: tr("A propos", "About") },
     { to: "/contact", label: tr("Contact", "Contact") },
+    { to: "/blog", label: tr("Blog", "Blog") },
   ];
   const adminMenuLinks = isAdminUser
       ? [

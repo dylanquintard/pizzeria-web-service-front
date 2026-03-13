@@ -80,7 +80,7 @@ export default function VerifyEmail() {
       setInfo(
         tr(
           "Un nouveau code a ete envoye a votre email.",
-          "A new code has been sent to your email."
+          "A new verification code has been sent to your email."
         )
       );
     } catch (err) {
@@ -97,12 +97,12 @@ export default function VerifyEmail() {
           {tr("Verification email", "Email verification")}
         </p>
         <h1 className="mt-2 font-display text-4xl uppercase tracking-wide text-white">
-          {tr("Entrez le code", "Enter the code")}
+          {tr("Entrez le code", "Verify your email")}
         </h1>
         <p className="mt-3 text-sm text-stone-300">
           {tr(
             "Saisissez le code a 6 chiffres recu par email.",
-            "Enter the 6-digit code received by email."
+            "Enter the 6-digit code we sent to your email address."
           )}
         </p>
 
@@ -143,7 +143,7 @@ export default function VerifyEmail() {
             disabled={loading}
             className="w-full rounded-full bg-saffron px-5 py-3 text-sm font-bold uppercase tracking-wide text-charcoal hover:bg-yellow-300 disabled:opacity-60"
           >
-            {loading ? tr("Verification...", "Verifying...") : tr("Valider", "Verify")}
+            {loading ? tr("Verification...", "Verifying...") : tr("Valider", "Verify email")}
           </button>
         </form>
 
@@ -153,7 +153,7 @@ export default function VerifyEmail() {
           disabled={resendLoading}
           className="mt-4 w-full rounded-full border border-white/20 px-5 py-3 text-sm font-semibold uppercase tracking-wide text-white hover:bg-white/10 disabled:opacity-60"
         >
-          {resendLoading ? tr("Envoi...", "Sending...") : tr("Renvoyer le code", "Resend code")}
+          {resendLoading ? tr("Envoi...", "Sending...") : tr("Renvoyer le code", "Send a new code")}
         </button>
 
         <p className="mt-5 text-sm text-stone-300">

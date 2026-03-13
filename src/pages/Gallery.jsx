@@ -7,6 +7,11 @@ import { useLanguage } from "../context/LanguageContext";
 export default function Gallery() {
   const { tr } = useLanguage();
   const [galleryImages, setGalleryImages] = useState([]);
+  const title = tr("Galerie | Pizza Truck", "Gallery | Pizza Truck");
+  const description = tr(
+    "Galerie photo du camion pizza, du four et des pizzas artisanales.",
+    "Photo gallery of the pizza truck, oven and handmade pizzas."
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -33,11 +38,8 @@ export default function Gallery() {
   return (
     <div className="section-shell pb-20 pt-10">
       <SeoHead
-        title="Galerie | Pizza Truck"
-        description={tr(
-          "Galerie photo du camion pizza, du four et des pizzas artisanales.",
-          "Photo gallery of the pizza truck, oven and craft pizzas."
-        )}
+        title={title}
+        description={description}
         pathname="/gallery"
       />
       <GalleryShowcase images={galleryImages} />

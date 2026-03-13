@@ -123,14 +123,22 @@ export default function Menu() {
   return (
     <div className="section-shell space-y-10 pb-20 pt-12 sm:pt-14">
       <SeoHead
-        title="Menu pizza napolitaine | Pizza Truck Moselle"
-        description="Consultez le menu pizza napolitaine artisanal de Pizza Truck en Moselle. Recettes, ingredients et prix."
+        title={tr(
+          "Menu pizza napolitaine | Pizza Truck Moselle",
+          "Neapolitan pizza menu | Pizza Truck Moselle"
+        )}
+        description={tr(
+          "Consultez le menu pizza napolitaine artisanal de Pizza Truck en Moselle. Recettes, ingredients et prix.",
+          "Browse Pizza Truck's handmade Neapolitan pizza menu in Moselle. Recipes, ingredients and prices."
+        )}
         pathname="/menu"
         jsonLd={buildBaseFoodEstablishmentJsonLd({
           pagePath: "/menu",
-          pageName: "Menu pizza napolitaine",
-          description:
+          pageName: tr("Menu pizza napolitaine", "Neapolitan pizza menu"),
+          description: tr(
             "Consultez le menu pizza napolitaine artisanal de Pizza Truck en Moselle. Recettes, ingredients et prix.",
+            "Browse Pizza Truck's handmade Neapolitan pizza menu in Moselle. Recipes, ingredients and prices."
+          ),
         })}
       />
       <header className="space-y-3 text-center">

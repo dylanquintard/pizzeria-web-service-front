@@ -827,7 +827,7 @@ export default function Order() {
               <h2 className="text-xl font-bold text-white">{tr("Mon panier", "My cart")}</h2>
               {isCartValidated && (
                 <span className="rounded-full bg-emerald-500/20 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-emerald-300">
-                  {tr("Panier valide", "Cart validated")}
+                  {tr("Panier valide", "Cart confirmed")}
                 </span>
               )}
             </div>
@@ -888,7 +888,7 @@ export default function Order() {
                   disabled={cartItems.length === 0}
                   className="flex-1 rounded-full bg-saffron px-4 py-2 text-xs font-bold uppercase tracking-wide text-charcoal transition hover:bg-yellow-300 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {tr("Valider le panier", "Validate cart")}
+                  {tr("Valider le panier", "Confirm cart")}
                 </button>
                 <button
                   type="button"
@@ -903,12 +903,12 @@ export default function Order() {
           </div>
 
           <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-            <h2 className="mb-1 text-xl font-bold text-white">{tr("Retrait de la commande", "Order pickup")}</h2>
+            <h2 className="mb-1 text-xl font-bold text-white">{tr("Retrait de la commande", "Pickup details")}</h2>
             <p className="mb-4 text-sm text-stone-300">
               {tr("Choisissez d'abord la date, l'horaire, puis l'adresse de retrait.", "Choose date first, then pickup time and location.")}
             </p>
             <p className="mb-3 text-xs text-stone-300">
-              {tr("Flux temps reel", "Realtime stream")}:{" "}
+              {tr("Flux temps reel", "Live updates")}:{" "}
               <strong className={realtimeConnected ? "text-emerald-300" : "text-amber-300"}>
                 {realtimeConnected ? tr("connecte", "connected") : tr("reconnexion...", "reconnecting...")}
               </strong>
@@ -1068,7 +1068,7 @@ export default function Order() {
                 onClick={handleFinalize}
                 className="mt-2 w-full rounded-full bg-saffron px-4 py-3 text-sm font-bold uppercase tracking-wide text-charcoal transition hover:bg-yellow-300 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {loading ? tr("Traitement...", "Processing...") : tr("Finaliser la commande", "Finalize order")}
+                {loading ? tr("Traitement...", "Processing...") : tr("Finaliser la commande", "Place order")}
               </button>
             </fieldset>
           </div>
@@ -1086,10 +1086,10 @@ export default function Order() {
             className="w-full max-w-lg rounded-2xl border border-saffron/45 bg-charcoal/95 p-5 shadow-2xl"
           >
             <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-saffron">
-              {tr("Verification retrait", "Pickup check")}
+              {tr("Verification retrait", "Pickup confirmation")}
             </p>
             <h3 id="finalize-order-title" className="mt-2 text-xl font-bold text-white">
-              {tr("Confirmez votre adresse de retrait", "Confirm your pickup address")}
+              {tr("Confirmez votre adresse de retrait", "Confirm your pickup location")}
             </h3>
 
             <div className="mt-4 space-y-3 rounded-xl border border-white/10 bg-black/20 p-4 text-sm">
@@ -1143,7 +1143,7 @@ export default function Order() {
                 disabled={loading}
                 className="flex-1 rounded-full bg-saffron px-4 py-2 text-xs font-bold uppercase tracking-wide text-charcoal transition hover:bg-yellow-300 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {loading ? tr("Traitement...", "Processing...") : tr("Confirmer", "Confirm")}
+                {loading ? tr("Traitement...", "Processing...") : tr("Confirmer", "Place order")}
               </button>
             </div>
           </div>

@@ -3,18 +3,19 @@ import SeoHead from "../components/seo/SeoHead";
 import SeoInternalLinks from "../components/seo/SeoInternalLinks";
 import { getPublicWeeklySettings } from "../api/timeslot.api";
 import { getLocations } from "../api/location.api";
+import { useLanguage } from "../context/LanguageContext";
 import { buildBaseFoodEstablishmentJsonLd } from "../seo/jsonLd";
 import { getCityPath } from "../seo/localLandingContent";
 import { Link } from "react-router-dom";
 
 const DAY_LABELS = {
-  MONDAY: "Lundi",
-  TUESDAY: "Mardi",
-  WEDNESDAY: "Mercredi",
-  THURSDAY: "Jeudi",
-  FRIDAY: "Vendredi",
-  SATURDAY: "Samedi",
-  SUNDAY: "Dimanche",
+  MONDAY: { fr: "Lundi", en: "Monday" },
+  TUESDAY: { fr: "Mardi", en: "Tuesday" },
+  WEDNESDAY: { fr: "Mercredi", en: "Wednesday" },
+  THURSDAY: { fr: "Jeudi", en: "Thursday" },
+  FRIDAY: { fr: "Vendredi", en: "Friday" },
+  SATURDAY: { fr: "Samedi", en: "Saturday" },
+  SUNDAY: { fr: "Dimanche", en: "Sunday" },
 };
 
 const ORDERED_DAYS = [
@@ -50,6 +51,7 @@ function formatAddress(location) {
 }
 
 export default function TourneeCamion() {
+  const { tr } = useLanguage();
   const [weeklySettings, setWeeklySettings] = useState([]);
   const [locations, setLocations] = useState([]);
 
@@ -109,7 +111,7 @@ export default function TourneeCamion() {
         const location = service?.location;
         if (!location) continue;
 
-        const locationName = String(location.name || "Emplacement").trim();
+        const locationName = String(location.name || tr("Emplacement", "Location")).trim();
         const address = formatAddress(location);
         const locationKey = normalizeText(locationName) || String(service.locationId || "");
 
@@ -155,7 +157,7 @@ export default function TourneeCamion() {
         }, {}),
       }))
       .sort((left, right) => left.locationName.localeCompare(right.locationName, "fr"));
-  }, [weeklySettings]);
+  }, [weeklySettings, tr]);
 
   const visibleCities = useMemo(() => {
     const fromSchedule = scheduleByLocation
@@ -169,9 +171,14 @@ export default function TourneeCamion() {
     return [...new Set([...fromSchedule, ...fromLocations])].sort((a, b) => a.localeCompare(b, "fr"));
   }, [scheduleByLocation, locations]);
 
-  const title = "Horaires d'ouvertures camion pizza | Emplacements en Moselle";
-  const description =
-    "Retrouvez les emplacements du camion pizza napolitaine autour de Thionville et Metz, avec horaires de passage hebdomadaires.";
+  const title = tr(
+    "Horaires d'ouvertures camion pizza | Emplacements en Moselle",
+    "Pizza truck opening hours | Locations in Moselle"
+  );
+  const description = tr(
+    "Retrouvez les emplacements du camion pizza napolitaine autour de Thionville et Metz, avec horaires de passage hebdomadaires.",
+    "Find the Neapolitan pizza truck locations around Thionville and Metz, with weekly service hours."
+  );
 
   return (
     <div className="section-shell space-y-8 pb-20 pt-10">
@@ -187,29 +194,39 @@ export default function TourneeCamion() {
       />
 
       <header className="space-y-3">
-        <p className="text-xs uppercase tracking-[0.25em] text-saffron">Horaires d'ouvertures du camion</p>
+        <p className="text-xs uppercase tracking-[0.25em] text-saffron">
+          {tr("Horaires d'ouvertures du camion", "Truck opening hours")}
+        </p>
         <h1 className="font-display text-4xl uppercase tracking-wide text-white sm:text-5xl">
-          Horaires d'ouvertures du camion pizza napolitaine
+          {tr(
+            "Horaires d'ouvertures du camion pizza napolitaine",
+            "Opening hours for the Neapolitan pizza truck"
+          )}
         </h1>
         <p className="max-w-3xl text-sm text-stone-300 sm:text-base">
-          Retrouvez les emplacements et horaires du camion pizza napolitaine autour de Thionville et Metz.
+          {tr(
+            "Retrouvez les emplacements et horaires du camion pizza napolitaine autour de Thionville et Metz.",
+            "Find the locations and opening hours of the Neapolitan pizza truck around Thionville and Metz."
+          )}
         </p>
       </header>
 
       <section className="glass-panel p-6">
-        <h2 className="font-display text-3xl uppercase tracking-wide text-white">Emplacements du camion pizza</h2>
+        <h2 className="font-display text-3xl uppercase tracking-wide text-white">
+          {tr("Emplacements du camion pizza", "Pizza truck locations")}
+        </h2>
         <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {scheduleByLocation.length === 0 ? (
             <div className="glass-panel p-5 text-sm text-stone-300">
-              Aucun horaire disponible pour le moment.
+              {tr("Aucun horaire disponible pour le moment.", "No opening hours available right now.")}
             </div>
           ) : (
             scheduleByLocation.map((entry) => (
               <article key={entry.key} className="glass-panel p-5">
-                <p className="text-[11px] uppercase tracking-wider text-saffron">Nom</p>
+                <p className="text-[11px] uppercase tracking-wider text-saffron">{tr("Nom", "Name")}</p>
                 <p className="mt-1 text-lg font-bold text-white">{entry.locationName}</p>
 
-                <p className="mt-3 text-[11px] uppercase tracking-wider text-saffron">Adresse</p>
+                <p className="mt-3 text-[11px] uppercase tracking-wider text-saffron">{tr("Adresse", "Address")}</p>
                 {entry.addresses.length > 0 ? (
                   <div className="mt-1 space-y-1">
                     {entry.addresses.map((address) => (
@@ -219,10 +236,12 @@ export default function TourneeCamion() {
                     ))}
                   </div>
                 ) : (
-                  <p className="mt-1 text-sm text-stone-200">Adresse a venir</p>
+                  <p className="mt-1 text-sm text-stone-200">{tr("Adresse a venir", "Address coming soon")}</p>
                 )}
 
-                <p className="mt-4 text-[11px] uppercase tracking-wider text-saffron">Planning hebdomadaire</p>
+                <p className="mt-4 text-[11px] uppercase tracking-wider text-saffron">
+                  {tr("Planning hebdomadaire", "Weekly schedule")}
+                </p>
                 <ul className="mt-2 space-y-1">
                   {ORDERED_DAYS.map((dayKey) => {
                     const hours = Array.isArray(entry?.slotsByDay?.[dayKey])
@@ -230,9 +249,11 @@ export default function TourneeCamion() {
                       : [];
                     return (
                       <li key={`${entry.key}-${dayKey}`} className="flex items-start justify-between gap-4 text-sm">
-                        <span className="text-stone-300">{DAY_LABELS[dayKey] || dayKey}</span>
+                        <span className="text-stone-300">
+                          {tr(DAY_LABELS[dayKey]?.fr || dayKey, DAY_LABELS[dayKey]?.en || dayKey)}
+                        </span>
                         <span className="text-right text-stone-100">
-                          {hours.length > 0 ? hours.join(" / ") : "Ferme"}
+                          {hours.length > 0 ? hours.join(" / ") : tr("Ferme", "Closed")}
                         </span>
                       </li>
                     );

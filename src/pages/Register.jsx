@@ -93,7 +93,7 @@ export default function Register() {
 
       navigate("/login", { state: { email: normalizedEmail } });
     } catch (err) {
-      setError(err.response?.data?.error || tr("Erreur lors de l'inscription", "Registration error"));
+      setError(err.response?.data?.error || tr("Erreur lors de l'inscription", "Unable to create your account"));
     } finally {
       setLoading(false);
     }
@@ -103,7 +103,7 @@ export default function Register() {
     <div className="section-shell py-10">
       <div className="mx-auto max-w-lg rounded-3xl border border-white/10 bg-white/5 p-8 backdrop-blur-md">
         <p className="text-sm uppercase tracking-[0.25em] text-saffron">{tr("Inscription", "Register")}</p>
-        <h1 className="mt-2 font-display text-4xl uppercase tracking-wide text-white">{tr("Creer un compte", "Create an account")}</h1>
+        <h1 className="mt-2 font-display text-4xl uppercase tracking-wide text-white">{tr("Creer un compte", "Create your account")}</h1>
 
         {error && (
           <p className="mt-4 rounded-lg border border-red-400/50 bg-red-500/10 px-3 py-2 text-sm text-red-200">
@@ -154,7 +154,7 @@ export default function Register() {
             disabled={loading}
             className="w-full rounded-full bg-saffron px-5 py-3 text-sm font-bold uppercase tracking-wide text-charcoal hover:bg-yellow-300 disabled:opacity-60"
           >
-            {loading ? tr("Creation...", "Creating...") : tr("S'inscrire", "Sign up")}
+            {loading ? tr("Creation...", "Creating account...") : tr("S'inscrire", "Sign up")}
           </button>
         </form>
 
