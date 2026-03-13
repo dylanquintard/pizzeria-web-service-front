@@ -45,30 +45,30 @@ export const LOCAL_PAGE_CONTENT = {
     pathname: "/pizza-napolitaine-thionville",
     title: "Pizza napolitaine proche de Thionville | Camion pizza artisanal",
     description:
-      "Pizza napolitaine artisanale proche de Thionville: cuisson bois-gaz, produits italiens selectionnes et retrait rapide au camion.",
+      "Camion pizza autour de Thionville: pate travaillee, cuisson bois-gaz, carte courte et retrait organise sur les points de passage.",
     h1: "Pizza napolitaine artisanale autour de Thionville",
     intro:
-      "Vous cherchez une pizza napolitaine proche de Thionville ? Notre camion pizza propose une carte artisanale, avec une pate travaillee dans l'esprit napolitain et des ingredients italiens reconnus.",
+      "Autour de Thionville, le camion propose une pizza d inspiration napolitaine pensee pour le retrait: une pate souple, une cuisson vive et des recettes tenues sans surcharge.",
     sections: [
       {
-        heading: "Une pizza inspiree de Naples",
+        heading: "Une execution plus serieuse qu un simple effet de style",
         paragraphs: [
-          "La base repose sur une fermentation en deux temps et une execution minute au camion pour garder texture, legerete et regularite.",
-          "Nous utilisons notamment farine Nuvola Super, tomates San Marzano, mozzarella fior di latte, parmigiano reggiano et charcuteries italiennes.",
+          "La base repose sur une fermentation preparee en amont et une cuisson minute au camion, afin de garder une pizza souple, lisible et reguliere.",
+          "Les produits restent volontairement choisis avec retenue: farine Nuvola Super, tomates San Marzano, mozzarella fior di latte, parmigiano reggiano et quelques charcuteries italiennes selon les recettes.",
         ],
       },
       {
-        heading: "Camion pizza dans la region",
+        heading: "Des passages organises autour de Thionville",
         paragraphs: [
           "Le camion se deplace sur plusieurs points de passage autour de Thionville selon le planning de la semaine.",
-          "Les adresses et horaires evoluent selon la horaires d'ouvertures, avec un fonctionnement simple: commande puis retrait direct au camion.",
+          "Les adresses et horaires varient en fonction de la tournee publiee. Le principe reste simple: commande, creneau, puis retrait sur place.",
         ],
       },
       {
-        heading: "Commande simple, retrait rapide",
+        heading: "Un format pense pour le retrait sans perte de qualite",
         paragraphs: [
-          "Le service est 100% a emporter pour garder une organisation fluide sur les creneaux.",
-          "Vous pouvez commander en ligne ou sur place selon disponibilite, puis recuperer une pizza chaude prete a deguster.",
+          "Le service est entierement tourne vers l emporter pour garder un rythme fluide et une cuisson bien cadree.",
+          "Vous pouvez commander en ligne ou sur place selon disponibilite, puis recuperer votre pizza chaude au moment prevu.",
         ],
       },
     ],
@@ -77,30 +77,30 @@ export const LOCAL_PAGE_CONTENT = {
     pathname: "/pizza-napolitaine-metz",
     title: "Pizza napolitaine proche de Metz | Camion pizza artisanal",
     description:
-      "Pizza napolitaine artisanale proche de Metz: camion pizza, produits italiens, cuisson bois-gaz et retrait rapide.",
+      "Camion pizza autour de Metz: recettes d inspiration napolitaine, ingredients selectionnes et retrait rapide sur planning hebdomadaire.",
     h1: "Pizza napolitaine artisanale autour de Metz",
     intro:
-      "Autour de Metz, notre camion pizza propose des recettes napolitaines travaillees avec des produits italiens et une cuisson maitrisee au four bois-gaz.",
+      "Autour de Metz, le camion sert une pizza travaillee avec une vraie logique de produit: pate preparee en avance, four bois-gaz et recettes qui vont a l essentiel.",
     sections: [
       {
-        heading: "Une pizza inspiree de la tradition napolitaine",
+        heading: "Une pizza pensee pour rester nette du four a la degustation",
         paragraphs: [
-          "La pate est preparee pour offrir une base souple, une corniche aerienne et un bon equilibre en bouche.",
-          "Les ingredients sont choisis pour leur regularite: farine Nuvola Super, tomates San Marzano, mozzarella fior di latte, parmigiano reggiano et charcuteries italiennes.",
+          "La pate est preparee pour offrir une base souple, une bordure aerienne et un ensemble lisible en bouche.",
+          "Les ingredients sont choisis pour leur regularite et leur tenue au service: farine Nuvola Super, tomates San Marzano, mozzarella fior di latte, parmigiano reggiano et charcuteries italiennes.",
         ],
       },
       {
-        heading: "Camion pizza autour de Metz",
+        heading: "Une tournee qui couvre Metz et ses alentours",
         paragraphs: [
           "Notre camion pizza se deplace dans differents secteurs proches de Metz et du nord mosellan.",
-          "Chaque semaine, la horaires d'ouvertures precise les points de retrait et les horaires disponibles.",
+          "Chaque semaine, le planning precise les points de retrait et les horaires disponibles.",
         ],
       },
       {
-        heading: "Retrait rapide et pizzas fraiches",
+        heading: "Retrait rapide, cuisson minute",
         paragraphs: [
-          "Les pizzas sont preparees a la commande pour conserver qualite et temperature au moment du service.",
-          "Le retrait se fait directement au camion avec peu d'attente, sur creneau clair.",
+          "Les pizzas sont preparees a la commande pour garder la bonne temperature et une sortie de four propre.",
+          "Le retrait se fait directement au camion, sur creneau clair, avec peu d attente lorsque la commande est anticipee.",
         ],
       },
     ],
@@ -109,30 +109,30 @@ export const LOCAL_PAGE_CONTENT = {
     pathname: "/food-truck-pizza-moselle",
     title: "Food truck pizza en Moselle | Pizza napolitaine artisanale",
     description:
-      "Food truck pizza en Moselle: pizzas napolitaines artisanales, produits italiens, cuisson bois-gaz et retrait rapide.",
+      "Food truck pizza en Moselle: carte courte, cuisson vive et passages hebdomadaires autour de Metz, Thionville et des communes voisines.",
     h1: "Food truck pizza en Moselle",
     intro:
-      "Notre camion pizza napolitaine couvre plusieurs communes de Moselle avec une offre artisanale, des ingredients italiens et un service de retrait efficace.",
+      "Le camion circule dans plusieurs communes de Moselle avec une offre construite pour l emporter: une pate tenue, un four bois-gaz et un retrait simple a suivre.",
     sections: [
       {
-        heading: "Une horaires d'ouvertures locale dans le nord mosellan",
+        heading: "Une tournee locale plutot qu un point fixe",
         paragraphs: [
-          "La horaires d'ouvertures passe par differents points autour de Thionville, Metz et des villes voisines selon la semaine.",
-          "Les emplacements et horaires sont mis a jour regulierement pour faciliter la commande a emporter.",
+          "La tournee passe par differents points autour de Thionville, Metz et d autres communes voisines selon la semaine.",
+          "Les emplacements et horaires sont mis a jour regulierement pour rendre la commande et le retrait faciles a suivre.",
         ],
       },
       {
-        heading: "Une carte claire, orientee qualite",
+        heading: "Une carte courte, plus facile a tenir",
         paragraphs: [
-          "Chaque pizza est preparee a la commande avec une base d'ingredients italiens selectionnes.",
-          "Le format camion permet de garder un service fluide, une cuisson reguliere et un retrait rapide.",
+          "Chaque pizza est preparee a la commande avec une base de produits italiens selectionnes et une construction volontairement lisible.",
+          "Le format camion aide a garder un service plus fluide, une cuisson plus reguliere et un retrait plus rapide.",
         ],
       },
       {
-        heading: "Un service simple pour commander",
+        heading: "Un fonctionnement simple pour commander",
         paragraphs: [
           "Commande en ligne ou sur place selon disponibilite, puis retrait dans le creneau choisi.",
-          "L'objectif reste le meme: une pizza chaude, bien executee, et peu d'attente.",
+          "L objectif reste le meme: une pizza chaude, bien cuite et remise sans attente inutile.",
         ],
       },
     ],
@@ -160,39 +160,35 @@ const DYNAMIC_CITY_VARIANTS = [
     title: "Pizza napolitaine a {city} | Camion pizza artisanal",
     h1: "Pizza napolitaine artisanale a {city}",
     description:
-      "Pizza napolitaine artisanale a {city}, cuisson au four a bois et gaz, produits italiens selectionnes et retrait rapide.",
+      "Camion pizza a {city}: recettes d inspiration napolitaine, cuisson bois-gaz et retrait organise sur les passages de la semaine.",
     intro: [
-      "Vous cherchez une pizza napolitaine a {city} ?",
-      "Notre camion pizza propose des pizzas artisanales preparees selon la tradition napolitaine avec une pate maison et des produits italiens selectionnes.",
-      "Chaque pizza est cuite dans un four a bois et gaz afin d'obtenir une cuisson rapide et une pate legere et moelleuse.",
-      "Le camion pizza passe regulierement a {city} selon la horaires d'ouvertures et les emplacements disponibles.",
+      "Vous cherchez une pizza a {city} sans tomber sur une offre standardisee ?",
+      "Le camion propose une pizza d inspiration napolitaine avec une pate preparee en amont, une cuisson vive et des recettes volontairement lisibles.",
+      "Le four bois-gaz permet de garder une sortie de cuisson rapide et reguliere, adaptee au retrait.",
+      "Les passages a {city} dependent du planning en ligne et des points de retrait ouverts sur la semaine.",
     ],
     sections: [
       {
-        heading: "Une pizza napolitaine preparee avec des produits italiens",
+        heading: "Une pizza construite autour de peu d ingredients, mais bien tenus",
         paragraphs: [
-          "Nos pizzas sont preparees avec des ingredients selectionnes pour leur qualite :",
-          "farine Nuvola Super",
-          "tomates San Marzano",
-          "mozzarella fior di latte",
-          "parmigiano reggiano",
-          "charcuteries italiennes.",
-          "La pate est travaillee selon la methode napolitaine traditionnelle afin d'obtenir une pizza legere et digeste.",
+          "La carte repose sur quelques produits reperes pour leur regularite: farine Nuvola Super, tomates San Marzano, mozzarella fior di latte, parmigiano reggiano et, selon les recettes, des charcuteries italiennes.",
+          "La pate est travaillee pour rester souple, aerienne et facile a lire en bouche.",
+          "Le resultat cherche davantage l equilibre que la surcharge.",
         ],
       },
       {
-        heading: "Camion pizza a {city}",
+        heading: "Le camion pizza passe a {city} selon la tournee active",
         paragraphs: [
-          "Le camion pizza propose regulierement des pizzas napolitaines artisanales a {city}.",
-          "Les emplacements changent selon la horaires d'ouvertures hebdomadaire et les points de retrait disponibles.",
-          "Chaque pizza est preparee sur place afin de garantir une qualite constante.",
+          "Le camion dessert regulierement {city}, mais pas en point fixe permanent.",
+          "Les emplacements changent selon la tournee hebdomadaire et les points de retrait ouverts.",
+          "Chaque pizza est preparee sur place pour garder une qualite stable jusqu a la remise.",
         ],
       },
       {
-        heading: "Pizza a emporter a {city}",
+        heading: "Un format pense pour l emporter a {city}",
         paragraphs: [
-          "Les pizzas sont disponibles uniquement a emporter directement au camion pizza.",
-          "Chaque pizza est preparee a la commande et cuite dans le four afin de garantir une pizza chaude et savoureuse.",
+          "Les pizzas sont disponibles uniquement a emporter directement au camion.",
+          "Chaque commande est lancee pour le retrait afin de remettre une pizza chaude, cuite minute et prete a repartir.",
         ],
       },
     ],
@@ -201,36 +197,33 @@ const DYNAMIC_CITY_VARIANTS = [
     title: "Pizza artisanale a {city} | Camion pizza napolitain",
     h1: "Pizza italienne artisanale a {city}",
     description:
-      "Pizza artisanale a {city}, pate maison, produits italiens et cuisson au four a bois et gaz.",
+      "Pizza artisanale a {city}: pate preparee avec soin, produits selectionnes et cuisson bois-gaz pour le retrait.",
     intro: [
-      "Le camion pizza propose des pizzas napolitaines artisanales a {city}.",
-      "Chaque pizza est preparee avec une pate maison et des produits italiens selectionnes pour leur qualite.",
-      "La cuisson dans un four a bois et gaz permet d'obtenir une pizza a la fois moelleuse et croustillante.",
+      "Le camion pizza dessert {city} avec une carte artisanale inspiree des codes napolitains, sans chercher l effet de catalogue.",
+      "Chaque pizza est preparee avec une pate maison et des produits choisis pour leur tenue au four comme pour leur gout.",
+      "La cuisson bois-gaz donne une pizza souple, vive et plus nette a la degustation.",
     ],
     sections: [
       {
-        heading: "Une pizza inspiree de la tradition napolitaine",
+        heading: "Une base de travail claire et sans surcharge",
         paragraphs: [
-          "La pate est travaillee selon la methode napolitaine classique.",
-          "Les ingredients utilises sont simples mais reconnus pour leur qualite :",
-          "tomates San Marzano",
-          "mozzarella fior di latte",
-          "parmigiano reggiano",
-          "huile d'olive.",
+          "La pate suit un protocole de fermentation qui privilegie la souplesse et une bordure bien ouverte.",
+          "Les ingredients restent simples, mais choisis avec rigueur: tomates San Marzano, mozzarella fior di latte, parmigiano reggiano et huile d olive selon les recettes.",
+          "Cette sobriete donne une pizza plus lisible qu une recette surchargee.",
         ],
       },
       {
-        heading: "Le camion pizza a {city}",
+        heading: "Le camion pizza se deplace a {city} selon le planning",
         paragraphs: [
-          "Le camion pizza passe a {city} selon la horaires d'ouvertures hebdomadaire.",
-          "Les points de retrait peuvent varier mais l'objectif reste le meme : proposer une pizza artisanale preparee sur place.",
+          "Le camion pizza passe a {city} selon le planning hebdomadaire publie.",
+          "Les points de retrait peuvent varier, mais l objectif reste identique: servir une pizza preparee sur place, dans un format simple a recuperer.",
         ],
       },
       {
-        heading: "Une pizza a emporter preparee a la commande",
+        heading: "Une pizza a emporter lancee au bon moment",
         paragraphs: [
-          "Chaque pizza est preparee au moment de la commande afin de garantir une qualite constante.",
-          "Le service est uniquement a emporter directement au camion pizza.",
+          "Chaque pizza est preparee au moment de la commande pour rester au plus juste sur la cuisson et la remise.",
+          "Le service est uniquement a emporter directement au camion.",
         ],
       },
     ],
@@ -239,36 +232,33 @@ const DYNAMIC_CITY_VARIANTS = [
     title: "Pizza feu de bois a {city} | Camion pizza",
     h1: "Pizza feu de bois artisanale a {city}",
     description:
-      "Pizza feu de bois a {city} avec ingredients italiens et retrait au camion pizza.",
+      "Pizza feu de bois a {city}: cuisson vive, produits bien choisis et retrait direct au camion.",
     intro: [
-      "Notre camion pizza propose des pizzas napolitaines artisanales a {city}.",
-      "La cuisson au four a bois et gaz permet d'obtenir une pizza savoureuse avec une pate legere et un bord croustillant.",
-      "Chaque pizza est preparee sur place avec des ingredients italiens.",
+      "A {city}, le camion propose des pizzas cuites dans un four bois-gaz pour garder une cuisson rapide et une pate plus aerienne.",
+      "Le travail ne se limite pas a la flamme: il repose aussi sur une pate bien tenue et des recettes qui restent lisibles.",
+      "Chaque pizza est preparee sur place au moment du service.",
     ],
     sections: [
       {
-        heading: "Des ingredients italiens selectionnes",
+        heading: "Des ingredients choisis pour tenir la cuisson",
         paragraphs: [
-          "La qualite d'une pizza repose sur les produits utilises.",
-          "Nous utilisons notamment :",
-          "farine Nuvola Super",
-          "tomates San Marzano",
-          "mozzarella fior di latte",
-          "parmigiano reggiano.",
+          "La qualite d une pizza vient autant de la cuisson que de la tenue des produits au four.",
+          "La base de travail inclut notamment farine Nuvola Super, tomates San Marzano, mozzarella fior di latte et parmigiano reggiano.",
+          "L objectif est de garder un gout clair, pas de multiplier les ingredients sans necessite.",
         ],
       },
       {
-        heading: "Camion pizza en horaires d'ouvertures a {city}",
+        heading: "Le camion pizza suit une tournee a {city}",
         paragraphs: [
-          "Le camion pizza se deplace a {city} selon la horaires d'ouvertures et les emplacements definis dans le planning.",
-          "Les pizzas sont preparees directement au camion afin de garantir leur fraicheur.",
+          "Le camion pizza se deplace a {city} selon les emplacements definis dans le planning.",
+          "Les pizzas sont preparees directement au camion afin de garder une sortie de four propre et fraiche.",
         ],
       },
       {
         heading: "Retrait pizza a {city}",
         paragraphs: [
           "Les pizzas sont disponibles uniquement a emporter.",
-          "Le retrait se fait directement au camion lors du passage a {city}.",
+          "Le retrait se fait directement au camion lors du passage a {city}, sur creneau quand la commande est anticipee.",
         ],
       },
     ],
@@ -277,34 +267,32 @@ const DYNAMIC_CITY_VARIANTS = [
     title: "Camion pizza a {city} | Pizza napolitaine artisanale",
     h1: "Camion pizza napolitaine a {city}",
     description:
-      "Camion pizza a {city}: pizzas napolitaines artisanales, ingredients italiens et cuisson bois-gaz.",
+      "Camion pizza a {city}: pizza d inspiration napolitaine, cuisson bois-gaz et organisation simple pour le retrait.",
     intro: [
-      "Le camion pizza propose des pizzas napolitaines artisanales a {city} selon la horaires d'ouvertures hebdomadaire.",
-      "Chaque pizza est preparee avec une pate maison et des ingredients italiens selectionnes.",
-      "La cuisson se fait dans un four a bois et gaz.",
+      "Le camion pizza dessert {city} selon la tournee hebdomadaire.",
+      "Chaque pizza est preparee avec une pate maison et des ingredients choisis pour rester coherents de la cuisson a la degustation.",
+      "La cuisson se fait dans un four bois-gaz pour garder un service rapide et une texture plus juste.",
     ],
     sections: [
       {
-        heading: "Une pizza napolitaine authentique",
+        heading: "Une pizza plus tenue qu une simple offre de passage",
         paragraphs: [
-          "La pizza napolitaine est connue pour sa pate legere et sa cuisson rapide.",
-          "Elle est preparee avec des ingredients simples et de qualite :",
-          "tomates San Marzano",
-          "mozzarella fior di latte",
-          "parmigiano reggiano.",
+          "La pizza napolitaine est surtout affaire de methode: une pate souple, une cuisson tres vive et une garniture tenue.",
+          "Les recettes s appuient sur quelques produits clefs comme les tomates San Marzano, la mozzarella fior di latte et le parmigiano reggiano.",
+          "Le but n est pas de surcharger la pizza, mais de sortir un produit net et regulier.",
         ],
       },
       {
-        heading: "Horaires d'ouvertures du camion pizza a {city}",
+        heading: "Ou retrouver le camion pizza a {city}",
         paragraphs: [
-          "Le camion pizza passe a {city} selon les emplacements prevus dans la horaires d'ouvertures.",
-          "Les horaires et emplacements peuvent etre consultes sur la page horaires d'ouvertures.",
+          "Le camion pizza passe a {city} selon les emplacements prevus dans la tournee.",
+          "Les horaires et points de retrait sont consultables sur la page planning.",
         ],
       },
       {
         heading: "Pizza artisanale a emporter",
         paragraphs: [
-          "Chaque pizza est preparee a la commande afin de garantir une cuisson parfaite.",
+          "Chaque pizza est preparee a la commande afin de garder une cuisson maitrisee.",
           "Le service est uniquement a emporter.",
         ],
       },
@@ -314,34 +302,31 @@ const DYNAMIC_CITY_VARIANTS = [
     title: "Pizza napolitaine traditionnelle a {city} | Camion pizza",
     h1: "Pizza napolitaine traditionnelle a {city}",
     description:
-      "Pizza napolitaine traditionnelle a {city}, preparation artisanale et cuisson au four a bois et gaz.",
+      "Pizza napolitaine traditionnelle a {city}: travail de pate, cuisson vive et retrait au camion.",
     intro: [
       "Vous cherchez une pizza napolitaine traditionnelle a {city} ?",
-      "Le camion pizza propose des pizzas preparees avec une pate artisanale et des ingredients italiens.",
-      "La cuisson dans un four a bois et gaz permet d'obtenir une pizza savoureuse.",
+      "Le camion pizza propose des pizzas preparees avec une pate artisanale, une cuisson bois-gaz et une lecture plus serieuse du produit.",
+      "Le resultat recherche est une pizza souple, bien cuite et claire en bouche.",
     ],
     sections: [
       {
-        heading: "Une pizza artisanale preparee avec soin",
+        heading: "Une pizza artisanale preparee avec une base simple",
         paragraphs: [
-          "Chaque pizza est preparee avec des ingredients italiens reconnus pour leur qualite :",
-          "farine Nuvola Super",
-          "tomates San Marzano",
-          "mozzarella fior di latte",
-          "parmigiano reggiano.",
+          "Chaque pizza s appuie sur quelques ingredients reconnus pour leur regularite: farine Nuvola Super, tomates San Marzano, mozzarella fior di latte et parmigiano reggiano.",
+          "Cette base courte laisse plus de place a la cuisson et a l equilibre general.",
         ],
       },
       {
         heading: "Le camion pizza a {city}",
         paragraphs: [
-          "Le camion pizza se deplace a {city} selon les emplacements de la horaires d'ouvertures.",
-          "Les pizzas sont preparees sur place afin de garantir leur fraicheur.",
+          "Le camion pizza se deplace a {city} selon les emplacements annonces dans la tournee.",
+          "Les pizzas sont preparees sur place afin de garantir leur fraicheur et une sortie de four propre.",
         ],
       },
       {
         heading: "Pizza a emporter",
         paragraphs: [
-          "Les pizzas sont disponibles uniquement a emporter directement au camion.",
+          "Les pizzas sont disponibles uniquement a emporter directement au camion, dans un format concu pour limiter l attente.",
         ],
       },
     ],
@@ -351,28 +336,28 @@ const DYNAMIC_CITY_VARIANTS = [
 const DYNAMIC_NEARBY_VARIANTS = [
   {
     heading: "Villes proches et emplacements autour de {city}",
-    lead: "Voici quelques points de retrait actifs a {city} et aux alentours.",
-    footer: "Consultez la page horaires d'ouvertures pour verifier les prochains passages.",
+    lead: "Voici quelques points de retrait actifs a {city} et dans les communes voisines.",
+    footer: "Consultez la page planning pour verifier les prochains passages du camion.",
   },
   {
     heading: "Prochains passages proches de {city}",
-    lead: "Les emplacements suivants proviennent du planning admin actuellement publie.",
-    footer: "Les jours et horaires peuvent evoluer selon la horaires d'ouvertures.",
+    lead: "Les emplacements suivants proviennent du planning actuellement publie.",
+    footer: "Les jours et horaires peuvent evoluer selon la tournee de la semaine.",
   },
   {
     heading: "Points de retrait disponibles a {city}",
-    lead: "Retrouvez ci-dessous des exemples d'emplacements ou le camion peut passer.",
-    footer: "Pour la version complete, consultez la page horaires d'ouvertures du camion pizza.",
+    lead: "Retrouvez ci-dessous quelques emplacements ou le camion peut passer.",
+    footer: "Pour la version complete et mise a jour, consultez la page planning du camion pizza.",
   },
   {
     heading: "Emplacements actuellement visibles pour {city}",
     lead: "Ces adresses sont mises a jour automatiquement depuis la configuration admin.",
-    footer: "Pensez a verifier la horaires d'ouvertures avant de vous deplacer.",
+    footer: "Pensez a verifier le planning avant de vous deplacer.",
   },
   {
     heading: "Retrait pizza autour de {city}",
     lead: "Selection de points de retrait disponibles selon les derniers creneaux ouverts.",
-    footer: "Tous les details de passage restent centralises sur la page horaires d'ouvertures.",
+    footer: "Tous les details de passage restent centralises sur la page planning.",
   },
 ];
 
@@ -381,7 +366,7 @@ const DYNAMIC_FAQ_VARIANTS = [
     {
       question: "Ou trouver le camion pizza a {city} ?",
       answer:
-        "Le camion pizza propose regulierement des emplacements a {city} selon la horaires d'ouvertures hebdomadaire. Les prochains passages et horaires sont indiques sur la page horaires d'ouvertures du site.",
+        "Le camion pizza passe a {city} selon le planning hebdomadaire. Les prochains passages et horaires sont indiques sur la page planning du site.",
     },
     {
       question: "Les pizzas sont-elles disponibles sur place ?",
@@ -397,7 +382,7 @@ const DYNAMIC_FAQ_VARIANTS = [
     {
       question: "Le camion pizza passe-t-il a {city} chaque semaine ?",
       answer:
-        "Le passage du camion pizza a {city} depend de la horaires d'ouvertures et des emplacements disponibles. Les horaires et jours de passage sont indiques dans la page horaires d'ouvertures.",
+        "Le passage du camion pizza a {city} depend de la tournee et des emplacements disponibles. Les horaires et jours de passage sont indiques dans la page planning.",
     },
     {
       question: "Peut-on commander une pizza a l'avance ?",
@@ -414,7 +399,7 @@ const DYNAMIC_FAQ_VARIANTS = [
     {
       question: "Ou acheter une pizza napolitaine a {city} ?",
       answer:
-        "Le camion pizza propose des pizzas napolitaines artisanales a {city} selon les emplacements de la horaires d'ouvertures.",
+        "Le camion pizza propose des pizzas napolitaines artisanales a {city} selon les emplacements prevus dans le planning.",
     },
     {
       question: "Comment fonctionne le retrait des pizzas ?",
@@ -431,7 +416,7 @@ const DYNAMIC_FAQ_VARIANTS = [
     {
       question: "Quand trouver le camion pizza a {city} ?",
       answer:
-        "Le camion pizza passe regulierement a {city} selon la horaires d'ouvertures hebdomadaire. Consultez la page horaires d'ouvertures pour connaitre les prochains passages.",
+        "Le camion pizza passe regulierement a {city} selon le planning hebdomadaire. Consultez la page planning pour connaitre les prochains passages.",
     },
     {
       question: "Les pizzas sont-elles cuites au feu de bois ?",
@@ -447,7 +432,7 @@ const DYNAMIC_FAQ_VARIANTS = [
     {
       question: "Le camion pizza propose-t-il des pizzas napolitaines a {city} ?",
       answer:
-        "Oui, le camion pizza propose regulierement des pizzas napolitaines artisanales a {city} selon les emplacements disponibles.",
+        "Oui, le camion pizza propose regulierement des pizzas napolitaines artisanales a {city} selon les emplacements disponibles sur la tournee.",
     },
     {
       question: "Combien de temps faut-il attendre pour une pizza ?",

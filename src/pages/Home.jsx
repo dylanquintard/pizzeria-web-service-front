@@ -71,6 +71,7 @@ const DAY_LABELS = {
 };
 const DEFAULT_HOME_BACKGROUND = "/pizza-background-1920.webp";
 const HERO_AUTOPLAY_DELAY_MS = 5000;
+const HERO_IMAGE_LIMIT = 5;
 
 function formatLocationAddress(location, tr) {
   if (!location) return tr("Adresse non renseignee", "Address not available");
@@ -239,7 +240,7 @@ const truckTourSchedule = useMemo(
       pagePath: "/",
       pageName: "Pizza napolitaine au feu de bois en Moselle",
       description:
-        "Camion pizza artisanal autour de Thionville et Metz, avec produits italiens authentiques et retrait rapide.",
+        "Camion pizza en Moselle avec pate travaillee, cuisson bois-gaz et retrait organise autour de Thionville et Metz.",
     });
 
     const payload = {
@@ -307,7 +308,7 @@ const truckTourSchedule = useMemo(
       if (leftOrder !== rightOrder) return leftOrder - rightOrder;
 
       return String(left?.id ?? "").localeCompare(String(right?.id ?? ""));
-    });
+    }).slice(0, HERO_IMAGE_LIMIT);
   }, [galleryImages]);
 
   const heroOverlay = theme === "light"
@@ -345,7 +346,7 @@ const truckTourSchedule = useMemo(
     <div className="space-y-20 pb-24">
       <SeoHead
         title="Pizza napolitaine au feu de bois en Moselle | Pizza Truck"
-        description="Camion pizza artisanal autour de Thionville et Metz, avec produits italiens authentiques et retrait rapide."
+        description="Camion pizza en Moselle avec pate travaillee, cuisson bois-gaz et retrait organise autour de Thionville et Metz."
         pathname="/"
         jsonLd={homeJsonLd}
       />
@@ -390,8 +391,8 @@ const truckTourSchedule = useMemo(
               }`}
             >
               {tr(
-                "Camion pizza artisanal autour de Thionville et Metz, avec produits italiens authentiques et retrait rapide.",
-                "Craft pizza truck around Thionville and Metz, with authentic Italian products and quick pickup."
+                "Une pizza travaillee pour l emporter: pate souple, cuisson vive et recettes nettes a recuperer autour de Thionville et Metz.",
+                "Pizza built for pickup: supple dough, lively baking and cleaner recipes around Thionville and Metz."
               )}
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -564,8 +565,8 @@ const truckTourSchedule = useMemo(
           <h2 className="font-display text-4xl uppercase tracking-wide text-white">{tr("Emplacements du camion pizza", "Pizza truck locations")}</h2>
           <p className="mt-2 text-sm text-stone-400">
             {tr(
-              "Retrouvez notre camion pizza napolitaine dans plusieurs villes autour de Thionville et Metz selon les horaires d'ouvertures hebdomadaires.",
-              "Find our Neapolitan pizza truck in several cities around Thionville and Metz according to weekly opening hours."
+              "Le planning hebdomadaire indique les points de passage, les horaires et les creneaux de retrait actuellement ouverts.",
+              "The weekly schedule shows the current stops, hours and pickup slots."
             )}
           </p>
         </div>
@@ -608,8 +609,8 @@ const truckTourSchedule = useMemo(
             <p className="text-xl font-bold text-white">{tr("Commande rapide", "Fast ordering")}</p>
             <p className="mt-2 text-sm text-stone-300">
               {tr(
-                "Passez commande en ligne, choisissez votre creneau et recuperez votre pizza chaude directement au camion.",
-                "Order online, choose your timeslot and pick up your hot pizza directly at the truck."
+                "Commandez, choisissez votre creneau, puis recuperez votre pizza au camion sans attente inutile.",
+                "Order, pick your slot, then collect your pizza at the truck without unnecessary waiting."
               )}
             </p>
           </div>
@@ -617,8 +618,8 @@ const truckTourSchedule = useMemo(
             <p className="text-xl font-bold text-white">{tr("Qualite constante", "Consistent quality")}</p>
             <p className="mt-2 text-sm text-stone-300">
               {tr(
-                "Pates travaillees, produits selectionnes et cuisson minute. Service fluide, tres peu d'attente.",
-                "Prepared doughs, selected products and minute baking. Smooth service, very little waiting."
+                "Une pate preparee en amont, des produits bien calibres et une cuisson minute pour garder un resultat plus stable.",
+                "Prepared dough, well-calibrated ingredients and minute baking for a more reliable result."
               )}
             </p>
           </div>
@@ -630,25 +631,25 @@ const truckTourSchedule = useMemo(
           <article className="glass-panel p-6 sm:p-8 xl:col-span-7">
             <p className="text-xs uppercase tracking-[0.2em] text-saffron">Pizza truck Moselle</p>
             <h2 className="mt-2 font-display text-3xl uppercase tracking-wide text-white">
-              Camion pizza napolitaine autour de Thionville et Metz
+              Une pizza pensee pour etre bonne au moment du retrait
             </h2>
             <p className="mt-4 text-sm leading-7 text-stone-300 sm:text-base">
-              Notre camion pizza propose des pizzas napolitaines artisanales dans le nord de la Moselle.
+              Le camion circule dans le nord de la Moselle avec une carte courte et une cuisson vive, pour servir une pizza propre plutot qu une offre standardisee.
             </p>
             <p className="mt-2 text-sm leading-7 text-stone-300 sm:text-base">
-              Les horaires d'ouvertures du camion couvrent regulierement plusieurs villes autour de Thionville, Metz et des communes voisines.
+              Le planning change selon la semaine, mais la ligne reste la meme: une organisation simple, un retrait rapide et une execution reguliere.
             </p>
             <p className="mt-2 text-sm leading-7 text-stone-300 sm:text-base">
-              Les pizzas sont preparees avec une pate napolitaine traditionnelle et des produits italiens selectionnes.
+              Les pizzas sont preparees avec une pate travaillee, une garniture tenue et un four bois-gaz qui donne du rythme au service.
             </p>
           </article>
 
           <article className="glass-panel p-6 sm:p-8 xl:col-span-5">
             <h2 className="font-display text-3xl uppercase tracking-wide text-white">
-              Pizza napolitaine artisanale avec produits italiens
+              Des produits choisis pour leur tenue, pas pour remplir la carte
             </h2>
             <p className="mt-3 text-sm leading-7 text-stone-300 sm:text-base">
-              Chaque pizza est preparee avec des ingredients italiens reconnus pour leur qualite:
+              La base produit reste volontairement courte pour garder des recettes plus nettes:
             </p>
             <ul className="mt-4 grid gap-2 text-sm text-stone-200 sm:grid-cols-2">
               <li className="rounded-lg border border-white/20 bg-stone-200/20 px-3 py-2">farine Nuvola Super</li>
@@ -659,7 +660,7 @@ const truckTourSchedule = useMemo(
               <li className="rounded-lg border border-white/20 bg-stone-200/20 px-3 py-2">prosciutto italien</li>
             </ul>
             <p className="mt-4 text-xs uppercase tracking-[0.22em] text-saffron">
-              pizza napolitaine artisanale | pizza produits italiens | pizza italienne traditionnelle
+              pate travaillee | ingredients bien choisis | cuisson minute
             </p>
           </article>
         </div>
@@ -670,10 +671,10 @@ const truckTourSchedule = useMemo(
               Cuisson au four a bois et gaz
             </h2>
             <p className="mt-3 text-sm leading-7 text-stone-300 sm:text-base">
-              La cuisson se fait dans un four a bois et gaz permettant d'obtenir une pizza legere, alveolee et croustillante.
+              Le four sert a garder une cuisson courte et lisible: un bord qui se developpe, une base qui tient et une pizza qui ne seche pas.
             </p>
             <p className="mt-2 text-sm leading-7 text-stone-300 sm:text-base">
-              Chaque pizza est preparee a la commande afin de garantir une qualite constante.
+              Chaque pizza est lancee a la commande pour sortir au bon moment, pas pour attendre sur le cote.
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
               <span className="rounded-full border border-saffron/40 bg-saffron/10 px-3 py-1 text-[11px] uppercase tracking-wide text-saffron">
@@ -696,13 +697,13 @@ const truckTourSchedule = useMemo(
               Ou trouver notre camion pizza
             </h2>
             <p className="mt-3 text-sm leading-7 text-stone-300 sm:text-base">
-              Retrouvez notre camion pizza dans plusieurs villes autour de Thionville et Metz.
+              Le camion passe sur plusieurs points autour de Thionville, Metz et des communes voisines.
             </p>
             <p className="mt-2 text-sm leading-7 text-stone-300 sm:text-base">
-              Les emplacements changent selon les horaires d'ouvertures hebdomadaires.
+              Les emplacements changent selon la tournee hebdomadaire.
             </p>
             <p className="mt-2 text-sm leading-7 text-stone-300 sm:text-base">
-              Consultez la page horaires d'ouvertures du camion pour connaitre les horaires et points de retrait.
+              Consultez le planning pour connaitre les horaires et les points de retrait ouverts.
             </p>
             <Link
               to="/planing"

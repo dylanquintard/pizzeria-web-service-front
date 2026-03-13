@@ -3,66 +3,66 @@ export const BLOG_ARTICLES = [
     slug: "pourquoi-la-pizza-napolitaine-est-differente",
     title: "Pourquoi la pizza napolitaine est differente",
     description:
-      "Comprendre ce qui distingue une pizza napolitaine artisanale: pate, cuisson, ingredients et texture.",
+      "Ce qui distingue vraiment une pizza napolitaine: le travail de pate, la cuisson, la lecture du four et l equilibre final en bouche.",
     excerpt:
-      "La pizza napolitaine repose sur un equilibre entre fermentation, cuisson tres chaude et ingredients italiens simples.",
+      "Une pizza napolitaine reussie ne tient pas a un discours marketing. Elle se reconnait a la pate, au rythme de cuisson et a la retenue dans les garnitures.",
     intro: [
-      "La pizza napolitaine est aujourd hui consideree comme l une des pizzas emble matiques de la cuisine italienne. Originaire de Naples, elle se distingue par une pate legere, une cuisson rapide et une garniture maitrisee.",
-      "A la difference de certaines pizzas plus epaisses ou tres chargees, la pizza napolitaine met au centre le travail de la pate et la qualite des produits. Elle cherche la justesse.",
-      "Quand on parle de pizza napolitaine artisanale, on parle de methode et de regularite. Derriere la simplicite apparente, il y a une technique de pizzaiolo.",
+      "Le terme pizza napolitaine est souvent utilise de facon large, parfois pour designer des pizzas qui n ont de napolitain que le nom. En pratique, la difference se joue dans l execution.",
+      "Ce style repose sur une pate vivante, une cuisson tres courte et une construction volontairement sobre. L objectif n est pas d accumuler les ingredients, mais d obtenir un ensemble net et leger.",
+      "Quand ce travail est bien mene, la pizza garde du volume, du moelleux et une vraie lisibilite en bouche. C est cette coherence qui fait la difference des la premiere part.",
     ],
     sections: [
       {
-        heading: "Une pate maison qui porte toute la pizza",
+        heading: "La pate n est pas un support, c est le coeur du produit",
         blocks: [
           {
-            subheading: "Une recette courte, mais exigeante",
+            subheading: "Une recette simple qui ne pardonne rien",
             paragraphs: [
-              "La base d une pizza napolitaine tient en peu d ingredients: farine, eau, sel, levure. C est justement cette recette minimaliste qui impose un vrai savoir faire.",
-              "Avec peu d elements, on ne peut rien masquer. Chaque detail compte: le choix de la farine, l hydratation, la temperature de la pate, le temps de repos, la facon de petrir et de bouler.",
-              "Dans une approche artisanale, la pate n est pas un simple support de garniture. Elle est la structure principale de la pizza et elle doit rester agreable du premier au dernier morceau.",
+              "Farine, eau, sel, levure: la base parait elementaire. Justement, avec si peu d ingredients, chaque choix devient visible dans le resultat final.",
+              "Le type de farine, l hydratation, la temperature de travail et le temps de repos influencent directement la souplesse de la pate et sa reaction au four.",
+              "Une bonne pizza napolitaine commence donc bien avant le faconnage. Elle se construit dans l anticipation et dans la regularite du protocole.",
             ],
           },
           {
-            subheading: "Fermentation et digestibilite",
+            subheading: "Fermentation et confort de degustation",
             paragraphs: [
-              "Le temps de fermentation est un point decisif. Une fermentation adaptee permet de developper des aromes plus nets, d obtenir une mie plus aerienne et une texture plus souple.",
-              "Une pate bien fermentee offre aussi une meilleure digestibilite. Pour le client, cela se traduit par une sensation plus legere apres le repas, sans perdre en gourmandise.",
-              "Cette etape demande de l anticipation et de la constance. Elle est au coeur de ce qui distingue une vraie pizza napolitaine feu de bois d une pizza produite trop vite.",
+              "Une fermentation bien geree developpe des aromes plus fins et une mie plus aerienne. Elle change aussi la sensation apres repas.",
+              "Quand la pate a eu le temps de maturer correctement, la pizza reste plus legere et plus lisible, meme avec une cuisson nerveuse.",
+              "Ce point est souvent ressenti par le client sans qu il ait besoin de connaitre la technique: la pizza parait plus fluide, moins compacte, plus facile a finir.",
             ],
           },
         ],
       },
       {
-        heading: "Une cuisson tres chaude et tres rapide",
+        heading: "Le four impose le rythme",
         blocks: [
           {
-            subheading: "Le role cle du four",
+            subheading: "Une cuisson courte, mais pas automatique",
             paragraphs: [
-              "La pizza napolitaine est cuite dans un four a tres haute temperature, souvent au dela de 400 degres. La cuisson se fait en general entre 60 et 90 secondes.",
-              "Ce choc thermique donne une signature tres particuliere: un centre moelleux, un bord bien developpe et une surface legerement marquee. La pizza garde du moelleux sans devenir lourde.",
-              "La cuisson rapide preserve aussi le gout des ingredients. La sauce tomate reste expressive, la mozzarella fond sans secher, et la pate garde sa personnalite.",
+              "La pizza napolitaine se cuit dans une fenetre tres breve. Cela demande un four tres chaud, mais surtout une lecture precise de la pizza pendant la cuisson.",
+              "Le bord doit prendre du volume sans durcir, la base doit rester tenue sans secher, et la garniture doit rester expressive. Cet equilibre se joue en quelques secondes.",
+              "Dire qu une pizza cuit vite ne suffit pas. Ce qui compte, c est la capacite a sortir chaque pizza au bon moment, pas simplement a aller vite.",
             ],
           },
           {
-            subheading: "Texture finale et regularite",
+            subheading: "Une texture qui se lit immediatement",
             paragraphs: [
-              "Sur une pizza napolitaine artisanale, la texture est un indicateur immediate de qualite. Le cornicione doit etre gonfle, la base doit rester souple, la coupe doit etre nette.",
-              "Obtenir ce resultat a chaque service demande de la repetition et de la discipline. Le pizzaiolo ajuste en permanence la position de la pizza, la puissance du four et le temps de cuisson.",
-              "La cuisson ne se resout pas a une duree unique. C est une lecture instantanee de la pizza en cours, pour sortir le produit au bon moment.",
+              "Une pizza napolitaine bien executee se reconnait a sa bordure developpee, a son centre souple et a sa coupe nette.",
+              "Si la pate casse, seche ou se tasse, le style est deja perdu. La texture sert donc de preuve concrete, bien plus que les mots du menu.",
+              "Cette regularite de texture est un vrai marqueur de metier, surtout en service soutenu.",
             ],
           },
         ],
       },
       {
-        heading: "Des ingredients italiens qui servent l equilibre",
+        heading: "Le choix des ingredients suit une logique de retenue",
         blocks: [
           {
-            subheading: "Des produits simples et lisibles",
+            subheading: "Moins de produits, plus de precision",
             paragraphs: [
-              "La pizza italienne traditionnelle repose sur peu d ingredients, mais des ingredients bien choisis. Cette logique de carte courte renforce la lisibilite de l offre et la constance en production.",
-              "On retrouve souvent des references connues pour la pizza napolitaine: tomates San Marzano, mozzarella fior di latte, parmigiano reggiano, huile d olive, basilic frais.",
-              "L objectif n est pas de tout mettre sur la pizza, mais de garder un bon rapport entre pate, sauce, fromage et eventuelle charcuterie italienne.",
+              "Sur une pizza napolitaine, la garniture n est pas la pour cacher la pate. Elle doit l accompagner.",
+              "Tomates, mozzarella, huile, basilic ou charcuterie ne prennent leur place que si l ensemble reste lisible. La surcharge casse vite l equilibre.",
+              "Cette retenue donne une pizza plus claire en gout, plus propre visuellement et plus reguliere en service.",
             ],
             list: [
               "tomates San Marzano",
@@ -73,203 +73,203 @@ export const BLOG_ARTICLES = [
             ],
           },
           {
-            subheading: "Le gout avant la surcharge",
+            subheading: "L equilibre vaut mieux que l accumulation",
             paragraphs: [
-              "Une pizza napolitaine ne cherche pas la surenchere. Elle cherche la precision. Trop de garniture coupe la respiration de la pate et desequilibre l ensemble.",
-              "A l inverse, une composition maitrisee permet de sentir chaque produit. C est cette lecture claire des saveurs qui rend la pizza artisanale memorable.",
-              "Ce parti pris est aussi un vrai marqueur de professionnalisme: quand la technique est solide, on laisse la matiere parler.",
+              "Une pizza memorable n est pas forcement la plus chargee. C est souvent celle ou chaque element reste a sa place.",
+              "Quand la pate, la sauce et le fromage parlent clairement, le produit gagne en identite sans forcer l effet.",
+              "Ce choix de sobriete est souvent ce qui separe une pizza artisanale serieuse d une proposition plus demonstrative que maitrisee.",
             ],
           },
         ],
       },
       {
-        heading: "Un savoir faire reconnu et transmis",
+        heading: "Un style historique, adapte a un service moderne",
         blocks: [
           {
-            subheading: "L heritage napolitain",
+            subheading: "Un heritage de geste",
             paragraphs: [
-              "Le metier de pizzaiolo napolitain a ete reconnu comme patrimoine culturel immateriel. Cette reconnaissance souligne la valeur d un geste, pas seulement d une recette.",
-              "Le faconnage a la main, la maitrise de la fermentation et la cuisson minute font partie d une culture culinaire precise, transmise par la pratique.",
-              "Aujourd hui, beaucoup de professionnels en France s inspirent de cette tradition pour proposer une pizza napolitaine artisanale fidele a cet esprit.",
+              "La pizza napolitaine renvoie a une culture de main, de four et de repetition. Le faconnage, la fermentation et la cuisson forment un meme langage.",
+              "Ce patrimoine ne se resume pas a une recette figee. Il tient a une facon de produire avec exigence, meme sur des produits simples.",
+              "C est pour cela que le style reste vivant: il repose sur une discipline quotidienne plus que sur un vernis traditionnel.",
             ],
           },
           {
-            subheading: "Adapter la tradition a un service moderne",
+            subheading: "Ce que cela implique dans un camion pizza",
             paragraphs: [
-              "Dans un contexte de camion pizza, la contrainte est differente d un restaurant assis. Il faut combiner exigence technique et cadence de service.",
-              "Le succes repose sur une organisation claire: preparation en amont, gestion des creneaux, flux de commande maitrise, retrait rapide.",
-              "Cette capacite a garder un niveau de qualite constant, meme en service mobile, est souvent ce qui fait la difference aux yeux des clients.",
+              "En service mobile, il faut concilier qualite, cadence et retrait rapide. L execution doit rester propre malgre un environnement plus contraint qu en salle.",
+              "Cela suppose une mise en place anticipee, une carte tenue et un flux de commande clair. Sans organisation, le style napolitain se degrade vite.",
+              "Quand la structure est solide, le format camion permet au contraire de servir une pizza tres fraiche, cuite minute, avec peu d attente.",
             ],
           },
         ],
       },
     ],
     conclusion: [
-      "Si la pizza napolitaine est differente, ce n est pas un effet de mode. C est le resultat d un equilibre entre une pate bien travaille e, une cuisson tres chaude et des ingredients italiens choisis avec soin.",
-      "Cet equilibre demande une vraie rigueur artisanale. Quand il est respecte, on obtient une pizza a la fois legere, gourmande et lisible en gout.",
-      "Pour le client, cela se traduit simplement par une experience claire: une pizza a emporter qui reste fidele a la tradition napolitaine et qui garde une qualite reguliere a chaque commande.",
+      "La pizza napolitaine n est pas differente parce qu elle est tendance. Elle l est parce qu elle impose un niveau d execution eleve sur des bases tres simples.",
+      "La qualite finale depend autant de la pate et du four que de la capacite a rester mesure dans la garniture. Tout se joue dans l equilibre.",
+      "Pour le client, le resultat est concret: une pizza plus souple, plus nette en bouche et plus reguliere d une commande a l autre.",
     ],
   },
   {
     slug: "la-cuisson-au-feu-de-bois",
     title: "La cuisson au feu de bois",
     description:
-      "Decouvrez pourquoi la cuisson au feu de bois apporte une texture legere et un gout typique a la pizza.",
+      "Pourquoi la cuisson bois-gaz change la texture, le rythme de service et la signature d une pizza bien executee.",
     excerpt:
-      "La cuisson au feu de bois et gaz permet une pizza rapide, legere et regul iere, avec une vraie signature de cuisson.",
+      "Le four ne sert pas seulement a cuire. Il determine la texture de la pate, la tenue de la garniture et le rythme global du service.",
     intro: [
-      "La cuisson est l etape qui transforme une pate crue en pizza aboutie. Pour une pizza napolitaine, elle est centrale: sans cuisson adaptee, meme une bonne pate perd son potentiel.",
-      "Le four a bois reste une reference historique du metier de pizzaiolo. Il apporte une chaleur tres intense et un comportement de cuisson difficile a reproduire avec un four classique.",
-      "Dans de nombreuses structures modernes, on retrouve une logique bois et gaz: garder la qualite de cuisson napolitaine, tout en assurant une stabilite de service.",
+      "On parle souvent du feu de bois comme d un argument d image. En realite, son interet est d abord technique. La chaleur du four decide de la forme que prendra la pizza.",
+      "Sur une cuisson napolitaine, quelques secondes changent tout: le bord se developpe, le centre reste souple, la tomate garde de la fraicheur et le fromage fond sans secher.",
+      "Dans un camion pizza, cette maitrise est encore plus visible. Le four influence a la fois le gout du produit et la fluidite du service.",
     ],
     sections: [
       {
-        heading: "Pourquoi la haute temperature change tout",
+        heading: "La haute temperature transforme la pizza en quelques secondes",
         blocks: [
           {
-            subheading: "Une cuisson rapide qui respecte la pate",
+            subheading: "Une cuisson vive qui protege la pate",
             paragraphs: [
-              "Une pizza napolitaine feu de bois est cuite en un temps tres court. Cette vitesse protege la structure de la pate: elle reste souple au centre et developpe un bord plus aerien.",
-              "La chaleur elevee fixe rapidement la forme de la pizza. On obtient un cornicione bien leve, une base fine, et une texture globale plus legere a la degustation.",
-              "Sur le plan gustatif, la cuisson courte limite l ass e chement des ingredients et conserve une bonne fraicheur aromatique.",
+              "Une forte chaleur permet de fixer rapidement la structure de la pizza. La bordure monte, la base prend juste assez de tenue et le centre reste souple.",
+              "Avec un four trop lent, la pate seche avant de s ouvrir correctement. On perd alors la legerete recherchee sur une pizza napolitaine.",
+              "La vitesse de cuisson n est donc pas un effet spectaculaire. C est une condition pour garder une texture coherente.",
             ],
           },
           {
-            subheading: "Un resultat difficile a imiter",
+            subheading: "Un rendu difficile a reproduire avec une chaleur plus basse",
             paragraphs: [
-              "Dans un four moins chaud, la cuisson s allonge. La pate peut secher, la sauce se concentrer excessivement, le fromage perdre en souplesse.",
-              "Le feu de bois ou la cuisson bois gaz permet d atteindre la fenetre ideale de temperature pour la pizza napolitaine artisanale.",
-              "C est cette combinaison de chaleur, de vitesse et de controle qui donne un profil de pizza reconnu par les amateurs.",
+              "Quand la temperature baisse, la cuisson s allonge et la pizza change de profil. La sauce se concentre davantage, le fromage se fige plus vite et la pate gagne en secheresse.",
+              "Le bois, complete par le gaz quand il faut stabiliser le four, permet de rester dans une zone de travail plus fiable.",
+              "Ce n est pas une question de folklore. C est une question de resultat mesurable dans l assiette.",
             ],
           },
         ],
       },
       {
-        heading: "Comment le four diffuse la chaleur",
+        heading: "Le four diffuse plusieurs chaleurs a la fois",
         blocks: [
           {
-            subheading: "Trois sources de cuisson",
+            subheading: "Sole, voute et air chaud",
             paragraphs: [
-              "Dans un four a bois, la pizza est cuite par la sole chaude, le rayonnement de la voute et l air chaud en mouvement. Ces trois effets se completent.",
-              "La sole apporte la tenue de la base, la voute travaille le dessus, et la circulation de chaleur aide a harmoniser la cuisson generale.",
-              "Le pizzaiolo ajuste la position de la pizza en fonction de la flamme pour eviter les zones sous cuites ou trop marquees.",
+              "La base de la pizza est saisie par la sole, le dessus travaille sous le rayonnement de la voute, et l air chaud uniformise l ensemble.",
+              "Ces trois apports ne jouent pas le meme role. Bien compris, ils permettent une cuisson plus precise qu un simple thermostat.",
+              "Le pizzaiolo ne pose pas une pizza dans le four en attendant passivement. Il la place, la tourne et ajuste sa lecture en continu.",
             ],
           },
           {
-            subheading: "Le geste du pizzaiolo",
+            subheading: "Le geste complete la machine",
             paragraphs: [
-              "La rotation de la pizza pendant la cuisson est une etape technique. Elle permet d equilibrer l exposition a la chaleur et d obtenir un rendu uniforme.",
-              "Ce geste demande de l attention et du rythme, surtout en service charge. Il participe directement a la qualite percue par le client.",
-              "Une cuisson maitrisee n est donc pas uniquement une question de materiel: c est aussi une question de lecture produit et de precision operationnelle.",
+              "Le four donne le potentiel, mais c est le geste qui finalise la cuisson. Une rotation au bon moment peut sauver une pizza ou au contraire faire la difference entre un produit correct et un produit juste.",
+              "Cette attention est essentielle en periode de rush, quand plusieurs cuissons se chevauchent.",
+              "Une bonne cuisson reste donc un dialogue entre le four, la pate et l oeil du pizzaiolo.",
             ],
           },
         ],
       },
       {
-        heading: "Saveur, texture et experience client",
+        heading: "La cuisson influence aussi la perception client",
         blocks: [
           {
-            subheading: "Une signature aromatique",
+            subheading: "Une signature de texture avant une signature de discours",
             paragraphs: [
-              "La cuisson au feu de bois peut apporter une note subtilement torrefiee, sans masquer les ingredients. Cette touche renforce l identite de la pizza italienne traditionnelle.",
-              "Quand la cuisson est bien geree, la note de feu reste elegante et accompagne la sauce tomate, la mozzarella et la pate.",
-              "Le but n est pas de donner un gout fum e dominant, mais de soutenir l ensemble avec une finition nette.",
+              "Le client ne decrit pas toujours techniquement ce qu il percoit, mais il sent tres vite si la pizza est souple, nerveuse, seche ou bien equilibree.",
+              "La cuisson joue ici un role central. Elle peut soutenir les ingredients ou au contraire les durcir.",
+              "Le bon rendu n est pas seulement plus gourmand. Il inspire aussi davantage de confiance sur la qualite globale du service.",
             ],
           },
           {
-            subheading: "Un service compatible avec la vente a emporter",
+            subheading: "Un vrai avantage pour la vente a emporter",
             paragraphs: [
-              "En camion pizza, la cuisson rapide est un avantage direct. Elle permet de sortir plus vite les commandes tout en maintenant une qualite constante.",
-              "Avec des creneaux clairs et une organisation precise, le client recupere une pizza chaude, prete a deguster, avec peu d attente.",
-              "Cette combinaison entre tradition de cuisson et logistique moderne explique le succes des formats pizza a emporter bien structures.",
+              "En format camion, une cuisson courte aide a garder un flux de retrait plus propre, avec des pizzas qui sortent chaudes et au bon rythme.",
+              "Cela permet de limiter l attente sans basculer dans une logique industrielle.",
+              "La cuisson bois-gaz prend alors une valeur concrete: elle soutient a la fois le produit et l organisation.",
             ],
           },
         ],
       },
       {
-        heading: "Bois seul ou bois et gaz",
+        heading: "Bois seul ou bois-gaz: le bon choix est celui qui tient le service",
         blocks: [
           {
-            subheading: "Une approche pragmatique",
+            subheading: "Une approche operationnelle avant tout",
             paragraphs: [
-              "Dans la pratique, de nombreux professionnels utilisent des fours bois et gaz. Le gaz aide a stabiliser la temperature, le bois apporte la signature de cuisson.",
-              "Cette solution permet de garder le niveau de cuisson attendu sur une pizza napolitaine, meme quand le service est soutenu ou quand les conditions varient.",
-              "Le client ne cherche pas le debat technique, il cherche la regularite. Le bon choix est celui qui garantit une pizza de qualite a chaque passage.",
+              "De nombreux professionnels travaillent aujourd hui avec des fours bois-gaz. Le gaz aide a tenir la temperature, le bois apporte le comportement de cuisson recherche.",
+              "Cette combinaison permet de rester constant quand les volumes montent ou quand les conditions varient.",
+              "Le client, lui, ne juge pas le debat technique. Il juge la pizza qu il a devant lui. Si le resultat est juste et repetable, le choix du four est defensable.",
             ],
           },
         ],
       },
     ],
     conclusion: [
-      "La cuisson au feu de bois reste un pilier de la pizza napolitaine. Elle apporte vitesse, texture et personnalite au produit final.",
-      "Associee a une pate bien preparee et a des ingredients italiens solides, elle permet d obtenir une pizza artisanale lisible, gourmande et constante.",
-      "Dans un modele camion pizza, c est un vrai levier de qualite et d efficacite: une cuisson forte, un retrait rapide, et une experience client rassurante.",
+      "La cuisson au feu de bois ne vaut que si elle produit un resultat plus propre, plus leger et plus regulier. Sinon elle reste un decor.",
+      "Quand elle est maitrisee, elle donne a la pizza son rythme, sa texture et une vraie personnalite de cuisson.",
+      "Dans un camion pizza, c est un atout technique autant qu un signe de positionnement.",
     ],
   },
   {
     slug: "les-ingredients-italiens-authentiques",
     title: "Les ingredients italiens authentiques",
     description:
-      "Tour d'horizon des ingredients italiens utilises pour une pizza napolitaine artisanale.",
+      "Comment les ingredients structurent le gout, la coherence de carte et la regularite d une pizza d inspiration napolitaine.",
     excerpt:
-      "Des tomates a la mozzarella, la qualite des produits italiens structure le gout d une vraie pizza napolitaine.",
+      "Le choix des produits ne sert pas a faire joli sur une carte. Il determine la clarte du gout, la cuisson et la credibilite de la promesse artisanale.",
     intro: [
-      "Dans une pizza napolitaine artisanale, la qualite des ingredients est aussi importante que la technique de pate et la cuisson.",
-      "La tradition italienne ne repose pas sur une liste infinie de produits. Elle repose sur des matieres premieres simples, selectionnees pour leur regularite et leur gout.",
-      "Cette logique est essentielle pour une pizza a emporter: il faut des produits fiables, qui gardent leur tenue en cuisson et qui restent lisibles en bouche.",
+      "Dans une pizza serieuse, les ingredients ne sont pas un detail secondaire derriere la pate. Ils definissent la finesse du gout et l identite de chaque recette.",
+      "La logique italienne classique n est pas de multiplier les references. Elle consiste plutot a travailler peu de produits, bien choisis, bien tenus et bien doses.",
+      "Cette approche est particulierement pertinente en camion pizza: elle rend la carte plus lisible et la production plus stable.",
     ],
     sections: [
       {
-        heading: "La tomate: base aromatique de la pizza",
+        heading: "La tomate donne la ligne directrice",
         blocks: [
           {
-            subheading: "Pourquoi la sauce est decisive",
+            subheading: "Une sauce qui relie la pate et le fromage",
             paragraphs: [
-              "Sur une pizza napolitaine, la sauce tomate ne doit pas dominer ni disparaitre. Elle sert de fil conducteur entre la pate et le fromage.",
-              "Une tomate de qualite apporte de la rondeur, une acidite mesuree et une belle longueur en bouche. Elle aide a garder un ensemble equilibre.",
-              "Les tomates San Marzano sont souvent citees car leur profil aromatique est adapte a ce type de cuisson rapide et a la carte pizza italienne.",
+              "Sur une pizza napolitaine, la sauce ne doit ni dominer ni disparaitre. Elle sert de liaison entre la base et la garniture.",
+              "Une bonne tomate apporte du relief, une acidite maitrisee et une sensation propre en bouche. Elle soutient l ensemble au lieu de le brouiller.",
+              "C est pour cela que certaines references comme les San Marzano restent souvent privilegiees: elles s integrent bien a une cuisson tres courte.",
             ],
           },
           {
-            subheading: "Une sauce volontairement simple",
+            subheading: "La simplicite comme exigence",
             paragraphs: [
-              "La sauce est souvent preparee avec peu d ingredients: tomate, sel, parfois un filet d huile d olive. L idee est de conserver la purete du produit.",
-              "Cette simplicite impose des produits propres et une execution precise. On ne peut pas corriger une matiere moyenne avec des artifices.",
-              "Dans un contexte professionnel, cette approche facilite aussi la regularite de service, indispensable pour garder une qualite stable toute la semaine.",
+              "Une sauce courte laisse peu de place a l a peu pres. Si la tomate est moyenne, cela se sent tout de suite.",
+              "Moins il y a d artifice, plus la qualite du produit devient visible.",
+              "Cette sobriete force une execution plus propre et donne un resultat plus lisible pour le client.",
             ],
           },
         ],
       },
       {
-        heading: "Les fromages italiens et leur role",
+        heading: "Les fromages doivent soutenir, pas alourdir",
         blocks: [
           {
-            subheading: "Mozzarella fior di latte",
+            subheading: "La mozzarella comme point d equilibre",
             paragraphs: [
-              "La mozzarella fior di latte est tres utilisee sur les pizzas napolitaines. Elle fond correctement, garde une texture cremeuse et accompagne bien la tomate.",
-              "Sa gestion en cuisson est importante: trop d humidite peut alourdir la pizza, trop peu peut ass e cher la garniture.",
-              "Le dosage et la coupe de mozzarella font partie du travail technique quotidien du pizzaiolo.",
+              "La mozzarella fior di latte apporte du liant, de la rondeur et une texture cremeuse quand elle est bien dosee.",
+              "Trop humide, elle detend la pizza. Trop seche, elle donne un dessus plus plat et plus dur. La gestion de coupe et de quantite compte donc autant que le produit lui meme.",
+              "Sur une pizza napolitaine, la mozzarella ne doit pas noyer la pate. Elle doit l accompagner.",
             ],
           },
           {
-            subheading: "Parmigiano reggiano en finition",
+            subheading: "Le fromage de finition pour donner de la profondeur",
             paragraphs: [
-              "Le parmigiano reggiano est souvent utilise en appoint. En petite quantite, il renforce la profondeur de gout sans saturer la pizza.",
-              "Il peut etre ajoute avant ou apres cuisson selon les recettes. Son role est de structurer la finition, pas de couvrir les autres saveurs.",
-              "Dans une carte bien pensee, chaque fromage a une fonction claire et contribue a l identite de chaque pizza.",
+              "Un fromage comme le parmigiano reggiano peut renforcer la longueur en bouche a condition de rester mesure.",
+              "Son role n est pas de saturer la recette, mais d apporter un relief supplementaire sur certaines compositions.",
+              "Chaque fromage a donc une fonction. Une carte bien pensee evite les doublons sans utilite.",
             ],
           },
         ],
       },
       {
-        heading: "Charcuteries et produits d accompagnement",
+        heading: "Charcuteries, huiles et finitions demandent de la retenue",
         blocks: [
           {
-            subheading: "Des charcuteries italiennes maitrisees",
+            subheading: "Le dosage reste plus important que la liste d ingredients",
             paragraphs: [
-              "Jambon de Parme, prosciutto, salami: ces produits apportent des textures et des notes aromatiques differentes.",
-              "L enjeu est de garder la mesure. Une charcuterie trop presente peut casser l equilibre entre la pate, la tomate et le fromage.",
-              "Un bon dosage permet au contraire de completer la pizza sans masquer sa base napolitaine.",
+              "Prosciutto, jambon de Parme ou salami peuvent enrichir une pizza, a condition de ne pas couper la lecture de la base.",
+              "Une charcuterie trop dominante casse vite l equilibre entre pate, tomate et fromage.",
+              "Le bon dosage permet de garder une pizza expressive sans l alourdir inutilement.",
             ],
             list: [
               "jambon de Parme",
@@ -279,190 +279,190 @@ export const BLOG_ARTICLES = [
             ],
           },
           {
-            subheading: "Fraicheur et coherence de carte",
+            subheading: "Une carte plus courte, mais plus credible",
             paragraphs: [
-              "La qualite des ingredients passe aussi par la gestion des flux: rotation des stocks, conservation, preparation quotidienne.",
-              "Une carte courte, coherente et bien executee vaut souvent mieux qu une carte trop large et difficile a tenir.",
-              "Cette logique est particulierement utile en camion pizza, ou l espace et le rythme de service demandent une organisation tres claire.",
+              "La qualite des ingredients depend aussi de la gestion des stocks, du rythme de rotation et de la preparation avant service.",
+              "Une carte resserree est souvent plus serieuse qu une carte trop large avec des produits mal tenus.",
+              "Dans un camion pizza, cette discipline est un avantage direct: moins de dispersion, plus de constance.",
             ],
           },
         ],
       },
       {
-        heading: "L impact direct sur la perception client",
+        heading: "Le client lit la qualite sans avoir besoin des coulisses",
         blocks: [
           {
-            subheading: "Un gout plus net, une confiance plus forte",
+            subheading: "Un produit plus net inspire plus de confiance",
             paragraphs: [
-              "Quand les ingredients sont bien choisis, le client le percoit immediatement: la sauce est nette, la mozzarella est fondante, la pate reste legere.",
-              "Cette regularite construit la confiance. Le client sait ce qu il vient chercher et retrouve cette qualite d une commande a l autre.",
-              "C est un point majeur pour un positionnement pizza artisanale moselle: la promesse doit etre tenue a chaque passage.",
+              "Quand les produits sont bien choisis, cela se traduit immediatement par une pizza plus claire, plus propre et plus reguliere.",
+              "Le client n a pas besoin de connaitre les references exactes pour percevoir que la sauce est juste, que le fromage est bien tenu et que la recette reste equilibree.",
+              "Cette regularite joue un role cle dans la fidelisation. Elle transforme une bonne premiere impression en habitude.",
             ],
           },
           {
-            subheading: "Qualite produit et image de marque",
+            subheading: "L ingredient soutient aussi le positionnement",
             paragraphs: [
-              "Les ingredients italiens authentiques jouent aussi un role dans l image de marque. Ils donnent de la coherence au discours entre site web, menu et experience reelle.",
-              "Quand la promesse annonce une pizza napolitaine artisanale, le client attend des produits identifiables et une execution propre. Cette coherence renforce la credibilite du projet.",
-              "Sur le long terme, cette rigueur produit contribue a la recommandation locale. Dans une zone concurrentielle, c est souvent ce qui fait la difference entre curiosite ponctuelle et fidelite durable.",
+              "Annoncer une pizza artisanale implique une coherence entre le discours, le menu et l assiette.",
+              "Les ingredients choisis servent donc autant le gout que la credibilite de la marque.",
+              "Sur le long terme, cette coherence compte davantage qu un vocabulaire marketing charge.",
             ],
           },
         ],
       },
     ],
     conclusion: [
-      "Les ingredients italiens authentiques ne sont pas un argument decoratif. Ils sont au coeur de l identite d une pizza napolitaine.",
-      "Associes a une pate bien fermentee et a une cuisson bois gaz maitrisee, ils permettent d obtenir une pizza lisible, equilibree et professionnelle.",
-      "Pour un camion pizza, ce choix des produits est aussi un choix strategique: il garantit la constance et renforce la qualite percue par les clients.",
+      "Les ingredients italiens ne sont pas un decor de carte. Ils conditionnent l equilibre du produit final.",
+      "Bien choisis et bien doses, ils rendent la pizza plus lisible, plus stable et plus convaincante.",
+      "Dans un service mobile, cette exigence sur le produit reste l un des meilleurs leviers pour se differencier durablement.",
     ],
   },
   {
     slug: "la-farine-nuvola-super",
     title: "La farine Nuvola Super",
     description:
-      "Pourquoi la farine Nuvola Super est appreciee pour obtenir une pate napolitaine alveolee.",
+      "Pourquoi cette farine revient souvent dans les pates napolitaines travaillees pour la fermentation longue et la legerete.",
     excerpt:
-      "La Nuvola Super est appreciee pour les fermentations longues et la texture aerienne des pates napolitaines.",
+      "La farine n est pas un detail technique reserve aux professionnels. Elle influence directement la tenue de la pate, son alveolage et la regularite au service.",
     intro: [
-      "Le choix de la farine est un element structurant dans la fabrication d une pate a pizza napolitaine. Une farine adaptee simplifie le travail du pizzaiolo et stabilise le resultat.",
-      "Parmi les references utilisees en pizzeria artisanale, la farine Nuvola Super revient souvent. Elle est reconnue pour sa capacite a soutenir des fermentations longues et a produire une pate aerienne.",
-      "Comprendre son role permet de mieux lire ce qui se passe dans l assiette: legerete, alveolage, tenue en cuisson et regularite du service.",
+      "Quand une pate a pizza parait souple, legerement aerienne et stable au faconnage, la farine y est pour beaucoup. Le choix de la farine conditionne une partie importante du comportement de la pate.",
+      "Parmi les references souvent citees dans l univers napolitain, la Nuvola Super revient regulierement pour sa tolerance aux fermentations longues et sa capacite a soutenir des pates legeres.",
+      "Cela ne fait pas tout, mais c est un socle solide quand on cherche un resultat regulier en service.",
     ],
     sections: [
       {
-        heading: "Pourquoi la farine est decisive pour la pate",
+        heading: "La farine pilote une partie du comportement de la pate",
         blocks: [
           {
-            subheading: "Une base technique, pas un detail",
+            subheading: "Une base technique tres concrete",
             paragraphs: [
-              "La farine ne sert pas uniquement a faire une boule de pate. Elle conditionne l elasticite, la souplesse, la capacite de fermentation et la reaction a la cuisson.",
-              "Une farine inadaptee peut rendre la pate nerveuse, fragile ou difficile a etaler. A l inverse, une farine bien choisie facilite la mise en forme et la regularite.",
-              "Pour une pizza napolitaine artisanale, cette regularite est essentielle, surtout quand le rythme de service est soutenu.",
+              "La farine influe sur l elasticite, la souplesse et la reaction de la pate au repos puis au four.",
+              "Une farine mal adaptee rend souvent le travail plus instable: la pate colle, se retracte ou manque de tenue a l etalage.",
+              "A l inverse, une reference bien choisie rend le protocole plus lisible et plus previsible.",
             ],
           },
           {
-            subheading: "Lien entre farine et digestibilite",
+            subheading: "Un effet indirect sur le confort de degustation",
             paragraphs: [
-              "La digestibilite depend de plusieurs facteurs, dont la fermentation et la gestion de la pate. La farine intervient dans cet ensemble en donnant une base stable au travail de maturation.",
-              "Avec une methode correcte, on obtient une pate plus legere, moins compacte et plus agreable a la degustation.",
-              "Le client ressent souvent cette difference sans connaitre les details techniques: la pizza parait plus equilibree et moins lourde.",
+              "La sensation de legerete ne depend pas de la farine seule, mais elle y contribue fortement avec la fermentation et la cuisson.",
+              "Quand la base est saine et que le protocole suit, la pizza gagne en souplesse et en aeration.",
+              "Le client n identifie pas forcement ce parametre, mais il ressent une pizza moins compacte et plus agreable a manger.",
             ],
           },
         ],
       },
       {
-        heading: "Les atouts de la farine Nuvola Super",
+        heading: "Ce que la Nuvola Super apporte en pratique",
         blocks: [
           {
-            subheading: "Fermentation longue et structure",
+            subheading: "Une bonne tolerance aux fermentations longues",
             paragraphs: [
-              "La Nuvola Super est appreciee pour sa tolerance aux fermentations longues. Elle aide a developper une pate souple qui garde de la tenue au faconnage.",
-              "Cette caracteristique est utile pour organiser la production en avance, sans sacrifier la qualite de texture au moment du service.",
-              "Le pizzaiolo peut ainsi travailler une pate plus reguliere, avec un comportement plus previsible en etalage.",
+              "Cette farine est souvent retenue pour des pates qui doivent tenir dans le temps sans perdre leur comportement.",
+              "Cela aide a organiser la production plus sereinement, surtout quand le service demande d anticiper.",
+              "Le pizzaiolo gagne en stabilite de travail, ce qui compte autant que la qualite brute de la farine.",
             ],
           },
           {
-            subheading: "Alveolage et legerete",
+            subheading: "Un rendu aerien quand le protocole est tenu",
             paragraphs: [
-              "Un des objectifs de la pizza napolitaine est d obtenir un bord aerien, avec des alveoles nettes et une mie legere.",
-              "Cette farine favorise ce rendu quand le protocole est maitrise: hydratation, pointage, boulage, detente et cuisson.",
-              "Le resultat attendu est un cornicione vivant, pas simplement volumineux. La texture doit rester fine et agreable, sans effet caoutchouteux.",
+              "L objectif n est pas simplement de faire gonfler la bordure. Il s agit d obtenir une mie vivante, legere et non caoutchouteuse.",
+              "La Nuvola Super peut aider a atteindre ce resultat, a condition que l hydratation, le repos et la cuisson soient eux aussi bien geres.",
+              "Autrement dit, elle soutient la methode, mais ne remplace pas la methode.",
             ],
           },
         ],
       },
       {
-        heading: "Impact en cuisson et en service",
+        heading: "Son interet apparait surtout dans la regularite de service",
         blocks: [
           {
-            subheading: "Comportement au four tres chaud",
+            subheading: "Une pate plus lisible au four",
             paragraphs: [
-              "La cuisson napolitaine demande une pate capable de supporter une chaleur tres elevee sans se desequilibrer.",
-              "Avec une farine adaptee, la pizza garde sa structure, le bord se developpe correctement et la base reste lisible.",
-              "Ce point est capital pour une pizza feu de bois: la fenetre de cuisson est courte, et la marge d erreur est faible.",
+              "Sur une cuisson tres chaude, la pate doit tenir sans se crisper ni s effondrer.",
+              "Avec une farine adaptee, la pizza garde mieux sa structure et reagit de facon plus nette dans cette fenetre de cuisson tres courte.",
+              "Cette stabilite est utile quand le rythme de production augmente.",
             ],
           },
           {
-            subheading: "Regularite operationnelle",
+            subheading: "Un avantage concret en camion pizza",
             paragraphs: [
-              "Sur un service mobile de type camion pizza, la regularite est un enjeu quotidien. Les clients attendent la meme qualite a chaque commande.",
-              "La Nuvola Super aide a stabiliser la production quand elle est integree a une methode de travail claire.",
-              "Elle ne remplace pas le geste du pizzaiolo, mais elle renforce la fiabilite globale du process.",
+              "En service mobile, la marge d erreur est plus faible. Il faut une pate reguliere, facile a lire et a repeter.",
+              "Une farine comme la Nuvola Super aide a rendre le process moins aleatoire, ce qui est precieux pour tenir la qualite sur la duree.",
+              "Elle apporte donc un benefice operationnel, pas seulement un argument technique.",
             ],
           },
         ],
       },
       {
-        heading: "Ce que la farine ne fait pas seule",
+        heading: "Ce que la farine ne peut pas compenser",
         blocks: [
           {
-            subheading: "La farine n est qu un maillon",
+            subheading: "La coherence du protocole reste decisive",
             paragraphs: [
-              "Meme une tres bonne farine ne suffit pas sans un protocole coherent. Le repos, la temperature, la cuisson et la gestion des garnitures restent essentiels.",
-              "La qualite finale vient de la chaine complete: produit, methode, execution et controle en service.",
-              "C est cette coherence qui permet de proposer une pizza napolitaine artisanale constante, et pas un bon resultat ponctuel.",
+              "Une bonne farine ne corrigera pas un mauvais repos, une temperature mal geree ou une cuisson approximative.",
+              "La qualite finale depend toujours d une chaine complete: matiere, protocole, execution et constance.",
+              "Chercher une farine miracle est une impasse. Chercher une methode fiable est bien plus pertinent.",
             ],
           },
           {
-            subheading: "Former une methode complete",
+            subheading: "Standardiser sans perdre l artisanat",
             paragraphs: [
-              "Le meilleur resultat apparait quand la farine est integree a une methode documentee: grammages fiables, protocoles de fermentation, controle des temperatures et standards de cuisson.",
-              "Cette standardisation n enleve rien a l artisanat. Elle permet au contraire de proteger la qualite quand l activite grandit et quand les volumes augmentent.",
-              "Pour un camion pizza, cette discipline est un avantage concret: elle rend le service plus fluide, plus previsible et plus rassurant pour les clients.",
+              "Documenter un protocole n enleve rien au metier. Cela protege au contraire le niveau de qualite.",
+              "Dans une activite qui grandit, cette discipline evite les variations inutiles et aide a tenir la promesse faite au client.",
+              "La farine prend alors sa vraie place: un outil au service d une execution solide.",
             ],
           },
         ],
       },
     ],
     conclusion: [
-      "La farine Nuvola Super est devenue une reference utile pour les professionnels qui recherchent une pate legere, alveolee et stable.",
-      "Elle prend tout son sens dans un cadre de fermentation maitrisee et de cuisson rapide au four bois gaz.",
-      "Pour le client, cela se traduit par une pizza a emporter plus reguliere, plus lisible en texture et fidele a l esprit de la tradition napolitaine.",
+      "La Nuvola Super est une farine interessante parce qu elle facilite un certain type de pate: plus stable, plus aerienne, plus lisible au service.",
+      "Elle donne de bons resultats quand elle s inscrit dans une methode de fermentation et de cuisson bien tenue.",
+      "Pour le client, cela se traduit surtout par une pizza plus reguliere et plus agreable a manger.",
     ],
   },
   {
     slug: "tomates-san-marzano",
     title: "Tomates San Marzano",
     description:
-      "Ce qu'apportent les tomates San Marzano dans la sauce d'une pizza napolitaine.",
+      "Pourquoi cette tomate reste une reference pour une sauce simple, equilibree et lisible sur pizza napolitaine.",
     excerpt:
-      "Les tomates San Marzano apportent douceur, faible acidite et equilibre a la sauce d une pizza napolitaine.",
+      "Une bonne tomate donne du relief a la sauce sans ecraser la pate. C est pour cela que les San Marzano restent si souvent citees.",
     intro: [
-      "La sauce tomate est l une des signatures majeures de la pizza napolitaine. Elle participe autant a l identite du produit que la pate ou la cuisson.",
-      "Parmi les varietes les plus reconnues, les tomates San Marzano occupent une place particuliere. Elles sont appreciees pour leur profil aromatique et leur texture.",
-      "Dans une pizzeria artisanale, ce choix de tomate influence directement la qualite percue, la regularite des recettes et l equilibre global de chaque pizza.",
+      "La sauce tomate est l un des elements les plus exposes sur une pizza. Si elle est mal choisie, toute la recette perd en nettete.",
+      "Les San Marzano sont souvent associees a l univers napolitain parce qu elles offrent un profil adapte a une sauce courte: de la rondeur, une acidite mesuree et une bonne tenue en cuisson.",
+      "Ce n est pas un detail de puriste. C est un choix qui influence directement le gout et la regularite du produit final.",
     ],
     sections: [
       {
-        heading: "Pourquoi les San Marzano sont autant utilisees",
+        heading: "Pourquoi cette tomate est autant recherchee",
         blocks: [
           {
-            subheading: "Une origine et un profil gustatif identifies",
+            subheading: "Un profil aromatique facile a integrer",
             paragraphs: [
-              "Les tomates San Marzano sont associees a la region de Campanie, proche de Naples. Elles sont devenues une reference dans la culture de la pizza italienne traditionnelle.",
-              "Leur gout est souvent decrit comme plus doux, avec une acidite moderee et une belle intensite aromatique.",
-              "Ce profil permet de construire une sauce claire en bouche, qui accompagne la pate sans l ecraser.",
+              "Les San Marzano sont appreciees pour leur douceur relative et leur intensite aromatique bien tenue.",
+              "Elles permettent de construire une sauce qui accompagne la pate sans l ecraser et qui reste compatible avec une mozzarella bien dosee.",
+              "Cette lisibilite est l une des raisons pour lesquelles elles sont souvent retenues dans les cartes d inspiration napolitaine.",
             ],
           },
           {
-            subheading: "Une texture adaptee a la pizza",
+            subheading: "Une texture utile en cuisson rapide",
             paragraphs: [
-              "La texture des San Marzano se prete bien a une sauce simple. Elle permet une bonne couverture de la pate sans effet trop aqueux.",
-              "En cuisson rapide, cette tenue est un vrai avantage: la sauce reste lisible, sans detremper la base.",
-              "Le resultat est plus net visuellement et plus stable gustativement, surtout en cadence de service.",
+              "Une sauce trop aqueuse detrempe vite la base. Une sauce trop concentree durcit la lecture globale de la pizza.",
+              "Les San Marzano offrent une matiere qui se prete bien a une preparation simple et a une cuisson courte.",
+              "Le rendu reste plus propre visuellement et plus stable pendant le service.",
             ],
           },
         ],
       },
       {
-        heading: "Comment elles s int egrent dans la recette napolitaine",
+        heading: "Elles fonctionnent bien dans une sauce volontairement sobre",
         blocks: [
           {
-            subheading: "Une sauce volontairement minimaliste",
+            subheading: "Peu d ingredients, peu de masquage",
             paragraphs: [
-              "Dans l esprit napolitain, la sauce tomate reste volontairement sobre. Elle peut se limiter a la tomate, au sel et a un peu d huile d olive.",
-              "Cette sobriete fonctionne seulement si la tomate est de qualite. Elle laisse apparaitre toutes les nuances du produit.",
-              "Sur une pizza napolitaine artisanale, ce choix renforce la lisibilite globale: pate, sauce, fromage et finition restent bien identifies.",
+              "L esprit napolitain privilegie souvent des sauces tres courtes: tomate, sel, parfois un peu d huile.",
+              "Avec une telle sobriete, la qualite de la tomate devient immediatement visible.",
+              "C est ce qui rend les San Marzano pertinentes: elles supportent bien une mise en avant directe du produit.",
             ],
             list: [
               "tomates San Marzano",
@@ -471,62 +471,62 @@ export const BLOG_ARTICLES = [
             ],
           },
           {
-            subheading: "Equilibre avec mozzarella et pate",
+            subheading: "Un bon dialogue avec la pate et le fromage",
             paragraphs: [
-              "Une bonne sauce doit dialoguer avec la mozzarella fior di latte sans la noyer. Elle doit aussi respecter la texture de la pate apres cuisson.",
-              "Les San Marzano aident a maintenir cet equilibre: elles apportent de la rondeur, sans acidite agressive.",
-              "Cette harmonie est essentielle pour conserver l identite d une pizza napolitaine feu de bois, surtout quand la cuisson est tres rapide.",
+              "La sauce doit garder une place claire sans noyer la mozzarella ni ramollir la base.",
+              "Les San Marzano aident a tenir cette ligne grace a leur profil plus rond que brutal.",
+              "Le resultat reste plus harmonieux, surtout sur des cuissons tres rapides.",
             ],
           },
         ],
       },
       {
-        heading: "Impact en production et en service",
+        heading: "Le choix de tomate change aussi la production",
         blocks: [
           {
-            subheading: "Regularite du resultat",
+            subheading: "Une base plus facile a stabiliser",
             paragraphs: [
-              "Pour un professionnel, la regularite est une priorite. Le client doit retrouver le meme profil de sauce d une commande a l autre.",
-              "Travailler une reference tomate stable simplifie les reglages de recette et ameliore la constance en service.",
-              "Dans un camion pizza, cette constance est encore plus importante, car le rythme impose une execution rapide et precise.",
+              "Pour un professionnel, la constance compte autant que la qualite pure. Le client doit retrouver un meme profil de sauce au fil des commandes.",
+              "Travailler une reference stable simplifie les reglages et limite les variations pendant le service.",
+              "Dans un camion pizza, cette fiabilite soulage la production autant qu elle securise le resultat final.",
             ],
           },
           {
-            subheading: "Valeur percue par le client",
+            subheading: "Une qualite percue sans discours excessif",
             paragraphs: [
-              "Le client ne formule pas toujours techniquement ce qu il goute, mais il percoit vite une sauce equilibree et une pizza harmonieuse.",
-              "Une bonne tomate renforce l impression de qualite artisanale et soutient la confiance dans la marque.",
-              "C est un detail en apparence, mais c est un detail qui influence fortement la fidelisation.",
+              "Le client remarque rarement une tomate par son nom, mais il identifie vite une sauce nette et bien equilibree.",
+              "Cette perception suffit a renforcer la confiance dans la qualite artisanale du produit.",
+              "Sur la duree, ce type de detail pese lourd dans la reputation d une adresse.",
             ],
           },
         ],
       },
       {
-        heading: "San Marzano et positionnement qualitatif",
+        heading: "Un ingredient coherent avec une promesse napolitaine",
         blocks: [
           {
-            subheading: "Un choix coherent avec la promesse napolitaine",
+            subheading: "La logique produit avant le decor SEO",
             paragraphs: [
-              "Quand une pizzeria se positionne sur la pizza napolitaine artisanale, le choix des ingredients doit etre coherent avec cette promesse.",
-              "Les tomates San Marzano s inscrivent dans cette logique: peu d artifices, plus de produit, et une execution maitrisee.",
-              "Associees a une bonne farine, a une cuisson bois gaz et a une organisation claire, elles participent a une experience client solide.",
+              "Si une pizzeria revendique un travail d inspiration napolitaine, le choix de la tomate doit suivre cette logique.",
+              "Les San Marzano ne sont pas une formule magique, mais elles s accordent bien avec une carte simple, une bonne pate et une cuisson vive.",
+              "Ce type de coherence vaut davantage qu une accumulation de mots cles sans fond technique.",
             ],
           },
           {
-            subheading: "Un choix pertinent pour le service mobile",
+            subheading: "Un choix pertinent pour un service mobile",
             paragraphs: [
-              "En service mobile, la sauce tomate doit rester stable malgre le rythme. Les San Marzano offrent une base fiable pour garder un rendu constant d un creneau a l autre.",
-              "Ce point compte autant pour la qualite gustative que pour l organisation en production. Une sauce reguliere simplifie la mise en place et limite les variations pendant le service.",
-              "Au final, ce choix technique soutient la promesse client: une pizza a emporter bien executee, avec des saveurs claires et une qualite qui ne depend pas du hasard.",
+              "En camion pizza, on a besoin d une sauce stable, simple a tenir et reguliere d un creneau a l autre.",
+              "Une bonne reference tomate limite les ajustements inutiles et soutient la qualite en periode active.",
+              "Au final, c est un choix de metier autant qu un choix de gout.",
             ],
           },
         ],
       },
     ],
     conclusion: [
-      "Les tomates San Marzano jouent un role central dans l identite gustative d une pizza napolitaine.",
-      "Leur douceur, leur faible acidite et leur texture en font une base fiable pour une sauce simple et efficace.",
-      "Dans une logique artisanale, ce choix contribue a l equilibre du produit final et a la regularite attendue par les clients, en salle comme en pizza a emporter.",
+      "Les San Marzano restent une reference utile parce qu elles donnent une sauce simple, stable et facile a lire en bouche.",
+      "Elles s integrent particulierement bien a une pizza ou la pate, la cuisson et la garniture doivent rester en equilibre.",
+      "Dans une logique artisanale, ce type de choix produit compte souvent plus que de longs discours.",
     ],
   },
 ];

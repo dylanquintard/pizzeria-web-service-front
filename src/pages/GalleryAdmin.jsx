@@ -1,8 +1,7 @@
-import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useLanguage } from "../context/LanguageContext";
 import {
-  activateGalleryImage,
   createGalleryImage,
   deleteGalleryImage,
   getGalleryAdmin,
@@ -10,31 +9,28 @@ import {
   uploadGalleryImage,
   updateGalleryImage,
 } from "../api/gallery.api";
-import { ActionIconButton, DeleteIcon, EditIcon, StatusToggle } from "../components/ui/AdminActions";
+import { ActionIconButton, EditIcon, StatusToggle } from "../components/ui/AdminActions";
 
-const emptyImageForm = {
+const HERO_IMAGE_LIMIT = 5;
+const MIN_HOME_GALLERY_IMAGE_WIDTH = 1920;
+const MIN_HOME_GALLERY_IMAGE_HEIGHT = 1080;
+
+const emptyCreateForm = {
+  title: "",
+  description: "",
+  active: true,
+};
+
+const emptyEditForm = {
+  id: null,
   imageUrl: "",
   thumbnailUrl: "",
   title: "",
   description: "",
-  altText: "",
   sortOrder: 0,
-  active: true,
+  active: false,
+  isHomeBackground: false,
 };
-const MIN_HOME_GALLERY_IMAGE_WIDTH = 1920;
-const MIN_HOME_GALLERY_IMAGE_HEIGHT = 1080;
-
-function normalizeImagePayload(form) {
-  return {
-    imageUrl: String(form.imageUrl || "").trim(),
-    thumbnailUrl: String(form.thumbnailUrl || "").trim() || null,
-    title: String(form.title || "").trim() || null,
-    description: String(form.description || "").trim() || null,
-    altText: String(form.altText || "").trim() || null,
-    sortOrder: Number(form.sortOrder || 0),
-    active: Boolean(form.active),
-  };
-}
 
 function formatFileSize(value) {
   const bytes = Number(value || 0);
@@ -48,28 +44,84 @@ function getMinimumGallerySizeLabel() {
   return `${MIN_HOME_GALLERY_IMAGE_WIDTH} x ${MIN_HOME_GALLERY_IMAGE_HEIGHT}px`;
 }
 
-function ImagePreviewCard({ previewUrl, file, onClear, tr }) {
+function buildGalleryPayload(form, sortOrder) {
+  const title = String(form.title || "").trim();
+  return {
+    imageUrl: String(form.imageUrl || "").trim(),
+    thumbnailUrl: String(form.thumbnailUrl || "").trim() || null,
+    title: title || null,
+    description: String(form.description || "").trim() || null,
+    altText: title || null,
+    sortOrder: Number(sortOrder || 0),
+    active: Boolean(form.active),
+  };
+}
+
+function GalleryImageCard({
+  image,
+  onClick,
+  tr,
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="group relative overflow-hidden rounded-[26px] border border-white/10 bg-black/20 text-left shadow-[0_18px_50px_rgba(0,0,0,0.22)] transition duration-300 hover:-translate-y-0.5 hover:border-saffron/50 hover:shadow-[0_24px_60px_rgba(0,0,0,0.28)]"
+    >
+      <img
+        src={image.thumbnailUrl || image.imageUrl}
+        alt={image.altText || image.title || `${tr("Image", "Image")} ${image.id}`}
+        className="h-60 w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+      />
+      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/45 to-transparent p-3">
+        <div className="flex flex-wrap items-center gap-2">
+          {image.active && (
+            <span className="rounded-full border border-white/20 bg-white/10 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-white">
+              {tr("Hero", "Hero")}
+            </span>
+          )}
+          {image.isHomeBackground && (
+            <span className="rounded-full border border-saffron/40 bg-saffron/15 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-saffron">
+              {tr("Accueil", "Home")}
+            </span>
+          )}
+        </div>
+        <p className="mt-2 truncate text-sm font-semibold text-white">
+          {image.title || tr("Image sans titre", "Untitled image")}
+        </p>
+      </div>
+    </button>
+  );
+}
+
+function NewImagePreview({ previewUrl, file, onClear, tr }) {
   if (!previewUrl) return null;
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-white/15 bg-black/30">
-      <img
-        src={previewUrl}
-        alt={tr("Apercu image selectionnee", "Selected image preview")}
-        className="h-52 w-full object-cover sm:h-64"
-      />
-      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/45 to-transparent p-3">
-        <p className="truncate text-sm font-semibold text-white">{file?.name || tr("Image", "Image")}</p>
-        {file?.size ? <p className="text-xs text-stone-200">{formatFileSize(file.size)}</p> : null}
+    <div className="mx-auto max-w-md">
+      <div className="relative overflow-hidden rounded-[26px] border border-white/15 bg-black/30 shadow-[0_18px_50px_rgba(0,0,0,0.2)]">
+        <img
+          src={previewUrl}
+          alt={tr("Apercu image selectionnee", "Selected image preview")}
+          className="h-64 w-full object-cover"
+        />
+        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/45 to-transparent p-3">
+          <p className="truncate text-sm font-semibold text-white">
+            {file?.name || tr("Image", "Image")}
+          </p>
+          {file?.size ? (
+            <p className="text-xs text-stone-200">{formatFileSize(file.size)}</p>
+          ) : null}
+        </div>
+        <button
+          type="button"
+          onClick={onClear}
+          aria-label={tr("Supprimer la selection", "Clear selection")}
+          className="absolute right-3 top-3 inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-black/65 text-sm font-bold text-white transition hover:bg-black/80"
+        >
+          x
+        </button>
       </div>
-      <button
-        type="button"
-        onClick={onClear}
-        aria-label={tr("Supprimer la selection", "Clear selection")}
-        className="absolute right-2 top-2 inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/30 bg-black/65 text-sm font-bold text-white transition hover:bg-red-700/80"
-      >
-        x
-      </button>
     </div>
   );
 }
@@ -77,17 +129,23 @@ function ImagePreviewCard({ previewUrl, file, onClear, tr }) {
 export default function GalleryAdmin() {
   const { token, user, loading: authLoading } = useContext(AuthContext);
   const { tr } = useLanguage();
+
   const [images, setImages] = useState([]);
-  const [newImage, setNewImage] = useState(emptyImageForm);
-  const [newImageFile, setNewImageFile] = useState(null);
-  const [newImagePreviewUrl, setNewImagePreviewUrl] = useState("");
-  const [editingId, setEditingId] = useState(null);
-  const [editImage, setEditImage] = useState(emptyImageForm);
-  const [editImageFile, setEditImageFile] = useState(null);
-  const [editImagePreviewUrl, setEditImagePreviewUrl] = useState("");
+  const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [backgroundSettingId, setBackgroundSettingId] = useState(null);
-  const [message, setMessage] = useState("");
+
+  const [newImage, setNewImage] = useState(emptyCreateForm);
+  const [newImageFile, setNewImageFile] = useState(null);
+  const [newImagePreviewUrl, setNewImagePreviewUrl] = useState("");
+
+  const [editingId, setEditingId] = useState(null);
+  const [editImage, setEditImage] = useState(emptyEditForm);
+  const [editImageOriginal, setEditImageOriginal] = useState(null);
+  const [editImageFile, setEditImageFile] = useState(null);
+  const [editImagePreviewUrl, setEditImagePreviewUrl] = useState("");
+  const [isEditMode, setIsEditMode] = useState(false);
+
   const newImageLibraryInputRef = useRef(null);
   const newImageCameraInputRef = useRef(null);
   const editImageLibraryInputRef = useRef(null);
@@ -133,33 +191,47 @@ export default function GalleryAdmin() {
     return () => URL.revokeObjectURL(previewUrl);
   }, [editImageFile]);
 
-  const handleCreate = async (event) => {
-    event.preventDefault();
-    if (!newImageFile) {
-      setMessage(tr("Selectionnez un fichier image", "Select an image file"));
-      return;
-    }
+  const sortedImages = useMemo(
+    () =>
+      [...images].sort((left, right) => {
+        const leftOrder = Number(left?.sortOrder ?? 0);
+        const rightOrder = Number(right?.sortOrder ?? 0);
+        if (leftOrder !== rightOrder) return leftOrder - rightOrder;
+        return String(left?.id ?? "").localeCompare(String(right?.id ?? ""));
+      }),
+    [images]
+  );
 
-    try {
-      setLoading(true);
-      const uploaded = await uploadGalleryImage(token, newImageFile);
-      const payload = {
-        ...normalizeImagePayload(newImage),
-        imageUrl: uploaded.imageUrl,
-        thumbnailUrl: uploaded.thumbnailUrl,
-      };
+  const heroImagesCount = useMemo(
+    () => sortedImages.filter((image) => image?.active).length,
+    [sortedImages]
+  );
 
-      await createGalleryImage(token, payload);
-      setNewImage(emptyImageForm);
-      setNewImageFile(null);
-      setMessage("");
-      fetchImages();
-    } catch (err) {
-      setMessage(err.response?.data?.error || tr("Erreur lors de la creation", "Error while creating"));
-    } finally {
-      setLoading(false);
-    }
-  };
+  const nextSortOrder = useMemo(() => {
+    if (sortedImages.length === 0) return 0;
+    return Math.max(...sortedImages.map((image) => Number(image?.sortOrder ?? 0))) + 1;
+  }, [sortedImages]);
+
+  const editHeroCountWithoutCurrent = useMemo(
+    () => heroImagesCount - (editImageOriginal?.active ? 1 : 0),
+    [editImageOriginal, heroImagesCount]
+  );
+
+  const canEnableHeroOnEdit = editImage.active || editHeroCountWithoutCurrent < HERO_IMAGE_LIMIT;
+  const canEnableHeroOnCreate = newImage.active || heroImagesCount < HERO_IMAGE_LIMIT;
+
+  const hasEditChanges = useMemo(() => {
+    if (!editImageOriginal) return false;
+
+    return (
+      String(editImage.title || "").trim() !== String(editImageOriginal.title || "").trim() ||
+      String(editImage.description || "").trim() !==
+        String(editImageOriginal.description || "").trim() ||
+      Boolean(editImage.active) !== Boolean(editImageOriginal.active) ||
+      Boolean(editImage.isHomeBackground) !== Boolean(editImageOriginal.isHomeBackground) ||
+      Boolean(editImageFile)
+    );
+  }, [editImage, editImageFile, editImageOriginal]);
 
   const handleImagePick = (setFile, event) => {
     const pickedFile = event.target.files?.[0] || null;
@@ -167,69 +239,84 @@ export default function GalleryAdmin() {
     event.target.value = "";
   };
 
-  const startEditing = (image) => {
-    setEditingId(image.id);
-    setEditImageFile(null);
-    setEditImage({
-      ...emptyImageForm,
-      ...image,
-      thumbnailUrl: image.thumbnailUrl ?? "",
-      title: image.title ?? "",
-      description: image.description ?? "",
-      altText: image.altText ?? "",
-    });
+  const resetCreateForm = () => {
+    setNewImage(emptyCreateForm);
+    setNewImageFile(null);
   };
 
-  const cancelEditing = () => {
+  const closeEditModal = () => {
     setEditingId(null);
+    setEditImage(emptyEditForm);
+    setEditImageOriginal(null);
     setEditImageFile(null);
-    setEditImage(emptyImageForm);
+    setIsEditMode(false);
   };
 
-  const handleUpdate = async () => {
+  const openEditModal = (image) => {
+    const payload = {
+      id: image.id,
+      imageUrl: image.imageUrl || "",
+      thumbnailUrl: image.thumbnailUrl || "",
+      title: image.title || "",
+      description: image.description || "",
+      sortOrder: Number(image.sortOrder || 0),
+      active: Boolean(image.active),
+      isHomeBackground: Boolean(image.isHomeBackground),
+    };
+
+    setEditingId(image.id);
+    setEditImage(payload);
+    setEditImageOriginal(payload);
+    setEditImageFile(null);
+    setIsEditMode(false);
+  };
+
+  const handleCreate = async (event) => {
+    event.preventDefault();
+
+    if (!newImageFile) {
+      setMessage(tr("Selectionnez un fichier image.", "Select an image file."));
+      return;
+    }
+
+    if (!String(newImage.title || "").trim()) {
+      setMessage(tr("Le titre est obligatoire.", "Title is required."));
+      return;
+    }
+
+    if (newImage.active && heroImagesCount >= HERO_IMAGE_LIMIT) {
+      setMessage(
+        tr(
+          `Le Hero est limite a ${HERO_IMAGE_LIMIT} images.`,
+          `The hero is limited to ${HERO_IMAGE_LIMIT} images.`
+        )
+      );
+      return;
+    }
+
     try {
       setLoading(true);
-      let payload = normalizeImagePayload(editImage);
-      if (editImageFile) {
-        const uploaded = await uploadGalleryImage(token, editImageFile);
-        payload = {
-          ...payload,
+      const uploaded = await uploadGalleryImage(token, newImageFile);
+      const payload = buildGalleryPayload(
+        {
+          ...newImage,
           imageUrl: uploaded.imageUrl,
           thumbnailUrl: uploaded.thumbnailUrl,
-        };
-      }
-
-      await updateGalleryImage(token, editingId, payload);
-      cancelEditing();
-      setMessage("");
-      fetchImages();
-    } catch (err) {
-      setMessage(err.response?.data?.error || tr("Erreur lors de la mise a jour", "Error while updating"));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleToggleActive = async (image) => {
-    try {
-      await activateGalleryImage(token, image.id, !image.active);
-      setMessage(
-        !image.active
-          ? tr(
-              "Image ajoutee au hero et a la page Gallery.",
-              "Image added to the hero and Gallery page."
-            )
-          : tr(
-              "Image retiree du hero et de la page Gallery.",
-              "Image removed from the hero and Gallery page."
-            )
+        },
+        nextSortOrder
       );
+
+      await createGalleryImage(token, payload);
+      resetCreateForm();
+      setMessage(tr("Image ajoutee.", "Image added."));
       fetchImages();
     } catch (err) {
       setMessage(
         err.response?.data?.error ||
-          tr("Erreur lors du changement de statut", "Error while changing status")
+          tr("Erreur lors de la creation", "Error while creating")
       );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -238,32 +325,78 @@ export default function GalleryAdmin() {
 
     try {
       await deleteGalleryImage(token, id);
-      fetchImages();
-    } catch (err) {
-      setMessage(err.response?.data?.error || tr("Erreur lors de la suppression", "Error while deleting"));
-    }
-  };
-
-  const handleSetHomeBackground = async (image) => {
-    try {
-      setBackgroundSettingId(image.id);
-      await setGalleryHomeBackground(token, image.id);
-      setMessage(
-        tr(
-          "Premiere image du hero mise a jour.",
-          "Hero first image updated."
-        )
-      );
+      if (editingId === id) {
+        closeEditModal();
+      }
+      setMessage(tr("Image supprimee.", "Image deleted."));
       fetchImages();
     } catch (err) {
       setMessage(
         err.response?.data?.error ||
-          tr(
-            "Erreur lors du changement de la premiere image Home",
-            "Error while updating the first home image"
-          )
+          tr("Erreur lors de la suppression", "Error while deleting")
+      );
+    }
+  };
+
+  const handleUpdate = async () => {
+    if (!editingId || !editImageOriginal) return;
+
+    if (!String(editImage.title || "").trim()) {
+      setMessage(tr("Le titre est obligatoire.", "Title is required."));
+      return;
+    }
+
+    if (editImage.active && editHeroCountWithoutCurrent >= HERO_IMAGE_LIMIT) {
+      setMessage(
+        tr(
+          `Le Hero est limite a ${HERO_IMAGE_LIMIT} images.`,
+          `The hero is limited to ${HERO_IMAGE_LIMIT} images.`
+        )
+      );
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      let payload = buildGalleryPayload(
+        {
+          ...editImage,
+          active: editImage.isHomeBackground ? true : editImage.active,
+        },
+        editImage.sortOrder
+      );
+
+      if (editImageFile) {
+        const uploaded = await uploadGalleryImage(token, editImageFile);
+        payload = buildGalleryPayload(
+          {
+            ...editImage,
+            imageUrl: uploaded.imageUrl,
+            thumbnailUrl: uploaded.thumbnailUrl,
+            active: editImage.isHomeBackground ? true : editImage.active,
+          },
+          editImage.sortOrder
+        );
+      }
+
+      await updateGalleryImage(token, editingId, payload);
+
+      if (editImage.isHomeBackground && !editImageOriginal.isHomeBackground) {
+        setBackgroundSettingId(editingId);
+        await setGalleryHomeBackground(token, editingId);
+      }
+
+      setMessage(tr("Image mise a jour.", "Image updated."));
+      closeEditModal();
+      fetchImages();
+    } catch (err) {
+      setMessage(
+        err.response?.data?.error ||
+          tr("Erreur lors de la mise a jour", "Error while updating")
       );
     } finally {
+      setLoading(false);
       setBackgroundSettingId(null);
     }
   };
@@ -274,38 +407,74 @@ export default function GalleryAdmin() {
   }
 
   return (
-    <div className="space-y-5">
-      <h2 className="text-2xl font-bold text-white">
-        {tr("Gestion de la galerie Home", "Home gallery management")}
-      </h2>
+    <div className="space-y-6">
+      <div className="space-y-4">
+        <h2 className="text-2xl font-bold text-white">
+          {tr("Gestion de la galerie Home", "Home gallery management")}
+        </h2>
+        <p className="text-sm text-stone-300">
+          {tr(
+            "Les images actives alimentent le Hero defilant et la page Gallery. Le Hero est limite a 5 images.",
+            "Active images feed the rotating hero and the Gallery page. The hero is limited to 5 images."
+          )}
+        </p>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+            <p className="text-[11px] uppercase tracking-[0.2em] text-stone-400">
+              {tr("Images Hero", "Hero images")}
+            </p>
+            <p className="mt-2 text-2xl font-bold text-white">
+              {heroImagesCount} / {HERO_IMAGE_LIMIT}
+            </p>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+            <p className="text-[11px] uppercase tracking-[0.2em] text-stone-400">
+              {tr("Images total", "Total images")}
+            </p>
+            <p className="mt-2 text-2xl font-bold text-white">{sortedImages.length}</p>
+          </div>
+        </div>
+      </div>
+
       {message && (
-        <p className="rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-stone-200">{message}</p>
+        <p className="rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-stone-200">
+          {message}
+        </p>
       )}
 
-      <form onSubmit={handleCreate} className="space-y-3 rounded-2xl border border-white/10 bg-black/20 p-3 sm:p-4">
-        <h3 className="text-lg font-semibold text-white">{tr("Ajouter une image", "Add image")}</h3>
-        <div className="theme-light-keep-dark rounded-xl border border-amber-300/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
-          {tr(
-            `ATTENTION : les images activees ici alimentent le hero defilant de la Home et la page Gallery. Mettez uniquement des images d'au minimum ${getMinimumGallerySizeLabel()} pour un bon rendu sur les ecrans users.`,
-            `WARNING: active images here feed the Home rotating hero and the Gallery page. Only use images of at least ${getMinimumGallerySizeLabel()} for a good display on user screens.`
-          )}
+      <form
+        onSubmit={handleCreate}
+        className="space-y-5 rounded-[28px] border border-white/10 bg-black/20 p-4 shadow-[0_18px_50px_rgba(0,0,0,0.18)] sm:p-6"
+      >
+        <div className="space-y-2 text-center">
+          <h3 className="text-lg font-semibold text-white">
+            {tr("Ajouter une image", "Add image")}
+          </h3>
+          <p className="text-xs text-stone-400">
+            {tr(
+              `Utilisez des images d'au minimum ${getMinimumGallerySizeLabel()} pour un rendu propre sur le Hero.`,
+              `Use images at least ${getMinimumGallerySizeLabel()} for a clean hero rendering.`
+            )}
+          </p>
         </div>
-        <div className="flex flex-wrap gap-2">
+
+        <div className="flex flex-wrap justify-center gap-3">
           <button
             type="button"
-            className="!bg-white/10 !text-white hover:!bg-white/20"
+            className="rounded-full border border-white/20 bg-white/5 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
             onClick={() => newImageLibraryInputRef.current?.click()}
           >
             {tr("Choisir une photo", "Choose photo")}
           </button>
           <button
             type="button"
-            className="!bg-sky-700/80 !text-white hover:!bg-sky-600"
+            className="rounded-full border border-sky-500/40 bg-sky-500/10 px-5 py-2 text-sm font-semibold text-sky-100 transition hover:bg-sky-500/20"
             onClick={() => newImageCameraInputRef.current?.click()}
           >
             {tr("Prendre une photo", "Take photo")}
           </button>
         </div>
+
         <input
           ref={newImageLibraryInputRef}
           type="file"
@@ -322,52 +491,95 @@ export default function GalleryAdmin() {
           onChange={(event) => handleImagePick(setNewImageFile, event)}
         />
 
-        <ImagePreviewCard
+        <NewImagePreview
           previewUrl={newImagePreviewUrl}
           file={newImageFile}
           onClear={() => setNewImageFile(null)}
           tr={tr}
         />
 
-        <div className="grid gap-2 sm:grid-cols-2">
-          <label className="grid gap-1 text-xs text-stone-300">
-            <span>{tr("Titre (optionnel)", "Title (optional)")}</span>
+        <div className="grid gap-4 lg:grid-cols-2">
+          <label className="grid gap-1 text-sm text-stone-300">
+            <span>{tr("Titre", "Title")}</span>
             <input
               id="gallery-new-title"
-              placeholder={tr("Titre (optionnel)", "Title (optional)")}
+              required
+              placeholder={tr("Titre obligatoire", "Required title")}
               value={newImage.title}
-              onChange={(event) => setNewImage((prev) => ({ ...prev, title: event.target.value }))}
+              onChange={(event) =>
+                setNewImage((prev) => ({ ...prev, title: event.target.value }))
+              }
             />
           </label>
-          <label className="grid gap-1 text-xs text-stone-300">
+
+          <label className="grid gap-1 text-sm text-stone-300">
             <span>{tr("Description", "Description")}</span>
-            <input
+            <textarea
               id="gallery-new-description"
-              placeholder={tr("Description", "Description")}
+              rows="3"
+              placeholder={tr("Description optionnelle", "Optional description")}
               value={newImage.description}
-              onChange={(event) => setNewImage((prev) => ({ ...prev, description: event.target.value }))}
+              onChange={(event) =>
+                setNewImage((prev) => ({ ...prev, description: event.target.value }))
+              }
             />
           </label>
-          <label className="grid gap-1 text-xs text-stone-300">
-            <span>{tr("Texte alternatif", "Alt text")}</span>
-            <input
-              id="gallery-new-alt-text"
-              placeholder={tr("Texte alternatif", "Alt text")}
-              value={newImage.altText}
-              onChange={(event) => setNewImage((prev) => ({ ...prev, altText: event.target.value }))}
-            />
-          </label>
-          <label className="grid gap-1 text-xs text-stone-300">
-            <span>{tr("Ordre", "Order")}</span>
-            <input
-              id="gallery-new-sort-order"
-              type="number"
-              min="0"
-              placeholder={tr("Ordre", "Order")}
-              value={newImage.sortOrder}
-              onChange={(event) => setNewImage((prev) => ({ ...prev, sortOrder: event.target.value }))}
-            />
-          </label>
+        </div>
+
+        <div className="grid gap-3 lg:grid-cols-2">
+          <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-stone-200">
+            <p className="font-semibold text-white">
+              {tr("Texte alternatif", "Alt text")}
+            </p>
+            <p className="mt-1 text-stone-300">
+              {String(newImage.title || "").trim() ||
+                tr("Le titre sera copie ici automatiquement.", "The title will be copied here automatically.")}
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-stone-200">
+            <p className="font-semibold text-white">
+              {tr("Ordre par defaut", "Default order")}
+            </p>
+            <p className="mt-1 text-stone-300">
+              {tr(
+                `Cette image sera ajoutee en position ${nextSortOrder + 1}.`,
+                `This image will be added in position ${nextSortOrder + 1}.`
+              )}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+          <div>
+            <p className="text-sm font-semibold text-white">
+              {tr("Afficher dans Hero", "Show in hero")}
+            </p>
+            <p className="text-xs text-stone-400">
+              {tr(
+                `${heroImagesCount}/${HERO_IMAGE_LIMIT} images actuellement selectionnees.`,
+                `${heroImagesCount}/${HERO_IMAGE_LIMIT} images currently selected.`
+              )}
+            </p>
+          </div>
+          <StatusToggle
+            checked={newImage.active}
+            onChange={() => {
+              if (!newImage.active && !canEnableHeroOnCreate) {
+                setMessage(
+                  tr(
+                    `Le Hero est limite a ${HERO_IMAGE_LIMIT} images.`,
+                    `The hero is limited to ${HERO_IMAGE_LIMIT} images.`
+                  )
+                );
+                return;
+              }
+
+              setNewImage((prev) => ({ ...prev, active: !prev.active }));
+            }}
+            labelOn={tr("Retirer du Hero", "Remove from hero")}
+            labelOff={tr("Ajouter au Hero", "Add to hero")}
+          />
         </div>
 
         <button type="submit" disabled={loading} className="w-full">
@@ -375,189 +587,250 @@ export default function GalleryAdmin() {
         </button>
       </form>
 
-      <div className="space-y-3">
-        <h3 className="text-lg font-semibold text-white">{tr("Images enregistrees", "Saved images")}</h3>
-        <div className="theme-light-keep-dark rounded-xl border border-amber-300/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
-          {tr(
-            `Avant de cocher une image en actif, verifiez bien qu'elle fait au moins ${getMinimumGallerySizeLabel()}. L'image definie comme premiere apparait en premier dans le hero.`,
-            `Before checking an image as active, make sure it is at least ${getMinimumGallerySizeLabel()}. The image set as first appears first in the hero.`
-          )}
+      <section className="space-y-4">
+        <div className="space-y-1">
+          <h3 className="text-lg font-semibold text-white">
+            {tr("Images enregistrees", "Saved images")}
+          </h3>
+          <p className="text-sm text-stone-400">
+            {tr(
+              "Cliquez sur une image pour la modifier.",
+              "Click an image to edit it."
+            )}
+          </p>
         </div>
-        <div className="overflow-x-auto">
-          <table>
-            <thead>
-              <tr>
-                <th>{tr("Apercu", "Preview")}</th>
-                <th>{tr("Titre", "Title")}</th>
-                <th>{tr("Description", "Description")}</th>
-                <th>{tr("Ordre", "Order")}</th>
-                <th>{tr("Actif", "Active")}</th>
-                <th>{tr("Premiere image", "First image")}</th>
-                <th>{tr("Actions", "Actions")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {images.length === 0 && (
-                <tr>
-                  <td colSpan="7">{tr("Aucune image", "No image")}</td>
-                </tr>
-              )}
-              {images.map((image) => (
-                <tr key={image.id}>
-                  <td>
-                    <img
-                      src={image.thumbnailUrl || image.imageUrl}
-                      alt={image.altText || image.title || `${tr("Image", "Image")} ${image.id}`}
-                      className="h-[60px] w-[90px] rounded-md object-cover"
-                    />
-                  </td>
-                  <td>{image.title || "-"}</td>
-                  <td>{image.description || "-"}</td>
-                  <td>{image.sortOrder}</td>
-                  <td>{image.active ? tr("Oui", "Yes") : tr("Non", "No")}</td>
-                  <td>
-                    {image.isHomeBackground ? (
-                      <span className="rounded-full border border-emerald-300/40 bg-emerald-500/10 px-2 py-1 text-xs font-semibold text-emerald-200">
-                        {tr("En premier", "First")}
-                      </span>
-                    ) : (
-                      <span className="text-xs text-stone-400">{tr("Ordre normal", "Default order")}</span>
-                    )}
-                  </td>
-                  <td>
-                    <div className="flex min-w-[240px] items-center gap-2">
-                      <ActionIconButton onClick={() => startEditing(image)} label={tr("Modifier", "Edit")}>
-                        <EditIcon />
-                      </ActionIconButton>
-                      <StatusToggle
-                        checked={image.active}
-                        onChange={() => handleToggleActive(image)}
-                        labelOn={tr("Desactiver", "Disable")}
-                        labelOff={tr("Activer", "Enable")}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => handleSetHomeBackground(image)}
-                        disabled={image.isHomeBackground || backgroundSettingId === image.id}
-                        className="rounded-md border border-saffron/40 bg-saffron/15 px-2 py-1 text-xs font-semibold text-saffron transition hover:bg-saffron/30 disabled:cursor-not-allowed disabled:opacity-60"
-                      >
-                        {image.isHomeBackground
-                          ? tr("Premiere image", "First image")
-                          : backgroundSettingId === image.id
-                            ? tr("En cours...", "Updating...")
-                            : tr("Mettre en premier", "Set first")}
-                      </button>
-                      <ActionIconButton onClick={() => handleDelete(image.id)} label={tr("Supprimer", "Delete")} variant="danger">
-                        <DeleteIcon />
-                      </ActionIconButton>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+
+        {sortedImages.length === 0 ? (
+          <div className="rounded-2xl border border-white/10 bg-black/20 p-6 text-sm text-stone-300">
+            {tr("Aucune image enregistree.", "No saved image.")}
+          </div>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {sortedImages.map((image) => (
+              <GalleryImageCard
+                key={image.id}
+                image={image}
+                onClick={() => openEditModal(image)}
+                tr={tr}
+              />
+            ))}
+          </div>
+        )}
+      </section>
 
       {editingId && (
-        <div className="space-y-3 rounded-2xl border border-white/10 bg-black/20 p-3 sm:p-4">
-          <h3 className="text-lg font-semibold text-white">
-            {tr("Modifier l'image", "Edit image")}
-          </h3>
-          <div className="grid gap-2 sm:grid-cols-2">
-            <div className="sm:col-span-2">
-              <div className="flex flex-wrap gap-2">
+        <div className="fixed inset-0 z-[130] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+          <div className="max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-[30px] border border-white/15 bg-charcoal p-5 shadow-[0_30px_90px_rgba(0,0,0,0.45)] sm:p-6">
+            <div className="flex flex-wrap items-start justify-between gap-4 border-b border-white/10 pb-5">
+              <div className="min-w-0">
+                <p className="text-xs uppercase tracking-[0.25em] text-stone-400">
+                  {tr("Image", "Image")}
+                </p>
+                <h3 className="mt-1 truncate text-2xl font-bold text-white">
+                  {editImage.title || tr("Image sans titre", "Untitled image")}
+                </h3>
+                <p className="mt-2 text-sm text-stone-400">
+                  {isEditMode
+                    ? tr(
+                        "Les champs sont modifiables. Mettez a jour pour enregistrer.",
+                        "Fields are editable. Update to save."
+                      )
+                    : tr(
+                        "Cliquez sur le crayon pour activer la modification.",
+                        "Click the pencil to enable editing."
+                      )}
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <ActionIconButton
+                  onClick={() => setIsEditMode((prev) => !prev)}
+                  label={isEditMode ? tr("Verrouiller", "Lock") : tr("Modifier", "Edit")}
+                  className="h-10 w-10 rounded-full border border-white/15 bg-white/5"
+                >
+                  <EditIcon className="h-4 w-4" />
+                </ActionIconButton>
                 <button
                   type="button"
-                  className="!bg-white/10 !text-white hover:!bg-white/20"
+                  onClick={() => handleDelete(editingId)}
+                  className="rounded-full border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm font-semibold text-red-200 transition hover:bg-red-500/20"
+                >
+                  {tr("Supprimer", "Delete")}
+                </button>
+                <button
+                  type="button"
+                  onClick={closeEditModal}
+                  className="rounded-full border border-white/15 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
+                >
+                  {tr("Fermer", "Close")}
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-center">
+              <div className="w-full max-w-md overflow-hidden rounded-[26px] border border-white/10 bg-black/25 shadow-[0_18px_50px_rgba(0,0,0,0.2)]">
+                <img
+                  src={editImagePreviewUrl || editImage.imageUrl}
+                  alt={editImage.title || tr("Image galerie", "Gallery image")}
+                  className="mx-auto h-72 w-full object-cover"
+                />
+              </div>
+            </div>
+
+            {isEditMode && (
+              <div className="mt-4 flex flex-wrap justify-center gap-3">
+                <button
+                  type="button"
+                  className="rounded-full border border-white/20 bg-white/5 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
                   onClick={() => editImageLibraryInputRef.current?.click()}
                 >
                   {tr("Choisir une photo", "Choose photo")}
                 </button>
                 <button
                   type="button"
-                  className="!bg-sky-700/80 !text-white hover:!bg-sky-600"
+                  className="rounded-full border border-sky-500/40 bg-sky-500/10 px-5 py-2 text-sm font-semibold text-sky-100 transition hover:bg-sky-500/20"
                   onClick={() => editImageCameraInputRef.current?.click()}
                 >
                   {tr("Prendre une photo", "Take photo")}
                 </button>
+                <input
+                  ref={editImageLibraryInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(event) => handleImagePick(setEditImageFile, event)}
+                />
+                <input
+                  ref={editImageCameraInputRef}
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="hidden"
+                  onChange={(event) => handleImagePick(setEditImageFile, event)}
+                />
               </div>
-              <input
-                ref={editImageLibraryInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(event) => handleImagePick(setEditImageFile, event)}
-              />
-              <input
-                ref={editImageCameraInputRef}
-                type="file"
-                accept="image/*"
-                capture="environment"
-                className="hidden"
-                onChange={(event) => handleImagePick(setEditImageFile, event)}
-              />
+            )}
+
+            <div className="mt-6 grid gap-4 rounded-[26px] border border-white/10 bg-white/5 p-4 lg:grid-cols-2">
+              <label className="grid gap-1 text-sm text-stone-300">
+                <span>{tr("Titre image", "Image title")}</span>
+                <input
+                  value={editImage.title}
+                  disabled={!isEditMode}
+                  onChange={(event) =>
+                    setEditImage((prev) => ({ ...prev, title: event.target.value }))
+                  }
+                />
+              </label>
+
+              <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-stone-200">
+                <p className="font-semibold text-white">
+                  {tr("Texte alternatif", "Alt text")}
+                </p>
+                <p className="mt-1 text-stone-300">
+                  {String(editImage.title || "").trim() ||
+                    tr("Le titre sera copie automatiquement.", "The title will be copied automatically.")}
+                </p>
+              </div>
+
+              <label className="grid gap-1 text-sm text-stone-300 lg:col-span-2">
+                <span>{tr("Description", "Description")}</span>
+                <textarea
+                  rows="4"
+                  value={editImage.description}
+                  disabled={!isEditMode}
+                  onChange={(event) =>
+                    setEditImage((prev) => ({ ...prev, description: event.target.value }))
+                  }
+                />
+              </label>
             </div>
-            <label className="grid gap-1 text-xs text-stone-300">
-              <span>{tr("Titre", "Title")}</span>
-              <input
-                id="gallery-edit-title"
-                placeholder={tr("Titre", "Title")}
-                value={editImage.title}
-                onChange={(event) => setEditImage((prev) => ({ ...prev, title: event.target.value }))}
-              />
-            </label>
-            <label className="grid gap-1 text-xs text-stone-300">
-              <span>{tr("Description", "Description")}</span>
-              <input
-                id="gallery-edit-description"
-                placeholder={tr("Description", "Description")}
-                value={editImage.description}
-                onChange={(event) => setEditImage((prev) => ({ ...prev, description: event.target.value }))}
-              />
-            </label>
-            <label className="grid gap-1 text-xs text-stone-300">
-              <span>{tr("Texte alternatif", "Alt text")}</span>
-              <input
-                id="gallery-edit-alt-text"
-                placeholder={tr("Texte alternatif", "Alt text")}
-                value={editImage.altText}
-                onChange={(event) => setEditImage((prev) => ({ ...prev, altText: event.target.value }))}
-              />
-            </label>
-            <label className="grid gap-1 text-xs text-stone-300">
-              <span>{tr("Ordre", "Order")}</span>
-              <input
-                id="gallery-edit-sort-order"
-                type="number"
-                min="0"
-                placeholder={tr("Ordre", "Order")}
-                value={editImage.sortOrder}
-                onChange={(event) => setEditImage((prev) => ({ ...prev, sortOrder: event.target.value }))}
-              />
-            </label>
-          </div>
 
-          <ImagePreviewCard
-            previewUrl={editImagePreviewUrl || editImage.imageUrl}
-            file={editImageFile}
-            onClear={() => setEditImageFile(null)}
-            tr={tr}
-          />
+            <div className="mt-6 space-y-3">
+              <div className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+                <div>
+                  <p className="text-sm font-semibold text-white">
+                    {tr(
+                      "Definir comme image d'arriere-plan accueil",
+                      "Set as home background image"
+                    )}
+                  </p>
+                  <p className="text-xs text-stone-400">
+                    {editImage.isHomeBackground
+                      ? tr(
+                          "Cette image est deja la premiere du Hero. Pour en changer, activez ce choix sur une autre image.",
+                          "This image is already the first hero image. To change it, enable this option on another image."
+                        )
+                      : tr(
+                          "Cette image apparaitra en premiere position dans le Hero.",
+                          "This image will appear first in the hero."
+                        )}
+                  </p>
+                </div>
+                <StatusToggle
+                  checked={editImage.isHomeBackground}
+                  disabled={!isEditMode || editImage.isHomeBackground || backgroundSettingId === editingId}
+                  onChange={() =>
+                    setEditImage((prev) => ({
+                      ...prev,
+                      isHomeBackground: true,
+                      active: true,
+                    }))
+                  }
+                  labelOn={tr("Image d'accueil active", "Home image active")}
+                  labelOff={tr("Definir pour l'accueil", "Set for home")}
+                />
+              </div>
 
-          <label className="inline-flex items-center gap-2 text-sm text-stone-200">
-            <input
-              type="checkbox"
-              checked={editImage.active}
-              onChange={(event) => setEditImage((prev) => ({ ...prev, active: event.target.checked }))}
-            />
-            {tr("Active", "Active")}
-          </label>
-          <div className="flex flex-wrap gap-2">
-            <button onClick={handleUpdate} disabled={loading}>
-              {tr("Sauvegarder", "Save")}
-            </button>
-            <button onClick={cancelEditing}>{tr("Annuler", "Cancel")}</button>
+              <div className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+                <div>
+                  <p className="text-sm font-semibold text-white">
+                    {tr("Actif / Inactif", "Active / Inactive")}
+                  </p>
+                  <p className="text-xs text-stone-400">
+                    {tr(
+                      `${heroImagesCount}/${HERO_IMAGE_LIMIT} images actives dans le Hero.`,
+                      `${heroImagesCount}/${HERO_IMAGE_LIMIT} active hero images.`
+                    )}
+                  </p>
+                </div>
+                <StatusToggle
+                  checked={editImage.active}
+                  disabled={!isEditMode || editImage.isHomeBackground}
+                  onChange={() => {
+                    if (!editImage.active && !canEnableHeroOnEdit) {
+                      setMessage(
+                        tr(
+                          `Le Hero est limite a ${HERO_IMAGE_LIMIT} images.`,
+                          `The hero is limited to ${HERO_IMAGE_LIMIT} images.`
+                        )
+                      );
+                      return;
+                    }
+
+                    setEditImage((prev) => ({
+                      ...prev,
+                      active: !prev.active,
+                    }));
+                  }}
+                  labelOn={tr("Desactiver", "Disable")}
+                  labelOff={tr("Activer", "Enable")}
+                />
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end gap-2 border-t border-white/10 pt-5">
+              {isEditMode && (
+                <button
+                  type="button"
+                  onClick={handleUpdate}
+                  disabled={loading || !hasEditChanges}
+                  className="rounded-full bg-saffron px-5 py-2 text-sm font-bold uppercase tracking-wide text-charcoal transition hover:bg-yellow-300 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {tr("Mettre a jour", "Update")}
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}

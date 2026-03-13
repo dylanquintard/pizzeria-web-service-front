@@ -6,7 +6,7 @@ import { BLOG_ARTICLES } from "../seo/blogContent";
 export default function Blog() {
   const title = "Blog pizza napolitaine | Pizza Truck";
   const description =
-    "Blog Pizza Truck: guides complets sur la pizza napolitaine, la cuisson, les ingredients italiens et le savoir faire artisanal.";
+    "Analyses et articles sur la pate, la cuisson, les ingredients et les choix techniques qui structurent une pizza mieux executee.";
 
   return (
     <div className="section-shell space-y-8 pb-20 pt-10">
@@ -18,8 +18,8 @@ export default function Blog() {
           Blog pizza napolitaine
         </h1>
         <p className="max-w-3xl text-sm text-stone-300 sm:text-base">
-          Retrouvez nos articles sur la pizza napolitaine artisanale, la cuisson au feu de bois, les produits italiens
-          et les choix techniques qui font la qualite d une pizza.
+          Des articles sur le produit, pas sur le folklore: travail de pate, lecture du four, ingredients et
+          organisation d un service qui tient la route.
         </p>
       </header>
 
