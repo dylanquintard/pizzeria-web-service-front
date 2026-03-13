@@ -63,70 +63,39 @@ export default function Blog() {
     <div className="section-shell space-y-8 pb-20 pt-10">
       <SeoHead title={title} description={description} pathname="/blog" />
 
-      <header className="overflow-hidden rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,_rgba(250,204,21,0.2),_transparent_34%),radial-gradient(circle_at_bottom_right,_rgba(120,53,15,0.35),_transparent_32%),linear-gradient(135deg,_rgba(255,255,255,0.05),_rgba(255,255,255,0.02))] p-6 sm:p-8 lg:p-10">
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_380px]">
-          <div className="space-y-5">
-            <p className="text-xs uppercase tracking-[0.3em] text-saffron">Blog pizza napolitaine</p>
-            <div className="space-y-4">
-              <h1 className="max-w-4xl font-display text-4xl uppercase tracking-wide text-white sm:text-5xl">
-                Farine, tomates, mozzarella et geste napolitain
-              </h1>
-              <p className="max-w-3xl text-sm leading-7 text-stone-300 sm:text-base">
-                Ici, on parle de pizza avec un angle simple et concret : la qualite des
-                produits italiens, l equilibre de la pate, la cuisson et les choix qui
-                changent vraiment le resultat final.
-              </p>
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              {["Produits italiens", "Pate & fermentation", "Cuisson napolitaine"].map((item) => (
-                <span
-                  key={item}
-                  className="rounded-full border border-white/10 bg-black/20 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-200"
-                >
-                  {item}
-                </span>
-              ))}
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              <Link
-                to="/menu"
-                className="rounded-full bg-saffron px-4 py-2 text-xs font-bold uppercase tracking-wide text-charcoal transition hover:bg-yellow-300"
-              >
-                Voir le menu
-              </Link>
-              <Link
-                to="/a-propos"
-                className="rounded-full border border-white/30 px-4 py-2 text-xs font-semibold text-white transition hover:bg-white/10"
-              >
-                Notre approche
-              </Link>
-            </div>
+      <header className="overflow-hidden rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,_rgba(250,204,21,0.2),_transparent_34%),radial-gradient(circle_at_bottom_right,_rgba(120,53,15,0.35),_transparent_32%),linear-gradient(135deg,_rgba(255,255,255,0.05),_rgba(255,255,255,0.02))] p-6 sm:p-8">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_180px] lg:items-start">
+          <div className="space-y-4">
+            <p className="text-xs uppercase tracking-[0.3em] text-saffron">Blog</p>
+            <h1 className="max-w-4xl font-display text-4xl uppercase tracking-wide text-white sm:text-5xl">
+              Farines, tomates, mozzarella & surtout la pizza !
+            </h1>
+            <p className="max-w-3xl text-sm leading-7 text-stone-300 sm:text-base">
+              Ici on parle d'italie, de saveurs, de savoir faire et de qualite !
+            </p>
           </div>
 
-          <div className="grid gap-4 self-start">
-            <div className="rounded-[1.75rem] border border-white/10 bg-black/25 p-5">
-              <p className="text-xs uppercase tracking-[0.22em] text-stone-400">Ligne editoriale</p>
-              <p className="mt-4 text-lg font-semibold leading-8 text-white">
-                Des articles centres sur le gout, la matiere premiere et les choix qui
-                donnent une pizza plus nette, plus legere et plus reguliere.
-              </p>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-2">
-              <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
-                <p className="text-xs uppercase tracking-[0.2em] text-stone-400">Articles</p>
-                <p className="mt-2 text-3xl font-bold text-white">{articles.length}</p>
-              </div>
-              <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
-                <p className="text-xs uppercase tracking-[0.2em] text-stone-400">Focus</p>
-                <p className="mt-2 text-sm leading-6 text-stone-200">
-                  Ingredients italiens, cuisson et lecture rapide.
-                </p>
-              </div>
+          <div className="lg:justify-self-end">
+            <div className="rounded-[1.4rem] border border-white/10 bg-black/20 px-4 py-3">
+              <p className="text-[10px] uppercase tracking-[0.2em] text-stone-400">Articles</p>
+              <p className="mt-1 text-2xl font-bold text-white">{articles.length}</p>
             </div>
           </div>
+        </div>
+
+        <div className="mt-5 flex flex-wrap justify-start gap-2 lg:justify-end">
+          <Link
+            to="/menu"
+            className="rounded-full bg-saffron px-4 py-2 text-xs font-bold uppercase tracking-wide text-charcoal transition hover:bg-yellow-300"
+          >
+            Voir le menu
+          </Link>
+          <Link
+            to="/a-propos"
+            className="rounded-full border border-white/30 px-4 py-2 text-xs font-semibold text-white transition hover:bg-white/10"
+          >
+            Notre approche
+          </Link>
         </div>
       </header>
 
