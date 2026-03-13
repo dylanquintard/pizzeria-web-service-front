@@ -12,6 +12,7 @@ const adminLinks = [
   { to: "/admin/tickets", labelFr: "Tickets", labelEn: "Tickets" },
   { to: "/admin/users", labelFr: "Clients", labelEn: "Users" },
   { to: "/admin/gallery", labelFr: "Galerie", labelEn: "Gallery" },
+  { to: "/admin/blog", labelFr: "Blog", labelEn: "Blog" },
 ];
 
 export default function Dashboard({ children }) {

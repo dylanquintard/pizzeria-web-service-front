@@ -1,142 +1,309 @@
-import { Link, Navigate, useParams } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import { getPublishedBlogArticleBySlug } from "../api/blog.api";
 import SeoHead from "../components/seo/SeoHead";
 import SeoInternalLinks from "../components/seo/SeoInternalLinks";
 import { SITE_URL } from "../config/env";
-import { getBlogArticleBySlug } from "../seo/blogContent";
+import NotFound from "./NotFound";
 
-export default function BlogArticle() {
+function formatArticleDate(value) {
+  if (!value) return "";
+
+  try {
+    return new Intl.DateTimeFormat("fr-FR", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    }).format(new Date(value));
+  } catch (_err) {
+    return "";
+  }
+}
+
+function splitContentBlocks(content) {
+  return String(content || "")
+    .split(/\n{2,}/)
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+}
+
+export default function BlogArticle({ forcedSlug = "" }) {
   const params = useParams();
-  const article = getBlogArticleBySlug(params.slug);
+  const resolvedSlug = String(forcedSlug || params.slug || "").trim().toLowerCase();
 
-  if (!article) {
-    return <Navigate to="/blog" replace />;
+  const [article, setArticle] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!resolvedSlug) {
+      setArticle(null);
+      setLoading(false);
+      setNotFound(true);
+      return undefined;
+    }
+
+    let cancelled = false;
+
+    async function loadArticle() {
+      try {
+        setLoading(true);
+        const data = await getPublishedBlogArticleBySlug(resolvedSlug);
+        if (!cancelled) {
+          setArticle(data || null);
+          setNotFound(false);
+          setError("");
+        }
+      } catch (err) {
+        if (!cancelled) {
+          const status = Number(err?.response?.status || 0);
+          setArticle(null);
+          setNotFound(status === 404);
+          setError(
+            status === 404
+              ? ""
+              : err?.response?.data?.error || "Impossible de charger cet article."
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadArticle();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [resolvedSlug]);
+
+  const pathname = article ? `/${article.slug}` : resolvedSlug ? `/${resolvedSlug}` : "/blog";
+  const articleImage = article?.featuredImage?.imageUrl || "/pizza-background-1920.webp";
+  const articleSeoTitle = article?.metaTitle || article?.title || "Article";
+  const articleSeoDescription = article?.metaDescription || article?.description || "";
+
+  const articleJsonLd = useMemo(() => {
+    if (!article) return null;
+
+    const articleUrl = `${SITE_URL}${pathname}`;
+    const publishedAt = article.publishedAt || article.createdAt;
+    const updatedAt = article.updatedAt || publishedAt;
+
+    return {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      headline: articleSeoTitle,
+      description: articleSeoDescription,
+      url: articleUrl,
+      image: articleImage.startsWith("http") ? articleImage : `${SITE_URL}${articleImage}`,
+      datePublished: publishedAt,
+      dateModified: updatedAt,
+      mainEntityOfPage: {
+        "@type": "WebPage",
+        "@id": articleUrl,
+      },
+      author: {
+        "@type": "Organization",
+        name: "Pizza Truck",
+      },
+      publisher: {
+        "@type": "Organization",
+        name: "Pizza Truck",
+        logo: {
+          "@type": "ImageObject",
+          url: `${SITE_URL}/logo.webp`,
+        },
+      },
+    };
+  }, [article, articleImage, articleSeoDescription, articleSeoTitle, pathname]);
+
+  if (loading) {
+    return (
+      <div className="section-shell space-y-6 pb-20 pt-10">
+        <div className="glass-panel animate-pulse space-y-4 p-8">
+          <div className="h-3 w-28 rounded bg-white/10" />
+          <div className="h-12 w-3/4 rounded bg-white/10" />
+          <div className="h-24 rounded bg-white/10" />
+        </div>
+        <div className="glass-panel animate-pulse space-y-4 p-8">
+          <div className="h-8 w-1/2 rounded bg-white/10" />
+          <div className="h-32 rounded bg-white/10" />
+        </div>
+      </div>
+    );
   }
 
-  const pathname = `/blog/${article.slug}`;
-  const articleUrl = `${SITE_URL}${pathname}`;
-  const articleImage = article.image || "/pizza-background-1920.webp";
-  const publishedAt = article.publishedAt || "2026-03-01";
-  const updatedAt = article.updatedAt || publishedAt;
-  const articleJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    headline: article.title,
-    description: article.description,
-    url: articleUrl,
-    image: articleImage.startsWith("http") ? articleImage : `${SITE_URL}${articleImage}`,
-    datePublished: publishedAt,
-    dateModified: updatedAt,
-    mainEntityOfPage: {
-      "@type": "WebPage",
-      "@id": articleUrl,
-    },
-    author: {
-      "@type": "Organization",
-      name: "Pizza Truck",
-    },
-    publisher: {
-      "@type": "Organization",
-      name: "Pizza Truck",
-      logo: {
-        "@type": "ImageObject",
-        url: `${SITE_URL}/logo.webp`,
-      },
-    },
-  };
+  if (notFound) {
+    return <NotFound />;
+  }
+
+  if (!article) {
+    return (
+      <div className="section-shell space-y-6 pb-20 pt-10">
+        <SeoHead
+          title="Article indisponible | Pizza Truck"
+          description="Cet article est temporairement indisponible."
+          pathname={pathname}
+          robots="noindex,nofollow"
+        />
+        <div className="rounded-2xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm text-red-100">
+          {error || "Cet article est indisponible pour le moment."}
+        </div>
+        <Link
+          to="/blog"
+          className="inline-flex rounded-full border border-white/20 px-4 py-2 text-xs font-semibold text-white transition hover:bg-white/10"
+        >
+          Retour au blog
+        </Link>
+      </div>
+    );
+  }
+
+  const publishedLabel = formatArticleDate(article.publishedAt || article.createdAt);
+  const galleryImages = Array.isArray(article.images) ? article.images : [];
 
   return (
     <div className="section-shell space-y-8 pb-20 pt-10">
       <SeoHead
-        title={`${article.title} | Blog Pizza Truck`}
-        description={article.description}
+        title={`${articleSeoTitle} | Blog Pizza Truck`}
+        description={articleSeoDescription}
         pathname={pathname}
         image={articleImage}
         ogType="article"
         jsonLd={articleJsonLd}
       />
 
-      <header className="space-y-3">
-        <p className="text-xs uppercase tracking-[0.25em] text-saffron">Article</p>
-        <h1 className="font-display text-4xl uppercase tracking-wide text-white sm:text-5xl">
-          {article.title}
-        </h1>
-        <p className="max-w-3xl text-sm text-stone-300 sm:text-base">{article.description}</p>
+      <header
+        className="overflow-hidden rounded-[2rem] border border-white/10 bg-cover bg-center p-6 sm:p-8 lg:p-10"
+        style={{
+          backgroundImage: `linear-gradient(135deg, rgba(0, 0, 0, 0.72), rgba(36, 25, 12, 0.84)), url('${articleImage}')`,
+        }}
+      >
+        <div className="max-w-4xl space-y-4">
+          <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.2em] text-stone-300">
+            <Link to="/blog" className="rounded-full border border-white/20 px-3 py-1 hover:bg-white/10">
+              Blog
+            </Link>
+            {publishedLabel ? (
+              <span className="rounded-full border border-saffron/40 px-3 py-1 text-saffron">
+                {publishedLabel}
+              </span>
+            ) : null}
+            <span className="rounded-full border border-white/20 px-3 py-1">
+              /{article.slug}
+            </span>
+          </div>
+
+          <h1 className="font-display text-4xl uppercase tracking-wide text-white sm:text-5xl lg:text-6xl">
+            {article.title}
+          </h1>
+          <p className="max-w-3xl text-sm leading-7 text-stone-200 sm:text-base">
+            {article.description}
+          </p>
+        </div>
       </header>
 
-      {Array.isArray(article.intro) && article.intro.length > 0 && (
-        <section className="glass-panel p-6">
-          {article.intro.map((paragraph, index) => (
-            <p key={`intro-${index}`} className="text-sm leading-7 text-stone-300">
-              {paragraph}
-            </p>
+      {galleryImages.length > 0 ? (
+        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {galleryImages.map((image, index) => (
+            <figure
+              key={image.id || `${image.imageUrl}-${index}`}
+              className={`overflow-hidden rounded-[1.75rem] border border-white/10 bg-white/5 ${
+                index === 0 ? "md:col-span-2 xl:col-span-2" : ""
+              }`}
+            >
+              <img
+                src={image.imageUrl}
+                alt={image.altText || article.title}
+                className={`w-full object-cover ${index === 0 ? "h-[360px]" : "h-64"}`}
+              />
+              {image.caption ? (
+                <figcaption className="border-t border-white/10 px-4 py-3 text-sm text-stone-300">
+                  {image.caption}
+                </figcaption>
+              ) : null}
+            </figure>
           ))}
         </section>
-      )}
+      ) : null}
 
-      {Array.isArray(article.sections) &&
-        article.sections.map((section, sectionIndex) => (
-          <section key={`${section.heading}-${sectionIndex}`} className="glass-panel p-6">
-            <h2 className="text-2xl font-bold text-white">{section.heading}</h2>
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
+        <div className="space-y-5">
+          {article.paragraphs.map((paragraph, index) => (
+            <section
+              key={paragraph.id || `${paragraph.title}-${index}`}
+              id={`section-${paragraph.id || index}`}
+              className="glass-panel rounded-[1.75rem] p-6 sm:p-7"
+            >
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-saffron/35 bg-saffron/10 text-sm font-bold text-saffron">
+                  {index + 1}
+                </span>
+                <h2 className="text-2xl font-bold text-white">{paragraph.title}</h2>
+              </div>
 
-            {Array.isArray(section.blocks) &&
-              section.blocks.map((block, blockIndex) => (
-                <div key={`${section.heading}-block-${blockIndex}`} className="mt-5">
-                  {block.subheading ? (
-                    <h3 className="text-lg font-semibold text-white">{block.subheading}</h3>
-                  ) : null}
+              <div className="mt-5 space-y-4">
+                {splitContentBlocks(paragraph.content).map((block, blockIndex) => (
+                  <p
+                    key={`${paragraph.id || index}-block-${blockIndex}`}
+                    className="text-sm leading-8 text-stone-300 sm:text-[15px]"
+                  >
+                    {block}
+                  </p>
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
 
-                  {Array.isArray(block.paragraphs) &&
-                    block.paragraphs.map((paragraph, paragraphIndex) => (
-                      <p
-                        key={`${section.heading}-paragraph-${blockIndex}-${paragraphIndex}`}
-                        className="mt-3 text-sm leading-7 text-stone-300"
-                      >
-                        {paragraph}
-                      </p>
-                    ))}
-
-                  {Array.isArray(block.list) && block.list.length > 0 ? (
-                    <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-stone-300">
-                      {block.list.map((item) => (
-                        <li key={`${section.heading}-${blockIndex}-${item}`}>{item}</li>
-                      ))}
-                    </ul>
-                  ) : null}
-                </div>
+        <aside className="space-y-4">
+          <div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5">
+            <p className="text-xs uppercase tracking-[0.25em] text-saffron">Sommaire</p>
+            <div className="mt-4 space-y-2">
+              {article.paragraphs.map((paragraph, index) => (
+                <a
+                  key={`toc-${paragraph.id || index}`}
+                  href={`#section-${paragraph.id || index}`}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    const target = document.getElementById(`section-${paragraph.id || index}`);
+                    target?.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }}
+                  className="block rounded-2xl border border-white/10 px-4 py-3 text-sm text-stone-200 transition hover:border-saffron/40 hover:bg-saffron/10 hover:text-white"
+                >
+                  {index + 1}. {paragraph.title}
+                </a>
               ))}
-          </section>
-        ))}
+            </div>
+          </div>
 
-      {Array.isArray(article.conclusion) && article.conclusion.length > 0 && (
-        <section className="glass-panel p-6">
-          <h2 className="text-2xl font-bold text-white">Conclusion</h2>
-          {article.conclusion.map((paragraph, index) => (
-            <p key={`conclusion-${index}`} className="mt-3 text-sm leading-7 text-stone-300">
-              {paragraph}
-            </p>
-          ))}
-        </section>
-      )}
-
-      <div className="flex flex-wrap gap-2">
-        <Link
-          to="/blog"
-          className="rounded-full border border-white/30 px-4 py-2 text-xs font-semibold text-white transition hover:bg-white/10"
-        >
-          Retour au blog
-        </Link>
-        <Link
-          to="/menu"
-          className="rounded-full bg-saffron px-4 py-2 text-xs font-bold uppercase tracking-wide text-charcoal transition hover:bg-yellow-300"
-        >
-          Voir le menu
-        </Link>
-        <Link
-          to="/planing"
-          className="rounded-full border border-saffron/60 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-saffron transition hover:bg-saffron/10"
-        >
-          Voir les horaires d'ouvertures
-        </Link>
+          <div className="rounded-[1.75rem] border border-white/10 bg-black/20 p-5">
+            <p className="text-xs uppercase tracking-[0.25em] text-stone-400">Continuer</p>
+            <div className="mt-4 flex flex-col gap-2">
+              <Link
+                to="/blog"
+                className="rounded-full border border-white/20 px-4 py-2 text-center text-xs font-semibold text-white transition hover:bg-white/10"
+              >
+                Retour au blog
+              </Link>
+              <Link
+                to="/menu"
+                className="rounded-full bg-saffron px-4 py-2 text-center text-xs font-bold uppercase tracking-wide text-charcoal transition hover:bg-yellow-300"
+              >
+                Voir le menu
+              </Link>
+              <Link
+                to="/planing"
+                className="rounded-full border border-saffron/60 px-4 py-2 text-center text-xs font-semibold uppercase tracking-wide text-saffron transition hover:bg-saffron/10"
+              >
+                Horaires d'ouvertures
+              </Link>
+            </div>
+          </div>
+        </aside>
       </div>
 
       <SeoInternalLinks />

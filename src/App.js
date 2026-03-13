@@ -23,6 +23,7 @@ const LocalSeoPage = lazy(() => import("./pages/LocalSeoPage"));
 const CitySeoPage = lazy(() => import("./pages/CitySeoPage"));
 const Blog = lazy(() => import("./pages/Blog"));
 const BlogArticle = lazy(() => import("./pages/BlogArticle"));
+const BlogAdmin = lazy(() => import("./pages/BlogAdmin"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Ingredients = lazy(() => import("./pages/Ingredients"));
 const Locations = lazy(() => import("./pages/Locations"));
@@ -77,13 +78,29 @@ const LegacyPizzaCityRoute = () => {
   return <Navigate to={`/pizza-${slug}`} replace />;
 };
 
-const PizzaSlugRoute = () => {
-  const location = useLocation();
-  const match = /^\/pizza-([a-z0-9-]+)$/.exec(String(location.pathname || "").toLowerCase());
-  if (!match) {
-    return <NotFound />;
+const LegacyBlogArticleRoute = () => {
+  const { slug } = useParams();
+  const normalizedSlug = String(slug || "").trim().toLowerCase();
+  if (!normalizedSlug) {
+    return <Navigate to="/blog" replace />;
   }
-  return <CitySeoPage forcedCitySlug={match[1]} />;
+  return <Navigate to={`/${normalizedSlug}`} replace />;
+};
+
+const CatchAllRoute = () => {
+  const location = useLocation();
+  const pathname = String(location.pathname || "").toLowerCase();
+  const pizzaMatch = /^\/pizza-([a-z0-9-]+)$/.exec(pathname);
+  if (pizzaMatch) {
+    return <CitySeoPage forcedCitySlug={pizzaMatch[1]} />;
+  }
+
+  const blogMatch = /^\/([a-z0-9-]+)$/.exec(pathname);
+  if (blogMatch) {
+    return <BlogArticle forcedSlug={blogMatch[1]} />;
+  }
+
+  return <NotFound />;
 };
 
 function AppRoutes() {
@@ -107,7 +124,7 @@ function AppRoutes() {
           <Route path="/a-propos" element={<APropos />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/blog" element={<Blog />} />
-          <Route path="/blog/:slug" element={<BlogArticle />} />
+          <Route path="/blog/:slug" element={<LegacyBlogArticleRoute />} />
           <Route path="/pizza-napolitaine-thionville" element={<LocalSeoPage cityKey="thionville" />} />
           <Route path="/pizza-napolitaine-metz" element={<LocalSeoPage cityKey="metz" />} />
           <Route path="/food-truck-pizza-moselle" element={<LocalSeoPage cityKey="moselle" />} />
@@ -267,6 +284,16 @@ function AppRoutes() {
             }
           />
           <Route
+            path="/admin/blog"
+            element={
+              <AdminRoute>
+                <Dashboard>
+                  <BlogAdmin />
+                </Dashboard>
+              </AdminRoute>
+            }
+          />
+          <Route
             path="/admin/editproduct/:id"
             element={
               <AdminRoute>
@@ -276,7 +303,7 @@ function AppRoutes() {
               </AdminRoute>
             }
           />
-          <Route path="*" element={<PizzaSlugRoute />} />
+          <Route path="*" element={<CatchAllRoute />} />
         </Route>
       </Routes>
     </Suspense>

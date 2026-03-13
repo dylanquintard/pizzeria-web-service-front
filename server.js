@@ -16,13 +16,6 @@ const FIXED_CITY_CATALOG = [
   { slug: "moselle", label: "Moselle" },
 ];
 const FIXED_CITY_SLUGS = new Set(FIXED_CITY_CATALOG.map((item) => item.slug));
-const DEFAULT_BLOG_SLUGS = new Set([
-  "pourquoi-la-pizza-napolitaine-est-differente",
-  "la-cuisson-au-feu-de-bois",
-  "les-ingredients-italiens-authentiques",
-  "la-farine-nuvola-super",
-  "tomates-san-marzano",
-]);
 
 const STATIC_PAGE_META = {
   "/": {
@@ -72,34 +65,6 @@ const STATIC_PAGE_META = {
   },
 };
 
-const BLOG_META_BY_SLUG = {
-  "pourquoi-la-pizza-napolitaine-est-differente": {
-    title: "Pourquoi la pizza napolitaine est differente",
-    description:
-      "Comprendre ce qui distingue une pizza napolitaine artisanale: pate, cuisson, ingredients et texture.",
-  },
-  "la-cuisson-au-feu-de-bois": {
-    title: "La cuisson au feu de bois",
-    description:
-      "Decouvrez pourquoi la cuisson au feu de bois apporte une texture legere et un gout typique a la pizza.",
-  },
-  "les-ingredients-italiens-authentiques": {
-    title: "Les ingredients italiens authentiques",
-    description:
-      "Tour d'horizon des ingredients italiens utilises pour une pizza napolitaine artisanale.",
-  },
-  "la-farine-nuvola-super": {
-    title: "La farine Nuvola Super",
-    description:
-      "Pourquoi la farine Nuvola Super est appreciee pour obtenir une pate napolitaine alveolee.",
-  },
-  "tomates-san-marzano": {
-    title: "Tomates San Marzano",
-    description:
-      "Ce qu'apportent les tomates San Marzano dans la sauce d'une pizza napolitaine.",
-  },
-};
-
 const EXACT_SPA_ROUTES = new Set([
   "/",
   "/menu",
@@ -130,7 +95,8 @@ const seoCache = {
   citySlugs: new Set(FIXED_CITY_SLUGS),
   cityLabelsBySlug: new Map(FIXED_CITY_CATALOG.map((entry) => [entry.slug, entry.label])),
   citySlugByLocationId: new Map(),
-  blogSlugs: new Set(DEFAULT_BLOG_SLUGS),
+  blogSlugs: new Set(),
+  blogMetaBySlug: new Map(),
 };
 
 let indexTemplate = "";
@@ -218,6 +184,29 @@ function normalizeSeoLocationCatalog(payload) {
   return [...deduped.values()];
 }
 
+function normalizeSeoBlogArticleCatalog(payload) {
+  const source = Array.isArray(payload?.articles) ? payload.articles : [];
+  if (!source.length) return [];
+
+  const deduped = new Map();
+  for (const row of source) {
+    const slug = slugify(row?.slug);
+    if (!slug) continue;
+
+    deduped.set(slug, {
+      slug,
+      title: String(row?.title || "").trim() || titleizeSlug(slug),
+      description:
+        String(row?.description || "").trim() ||
+        "Article du blog Pizza Truck sur la pizza napolitaine artisanale.",
+      image:
+        String(row?.image?.imageUrl || row?.imageUrl || "").trim() || "",
+    });
+  }
+
+  return [...deduped.values()];
+}
+
 function escapeHtml(value) {
   return String(value || "")
     .replaceAll("&", "&amp;")
@@ -262,7 +251,8 @@ async function refreshSeoCacheIfNeeded(options = {}) {
   const nextCitySlugs = new Set(FIXED_CITY_SLUGS);
   const nextCityLabelsBySlug = new Map(FIXED_CITY_CATALOG.map((entry) => [entry.slug, entry.label]));
   const nextCitySlugByLocationId = new Map();
-  const nextBlogSlugs = new Set(DEFAULT_BLOG_SLUGS);
+  const nextBlogSlugs = new Set();
+  const nextBlogMetaBySlug = new Map();
 
   function addLocationSlugCandidates(source, preferredLabel = "") {
     const fromName = slugify(source?.name);
@@ -318,10 +308,22 @@ async function refreshSeoCacheIfNeeded(options = {}) {
     return entries.length > 0;
   }
 
+  function addSeoBlogCatalog(catalogPayload) {
+    const entries = normalizeSeoBlogArticleCatalog(catalogPayload);
+    for (const entry of entries) {
+      nextBlogSlugs.add(entry.slug);
+      nextBlogMetaBySlug.set(entry.slug, {
+        title: entry.title,
+        description: entry.description,
+        image: entry.image,
+      });
+    }
+  }
+
   try {
-    const [seoLocationsData, blogSlugsData] = await Promise.all([
+    const [seoLocationsData, blogArticlesData] = await Promise.all([
       fetchJsonWithTimeout(buildApiUrl("/seo/locations")),
-      fetchJsonWithTimeout(buildApiUrl("/seo/blog-slugs")),
+      fetchJsonWithTimeout(buildApiUrl("/seo/blog-articles")),
     ]);
 
     const hasCatalogData = addSeoLocationCatalog(seoLocationsData);
@@ -338,21 +340,13 @@ async function refreshSeoCacheIfNeeded(options = {}) {
       addWeeklySettingsSlugs(weeklySettingsData);
     }
 
-    if (Array.isArray(blogSlugsData?.slugs)) {
-      nextBlogSlugs.clear();
-      for (const slug of blogSlugsData.slugs) {
-        const normalized = slugify(slug);
-        if (normalized) nextBlogSlugs.add(normalized);
-      }
-      if (nextBlogSlugs.size === 0) {
-        DEFAULT_BLOG_SLUGS.forEach((slug) => nextBlogSlugs.add(slug));
-      }
-    }
+    addSeoBlogCatalog(blogArticlesData);
 
     seoCache.citySlugs = nextCitySlugs;
     seoCache.cityLabelsBySlug = nextCityLabelsBySlug;
     seoCache.citySlugByLocationId = nextCitySlugByLocationId;
     seoCache.blogSlugs = nextBlogSlugs;
+    seoCache.blogMetaBySlug = nextBlogMetaBySlug;
     seoCache.expiresAt = now + SEO_CACHE_TTL_MS;
   } catch (_error) {
     // Keep fallback cache windows short so dynamic routes recover quickly
@@ -366,6 +360,7 @@ async function refreshSeoCacheIfNeeded(options = {}) {
 function isDynamicSeoPath(pathname) {
   return (
     /^\/blog\/[^/]+$/.test(pathname) ||
+    /^\/[a-z0-9-]+$/.test(pathname) ||
     /^\/pizza-[a-z0-9-]+$/.test(pathname) ||
     /^\/pizza\/[^/]+$/.test(pathname)
   );
@@ -391,16 +386,17 @@ function buildSeoMeta(pathname, cache) {
     };
   }
 
-  const blogMatch = /^\/blog\/([^/]+)$/.exec(pathname);
+  const blogMatch = /^\/([a-z0-9-]+)$/.exec(pathname);
   if (blogMatch) {
     const slug = slugify(blogMatch[1]);
     if (!cache.blogSlugs.has(slug)) return null;
-    const articleMeta = BLOG_META_BY_SLUG[slug];
+    const articleMeta = cache.blogMetaBySlug.get(slug);
     return {
       title: articleMeta ? `${articleMeta.title} | Blog Pizza Truck` : "Article | Blog Pizza Truck",
       description:
         articleMeta?.description ||
         "Article du blog Pizza Truck sur la pizza napolitaine artisanale et les ingredients italiens.",
+      image: articleMeta?.image || "/pizza-background-1920.webp",
       robots: "index,follow",
       ogType: "article",
       pathname,
@@ -464,7 +460,9 @@ function renderHtmlWithSeo(req, meta) {
   const baseUrl = getCanonicalBaseUrl(req);
   const pathname = safeMeta.pathname || req.path || "/";
   const canonical = `${baseUrl}${pathname}`;
-  const image = `${baseUrl}/pizza-background-1920.webp`;
+  const image = String(safeMeta.image || "/pizza-background-1920.webp").startsWith("http")
+    ? String(safeMeta.image || "/pizza-background-1920.webp")
+    : `${baseUrl}${String(safeMeta.image || "/pizza-background-1920.webp").startsWith("/") ? String(safeMeta.image || "/pizza-background-1920.webp") : `/${String(safeMeta.image || "/pizza-background-1920.webp")}`}`;
 
   const titleTag = `<title>${escapeHtml(safeMeta.title)}</title>`;
   const descriptionTag = `<meta name="description" content="${escapeHtmlAttr(safeMeta.description)}" />`;
@@ -559,6 +557,22 @@ app.use(async (req, res) => {
     const queryIndex = req.url.indexOf("?");
     const search = queryIndex >= 0 ? req.url.slice(queryIndex) : "";
     return res.redirect(301, `${normalizedPath}${search}`);
+  }
+
+  const legacyBlogMatch = /^\/blog\/([a-z0-9-]+)$/.exec(pathname.toLowerCase());
+  if (legacyBlogMatch) {
+    const requestedSlug = slugify(legacyBlogMatch[1]);
+    const cache = await refreshSeoCacheIfNeeded();
+    if (cache.blogSlugs.has(requestedSlug)) {
+      return res.redirect(301, `/${requestedSlug}`);
+    }
+
+    const forcedCache = await refreshSeoCacheIfNeeded({ force: true });
+    if (forcedCache.blogSlugs.has(requestedSlug)) {
+      return res.redirect(301, `/${requestedSlug}`);
+    }
+
+    return sendNoindex404(res);
   }
 
   if (pathname === "/pizza") {
