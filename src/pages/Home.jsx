@@ -332,16 +332,6 @@ const truckTourSchedule = useMemo(
     return () => window.clearInterval(intervalId);
   }, [heroGalleryImages.length]);
 
-  const showPreviousHeroImage = () => {
-    setActiveHeroIndex(
-      (prev) => (prev - 1 + heroGalleryImages.length) % heroGalleryImages.length
-    );
-  };
-
-  const showNextHeroImage = () => {
-    setActiveHeroIndex((prev) => (prev + 1) % heroGalleryImages.length);
-  };
-
   return (
     <div className="space-y-20 pb-24">
       <SeoHead
@@ -446,67 +436,6 @@ const truckTourSchedule = useMemo(
                 </Link>
               )}
             </div>
-            {heroGalleryImages.length > 1 && (
-              <div className="mt-8 flex flex-wrap items-center gap-3">
-                <div
-                  className={`inline-flex items-center rounded-full px-2 py-2 ${
-                    isLightTheme
-                      ? "border border-[#3A261C]/15 bg-white/75"
-                      : "border border-white/20 bg-black/30"
-                  }`}
-                >
-                  <button
-                    type="button"
-                    onClick={showPreviousHeroImage}
-                    className={`rounded-full px-3 py-1 text-sm font-semibold transition ${
-                      isLightTheme
-                        ? "text-[#3A261C] hover:bg-[#3A261C]/10"
-                        : "theme-light-keep-white text-white hover:bg-white/10"
-                    }`}
-                    aria-label={tr("Image precedente", "Previous image")}
-                  >
-                    {"<"}
-                  </button>
-                  <span
-                    className={`px-2 text-xs font-semibold uppercase tracking-[0.25em] ${
-                      isLightTheme ? "text-[#3A261C]/75" : "text-stone-200"
-                    }`}
-                  >
-                    {activeHeroIndex + 1} / {heroGalleryImages.length}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={showNextHeroImage}
-                    className={`rounded-full px-3 py-1 text-sm font-semibold transition ${
-                      isLightTheme
-                        ? "text-[#3A261C] hover:bg-[#3A261C]/10"
-                        : "theme-light-keep-white text-white hover:bg-white/10"
-                    }`}
-                    aria-label={tr("Image suivante", "Next image")}
-                  >
-                    {">"}
-                  </button>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  {heroGalleryImages.map((image, index) => (
-                    <button
-                      key={`hero-dot-${image.id || index}`}
-                      type="button"
-                      onClick={() => setActiveHeroIndex(index)}
-                      className={`h-2.5 rounded-full transition-all ${
-                        index === activeHeroIndex
-                          ? "w-10 bg-saffron"
-                          : isLightTheme
-                            ? "w-2.5 bg-[#3A261C]/25 hover:bg-[#3A261C]/40"
-                            : "w-2.5 bg-white/35 hover:bg-white/60"
-                      }`}
-                      aria-label={`${tr("Aller a l'image", "Go to image")} ${index + 1}`}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </section>
