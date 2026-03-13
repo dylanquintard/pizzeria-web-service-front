@@ -141,7 +141,17 @@ export default function Blog() {
               key={article.id}
               className="group flex h-full flex-col rounded-[1.6rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.03))] p-5 transition hover:border-saffron/30 hover:bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.04))]"
             >
-              <div className="mb-4 h-px w-16 bg-gradient-to-r from-saffron via-saffron/50 to-transparent" />
+              {article.featuredImage?.imageUrl ? (
+                <div className="mb-4 overflow-hidden rounded-[1.2rem] border border-white/10">
+                  <img
+                    src={article.featuredImage.imageUrl}
+                    alt={article.featuredImage.altText || article.featuredImage.caption || article.title}
+                    className="h-40 w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+                  />
+                </div>
+              ) : (
+                <div className="mb-4 h-px w-16 bg-gradient-to-r from-saffron via-saffron/50 to-transparent" />
+              )}
 
               <div className="flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-stone-400">
                 <span className="rounded-full border border-white/10 px-3 py-1">
