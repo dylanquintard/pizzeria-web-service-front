@@ -35,6 +35,23 @@ export const getPickupAvailability = async (token, filters = {}) => {
   return response.data;
 };
 
+export const getConcreteSlots = async (token, filters = {}) => {
+  const response = await api.get("/timeslots/concrete-slots", {
+    ...authConfig(token),
+    params: filters,
+  });
+  return response.data;
+};
+
+export const updateConcreteSlotActiveState = async (token, data) => {
+  const response = await api.patch(
+    "/timeslots/concrete-slots/active",
+    data,
+    authConfig(token)
+  );
+  return response.data;
+};
+
 export const getTruckClosures = async (token) => {
   const response = await api.get("/timeslots/closures", authConfig(token));
   return response.data;
