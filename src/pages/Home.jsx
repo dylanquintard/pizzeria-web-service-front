@@ -14,7 +14,7 @@ import { useSiteSettings } from "../context/SiteSettingsContext";
 import { useTheme } from "../context/ThemeContext";
 import { buildBaseFoodEstablishmentJsonLd } from "../seo/jsonLd";
 import { DEFAULT_TOUR_CITIES } from "../seo/localLandingContent";
-import { getLocalizedSiteText } from "../site/siteSettings";
+import { DEFAULT_SITE_SETTINGS, getLocalizedSiteText } from "../site/siteSettings";
 
 const paymentLogos = [
   {
@@ -238,7 +238,7 @@ const truckTourSchedule = useMemo(
     return [...new Set([...DEFAULT_TOUR_CITIES, ...dynamicLocations])];
   }, [weeklySettings]);
 
-  const siteName = siteSettings.siteName || "Pizza Truck";
+  const siteName = siteSettings.siteName || DEFAULT_SITE_SETTINGS.siteName;
   const canonicalSiteUrl = String(siteSettings.seo?.canonicalSiteUrl || "").trim();
   const defaultOgImageUrl = String(siteSettings.seo?.defaultOgImageUrl || "").trim();
   const socialUrls = [
@@ -315,16 +315,16 @@ const truckTourSchedule = useMemo(
     siteSettings.seo?.defaultMetaTitle,
     language,
     tr(
-      "Pizza napolitaine au feu de bois en Moselle | Pizza Truck",
-      "Wood-fired Neapolitan pizza in Moselle | Pizza Truck"
+      `Pizza napolitaine au feu de bois en Moselle | ${siteName}`,
+      `Wood-fired Neapolitan pizza in Moselle | ${siteName}`
     )
   );
   const siteMetaDescription = getLocalizedSiteText(
     siteSettings.seo?.defaultMetaDescription,
     language,
     tr(
-      "Camion pizza en Moselle avec pate travaillee, cuisson bois-gaz et retrait organise autour de Thionville et Metz.",
-      "Pizza truck in Moselle with well-worked dough, wood-and-gas baking and organized pickup around Thionville and Metz."
+      "Pizza napolitaine au feu de bois en Moselle. Commande en ligne et retrait rapide.",
+      "Wood-fired Neapolitan pizza in Moselle. Online ordering and quick pickup."
     )
   );
   const heroTitle = getLocalizedSiteText(
@@ -339,8 +339,8 @@ const truckTourSchedule = useMemo(
     siteSettings.home?.heroSubtitle,
     language,
     tr(
-      "Une pizza travaillee pour l emporter: pate souple, cuisson vive et recettes nettes a recuperer autour de Thionville et Metz.",
-      "Pizza built for pickup: supple dough, lively baking and cleaner recipes around Thionville and Metz."
+      "Une pizza travaillee pour l emporter: pate souple, cuisson vive et recettes nettes a recuperer en Moselle.",
+      "Pizza built for pickup: supple dough, lively baking and cleaner recipes to collect in Moselle."
     )
   );
   const siteTaglineText = getLocalizedSiteText(

@@ -18,13 +18,13 @@ const BLOCKED_CITY_SLUGS = new Set(["metz"]);
 const FIXED_CITY_SLUGS = new Set(FIXED_CITY_CATALOG.map((item) => item.slug));
 
 const DEFAULT_SITE_SETTINGS = Object.freeze({
-  siteName: "Pizza Truck",
+  siteName: "Camion Pizza Italienne",
   seo: {
     defaultMetaTitle: {
-      fr: "Pizza Truck | Pizza napolitaine au feu de bois en Moselle",
+      fr: "Camion Pizza Italienne | Pizza napolitaine au feu de bois en Moselle",
     },
     defaultMetaDescription: {
-      fr: "Pizza napolitaine au feu de bois en Moselle. Camion pizza artisanal autour de Thionville et Metz, commande en ligne et retrait rapide.",
+      fr: "Pizza napolitaine au feu de bois en Moselle. Commande en ligne et retrait rapide.",
     },
     defaultOgImageUrl: "",
     canonicalSiteUrl: "",
@@ -43,7 +43,7 @@ const DEFAULT_SITE_SETTINGS = Object.freeze({
     address: "",
     mapsUrl: "",
     serviceArea: {
-      fr: "Thionville, Metz et alentours",
+      fr: "Moselle et alentours",
     },
   },
   social: {
@@ -258,7 +258,7 @@ function normalizeSeoBlogArticleCatalog(payload) {
       title: String(row?.title || "").trim() || titleizeSlug(slug),
       description:
         String(row?.description || "").trim() ||
-        "Article du blog Pizza Truck sur la pizza napolitaine artisanale.",
+        "Article du blog sur la pizza napolitaine artisanale.",
       image:
         String(row?.image?.imageUrl || row?.imageUrl || "").trim() || "",
     });
@@ -514,7 +514,7 @@ function buildSeoMeta(pathname, cache) {
     "/food-truck-pizza-moselle": {
       title: `Food truck pizza en Moselle | ${siteName}`,
       description:
-        "Food truck pizza en Moselle: carte courte, cuisson vive et passages hebdomadaires autour de Metz, Thionville et des communes voisines.",
+        "Food truck pizza en Moselle: carte courte, cuisson vive et passages hebdomadaires dans les communes voisines.",
       image: defaultImage,
     },
   };

@@ -4,12 +4,13 @@ import SeoHead from "../components/seo/SeoHead";
 import { useSiteSettings } from "../context/SiteSettingsContext";
 import { buildBaseFoodEstablishmentJsonLd, buildBreadcrumbJsonLd } from "../seo/jsonLd";
 import { LOCAL_PAGE_CONTENT } from "../seo/localLandingContent";
+import { DEFAULT_SITE_SETTINGS } from "../site/siteSettings";
 
 export default function LocalSeoPage({ cityKey }) {
   const { settings } = useSiteSettings();
   const content = LOCAL_PAGE_CONTENT[cityKey] || LOCAL_PAGE_CONTENT.moselle;
   const cityLabel = cityKey === "moselle" ? "Moselle" : "Thionville";
-  const siteName = settings.siteName || "Pizza Truck";
+  const siteName = settings.siteName || DEFAULT_SITE_SETTINGS.siteName;
   const canonicalSiteUrl = String(settings.seo?.canonicalSiteUrl || "").trim();
   const localJsonLd = [
     buildBaseFoodEstablishmentJsonLd({

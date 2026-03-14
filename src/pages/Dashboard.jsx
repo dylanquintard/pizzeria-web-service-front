@@ -2,25 +2,12 @@ import { useContext } from "react";
 import { NavLink } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { useLanguage } from "../context/LanguageContext";
-
-const adminLinks = [
-  { to: "/admin/orders", labelFr: "Commandes", labelEn: "Orders" },
-  { to: "/admin/menu", labelFr: "Menu", labelEn: "Menu" },
-  { to: "/admin/locations", labelFr: "Adresses", labelEn: "Addresses" },
-  { to: "/admin/timeslots", labelFr: "Horaires", labelEn: "Schedules" },
-  { to: "/admin/print", labelFr: "Camions & Impressions", labelEn: "Trucks & Printing" },
-  { to: "/admin/tickets", labelFr: "Tickets", labelEn: "Tickets" },
-  { to: "/admin/users", labelFr: "Clients", labelEn: "Users" },
-  { to: "/admin/gallery", labelFr: "Galerie", labelEn: "Gallery" },
-  { to: "/admin/blog", labelFr: "Blog", labelEn: "Blog" },
-  { to: "/admin/faq", labelFr: "FAQ", labelEn: "FAQ" },
-  { to: "/admin/site-info", labelFr: "Info site", labelEn: "Site info" },
-];
+import { getAdminNavLinks } from "../navigation/adminLinks";
 
 export default function Dashboard({ children }) {
   const { user } = useContext(AuthContext);
   const { tr } = useLanguage();
-  const safeAdminLinks = adminLinks.filter(
+  const safeAdminLinks = getAdminNavLinks(tr).filter(
     (item) => item && typeof item.to === "string" && item.to
   );
 
@@ -56,7 +43,7 @@ export default function Dashboard({ children }) {
                   }`
                 }
               >
-                <span>{tr(item.labelFr, item.labelEn)}</span>
+                <span>{item.label}</span>
               </NavLink>
             ))}
           </nav>

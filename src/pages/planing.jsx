@@ -176,8 +176,8 @@ export default function TourneeCamion() {
     "Pizza truck opening hours | Locations in Moselle"
   );
   const description = tr(
-    "Retrouvez les emplacements du camion pizza napolitaine autour de Thionville et Metz, avec horaires de passage hebdomadaires.",
-    "Find the Neapolitan pizza truck locations around Thionville and Metz, with weekly service hours."
+    "Retrouvez les emplacements du camion pizza napolitaine en Moselle et autour de Thionville, avec horaires de passage hebdomadaires.",
+    "Find the Neapolitan pizza truck locations in Moselle and around Thionville, with weekly service hours."
   );
 
   return (
@@ -205,8 +205,8 @@ export default function TourneeCamion() {
         </h1>
         <p className="max-w-3xl text-sm text-stone-300 sm:text-base">
           {tr(
-            "Retrouvez les emplacements et horaires du camion pizza napolitaine autour de Thionville et Metz.",
-            "Find the locations and opening hours of the Neapolitan pizza truck around Thionville and Metz."
+            "Retrouvez les emplacements et horaires du camion pizza napolitaine en Moselle et autour de Thionville.",
+            "Find the locations and opening hours of the Neapolitan pizza truck in Moselle and around Thionville."
           )}
         </p>
       </header>

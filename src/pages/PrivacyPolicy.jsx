@@ -1,11 +1,12 @@
 import LegalPageLayout from "../components/legal/LegalPageLayout";
 import { useLanguage } from "../context/LanguageContext";
 import { useSiteSettings } from "../context/SiteSettingsContext";
+import { DEFAULT_SITE_SETTINGS } from "../site/siteSettings";
 
 export default function PrivacyPolicy() {
   const { tr } = useLanguage();
   const { settings } = useSiteSettings();
-  const siteName = settings.siteName || "Pizza Truck";
+  const siteName = settings.siteName || DEFAULT_SITE_SETTINGS.siteName;
   const email = String(settings.contact?.email || "").trim() || "contact@exemple.fr";
 
   return (

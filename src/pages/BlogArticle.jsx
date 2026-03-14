@@ -5,6 +5,7 @@ import PageFaqSection from "../components/common/PageFaqSection";
 import SeoHead from "../components/seo/SeoHead";
 import { SITE_URL } from "../config/env";
 import { useSiteSettings } from "../context/SiteSettingsContext";
+import { DEFAULT_SITE_SETTINGS } from "../site/siteSettings";
 import NotFound from "./NotFound";
 
 function formatArticleDate(value) {
@@ -32,7 +33,7 @@ export default function BlogArticle({ forcedSlug = "" }) {
   const params = useParams();
   const resolvedSlug = String(forcedSlug || params.slug || "").trim().toLowerCase();
   const { settings } = useSiteSettings();
-  const siteName = settings.siteName || "Pizza Truck";
+  const siteName = settings.siteName || DEFAULT_SITE_SETTINGS.siteName;
   const canonicalSiteUrl = String(settings.seo?.canonicalSiteUrl || "").trim().replace(/\/+$/, "") || SITE_URL;
   const rawLogoUrl = String(settings.seo?.defaultOgImageUrl || "").trim();
   const logoUrl = rawLogoUrl
@@ -154,7 +155,7 @@ export default function BlogArticle({ forcedSlug = "" }) {
     return (
       <div className="section-shell space-y-6 pb-20 pt-10">
         <SeoHead
-          title="Article indisponible | Pizza Truck"
+          title={`Article indisponible | ${siteName}`}
           description="Cet article est temporairement indisponible."
           pathname={pathname}
           robots="noindex,nofollow"

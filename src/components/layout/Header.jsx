@@ -6,6 +6,8 @@ import { useLanguage } from "../../context/LanguageContext";
 import { useSiteSettings } from "../../context/SiteSettingsContext";
 import { useTheme } from "../../context/ThemeContext";
 import { BRAND_LOGO_URL } from "../../config/env";
+import { getAdminNavLinks } from "../../navigation/adminLinks";
+import { DEFAULT_SITE_SETTINGS } from "../../site/siteSettings";
 
 function CartItemRow({ item, onRemove, tr }) {
   const lineTotal = (Number(item.unitPrice || 0) * Number(item.quantity || 0)).toFixed(2);
@@ -112,21 +114,7 @@ export default function Header() {
     { to: "/contact", label: tr("Contact", "Contact") },
     { to: "/blog", label: tr("Blog", "Blog") },
   ];
-  const adminMenuLinks = isAdminUser
-      ? [
-        { to: "/admin/orders", label: tr("Commandes", "Orders") },
-        { to: "/admin/menu", label: tr("Menu", "Menu") },
-        { to: "/admin/locations", label: tr("Adresses", "Addresses") },
-        { to: "/admin/timeslots", label: tr("Horaires", "Schedules") },
-        { to: "/admin/print", label: tr("Camions & Impressions", "Trucks & Printing") },
-        { to: "/admin/tickets", label: tr("Tickets", "Tickets") },
-        { to: "/admin/users", label: tr("Clients", "Users") },
-        { to: "/admin/gallery", label: tr("Galerie", "Gallery") },
-        { to: "/admin/blog", label: tr("Blog", "Blog") },
-        { to: "/admin/faq", label: tr("FAQ", "FAQ") },
-        { to: "/admin/site-info", label: tr("Info site", "Site info") },
-      ]
-    : [];
+  const adminMenuLinks = isAdminUser ? getAdminNavLinks(tr) : [];
   const safeAdminMenuLinks = adminMenuLinks.filter(
     (item) => item && typeof item.to === "string" && item.to
   );
@@ -177,7 +165,7 @@ export default function Header() {
             {headerLogoUrl && !hasLogoError ? (
               <img
                 src={headerLogoUrl}
-                alt={siteSettings.siteName || "Pizza Truck"}
+                alt={siteSettings.siteName || DEFAULT_SITE_SETTINGS.siteName}
                 className="block h-10 w-auto object-contain"
                 loading="eager"
                 decoding="async"
@@ -185,7 +173,7 @@ export default function Header() {
               />
             ) : (
               <span className="text-sm font-semibold uppercase tracking-[0.2em] text-saffron">
-                {siteSettings.siteName || "Pizza Truck"}
+                {siteSettings.siteName || DEFAULT_SITE_SETTINGS.siteName}
               </span>
             )}
           </Link>

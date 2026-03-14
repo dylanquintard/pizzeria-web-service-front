@@ -74,6 +74,14 @@ function summarizeAnswer(value) {
   return `${text.slice(0, 137).trim()}...`;
 }
 
+function getSecondaryButtonClassName(extra = "") {
+  return `rounded-full border border-white/20 bg-black/20 text-white transition hover:bg-white/10 ${extra}`.trim();
+}
+
+function getGhostButtonClassName(extra = "") {
+  return `rounded-full border border-white/15 text-stone-200 transition hover:bg-white/10 ${extra}`.trim();
+}
+
 export default function FaqAdmin() {
   const { token, user, loading: authLoading } = useContext(AuthContext);
   const { tr } = useLanguage();
@@ -326,7 +334,7 @@ export default function FaqAdmin() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,_rgba(250,204,21,0.16),_transparent_36%),linear-gradient(135deg,_rgba(255,255,255,0.06),_rgba(255,255,255,0.02))] p-6 sm:p-8">
+      <header className="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-card sm:p-8">
         <p className="text-xs uppercase tracking-[0.25em] text-saffron">{tr("FAQ", "FAQ")}</p>
         <h2 className="mt-2 text-3xl font-bold text-white">
           {tr("Questions / reponses par page", "Questions / answers by page")}
@@ -437,7 +445,9 @@ export default function FaqAdmin() {
             <button
               type="button"
               onClick={handleAddFaq}
-              className="rounded-full border border-white/20 bg-black/20 px-5 py-3 text-xs font-bold uppercase tracking-wide text-white transition hover:bg-white/10"
+              className={getSecondaryButtonClassName(
+                "px-5 py-3 text-xs font-bold uppercase tracking-wide"
+              )}
             >
               {tr("Ajouter une FAQ", "Add FAQ")}
             </button>
@@ -461,7 +471,14 @@ export default function FaqAdmin() {
               const isLast = index === orderedItems.length - 1;
 
               return (
-                <article key={item.id} className="rounded-[1.4rem] border border-white/10 bg-black/15 p-4 sm:p-5">
+                <article
+                  key={item.id}
+                  className={`rounded-[1.4rem] border p-4 transition sm:p-5 ${
+                    isOpen
+                      ? "border-white/15 bg-black/20 shadow-[0_18px_60px_rgba(0,0,0,0.18)]"
+                      : "border-white/10 bg-white/5"
+                  }`}
+                >
                   <button
                     type="button"
                     onClick={() => setOpenItemId((current) => (current === item.id ? null : item.id))}
@@ -494,8 +511,15 @@ export default function FaqAdmin() {
                         <p className="mt-2 text-sm text-stone-400">{summarizeAnswer(item.answer)}</p>
                       ) : null}
                     </div>
-                    <span className="rounded-full border border-white/10 px-3 py-2 text-xs text-stone-300">
-                      {isOpen ? tr("Fermer", "Close") : tr("Modifier", "Edit")}
+                    <span
+                      className={`mt-1 inline-flex h-10 w-10 flex-none items-center justify-center rounded-full border text-base font-bold transition ${
+                        isOpen
+                          ? "border-white/20 bg-white/10 text-white"
+                          : "border-white/15 bg-black/20 text-white"
+                      }`}
+                      aria-hidden="true"
+                    >
+                      {isOpen ? "\u2191" : "\u2193"}
                     </span>
                   </button>
 
@@ -506,7 +530,9 @@ export default function FaqAdmin() {
                           type="button"
                           onClick={() => moveItem(item.id, "up")}
                           disabled={isFirst}
-                          className="rounded-full border border-white/15 px-3 py-2 text-xs font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+                          className={getGhostButtonClassName(
+                            "px-3 py-2 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"
+                          )}
                         >
                           {tr("Monter", "Move up")}
                         </button>
@@ -514,7 +540,9 @@ export default function FaqAdmin() {
                           type="button"
                           onClick={() => moveItem(item.id, "down")}
                           disabled={isLast}
-                          className="rounded-full border border-white/15 px-3 py-2 text-xs font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+                          className={getGhostButtonClassName(
+                            "px-3 py-2 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"
+                          )}
                         >
                           {tr("Descendre", "Move down")}
                         </button>

@@ -4,18 +4,18 @@ import SeoHead from "../components/seo/SeoHead";
 import { useLanguage } from "../context/LanguageContext";
 import { useSiteSettings } from "../context/SiteSettingsContext";
 import { buildBaseFoodEstablishmentJsonLd } from "../seo/jsonLd";
-import { getLocalizedSiteText } from "../site/siteSettings";
+import { DEFAULT_SITE_SETTINGS, getLocalizedSiteText } from "../site/siteSettings";
 
 export default function ContactPage() {
   const { language, tr } = useLanguage();
   const { settings } = useSiteSettings();
-  const siteName = settings.siteName || "Pizza Truck";
+  const siteName = settings.siteName || DEFAULT_SITE_SETTINGS.siteName;
   const siteDescription = getLocalizedSiteText(
     settings.siteDescription,
     language,
     tr(
-      "Camion pizza artisanal autour de Thionville et Metz, commande en ligne et retrait rapide.",
-      "Artisan pizza truck around Thionville and Metz with online ordering and quick pickup."
+      "Pizza napolitaine au feu de bois en Moselle. Commande en ligne et retrait rapide.",
+      "Wood-fired Neapolitan pizza in Moselle. Online ordering and quick pickup."
     )
   );
   const contactPageTitle = getLocalizedSiteText(

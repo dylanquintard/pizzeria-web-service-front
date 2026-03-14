@@ -167,6 +167,14 @@ function getDangerButtonClassName(extra = "") {
   return `rounded-full border border-red-400/50 bg-red-500/10 text-red-200 transition hover:bg-red-500/20 ${extra}`.trim();
 }
 
+function getSecondaryButtonClassName(extra = "") {
+  return `rounded-full border border-white/20 bg-black/20 text-white transition hover:bg-white/10 ${extra}`.trim();
+}
+
+function getGhostButtonClassName(extra = "") {
+  return `rounded-full border border-white/15 text-stone-200 transition hover:bg-white/10 ${extra}`.trim();
+}
+
 function ArticleEditor({
   form,
   setForm,
@@ -329,7 +337,9 @@ function ArticleEditor({
           <button
             type="button"
             onClick={addParagraph}
-            className="rounded-full border border-emerald-300/40 bg-emerald-500/10 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-emerald-200 transition hover:bg-emerald-500/20"
+            className={getSecondaryButtonClassName(
+              "px-4 py-2 text-xs font-semibold uppercase tracking-wide"
+            )}
           >
             {tr("Ajouter un paragraphe", "Add paragraph")}
           </button>
@@ -354,7 +364,9 @@ function ArticleEditor({
                   type="button"
                   onClick={() => moveParagraph(index, "up")}
                   disabled={index === 0}
-                  className="rounded-full border border-white/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-stone-200 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+                  className={getGhostButtonClassName(
+                    "px-3 py-1 text-[11px] font-semibold uppercase tracking-wide disabled:cursor-not-allowed disabled:opacity-40"
+                  )}
                 >
                   {tr("Monter", "Move up")}
                 </button>
@@ -362,7 +374,9 @@ function ArticleEditor({
                   type="button"
                   onClick={() => moveParagraph(index, "down")}
                   disabled={index === form.paragraphs.length - 1}
-                  className="rounded-full border border-white/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-stone-200 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+                  className={getGhostButtonClassName(
+                    "px-3 py-1 text-[11px] font-semibold uppercase tracking-wide disabled:cursor-not-allowed disabled:opacity-40"
+                  )}
                 >
                   {tr("Descendre", "Move down")}
                 </button>
@@ -515,7 +529,9 @@ function ArticleEditor({
           <button
             type="button"
             onClick={onCancel}
-            className="rounded-full border border-white/20 px-5 py-3 text-xs font-semibold uppercase tracking-wide text-white transition hover:bg-white/10"
+            className={getSecondaryButtonClassName(
+              "px-5 py-3 text-xs font-semibold uppercase tracking-wide"
+            )}
           >
             {tr("Annuler", "Cancel")}
           </button>
@@ -684,7 +700,7 @@ export default function BlogAdmin() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,_rgba(250,204,21,0.16),_transparent_36%),linear-gradient(135deg,_rgba(255,255,255,0.06),_rgba(255,255,255,0.02))] p-6 sm:p-8">
+      <header className="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-card sm:p-8">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="max-w-3xl">
             <h2 className="mt-2 text-3xl font-bold text-white">
@@ -700,7 +716,9 @@ export default function BlogAdmin() {
           <button
             type="button"
             onClick={toggleCreatePanel}
-            className="rounded-full bg-saffron px-5 py-3 text-xs font-bold uppercase tracking-wide text-charcoal transition hover:bg-yellow-300"
+            className={getSecondaryButtonClassName(
+              "px-5 py-3 text-xs font-bold uppercase tracking-wide"
+            )}
           >
             {isCreateOpen
               ? tr("Fermer la creation", "Close creation")
@@ -737,7 +755,7 @@ export default function BlogAdmin() {
       </header>
 
       {message ? (
-        <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-stone-100">
+        <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-stone-100">
           {message}
         </div>
       ) : null}
@@ -784,7 +802,9 @@ export default function BlogAdmin() {
           </div>
           <Link
             to="/blog"
-            className="rounded-full border border-white/20 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white transition hover:bg-white/10"
+            className={getSecondaryButtonClassName(
+              "px-4 py-2 text-xs font-semibold uppercase tracking-wide"
+            )}
           >
             {tr("Voir la page blog", "See blog page")}
           </Link>
@@ -871,13 +891,17 @@ export default function BlogAdmin() {
                       <button
                         type="button"
                         onClick={() => startEditing(article)}
-                        className="rounded-full border border-saffron/40 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-saffron transition hover:bg-saffron/10"
+                        className={getSecondaryButtonClassName(
+                          "px-4 py-2 text-xs font-semibold uppercase tracking-wide"
+                        )}
                       >
                         {tr("Modifier", "Edit")}
                       </button>
                       <Link
                         to={`/${article.slug}`}
-                        className="rounded-full border border-white/20 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white transition hover:bg-white/10"
+                        className={getGhostButtonClassName(
+                          "px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white"
+                        )}
                       >
                         {tr("Ouvrir", "Open")}
                       </Link>

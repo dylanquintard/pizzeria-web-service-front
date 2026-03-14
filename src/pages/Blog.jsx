@@ -5,7 +5,7 @@ import PageFaqSection from "../components/common/PageFaqSection";
 import SeoHead from "../components/seo/SeoHead";
 import { useLanguage } from "../context/LanguageContext";
 import { useSiteSettings } from "../context/SiteSettingsContext";
-import { getLocalizedSiteText } from "../site/siteSettings";
+import { DEFAULT_SITE_SETTINGS, getLocalizedSiteText } from "../site/siteSettings";
 
 function formatPublishDate(value) {
   if (!value) return "";
@@ -24,7 +24,7 @@ function formatPublishDate(value) {
 export default function Blog() {
   const { language, tr } = useLanguage();
   const { settings } = useSiteSettings();
-  const siteName = settings.siteName || "Pizza Truck";
+  const siteName = settings.siteName || DEFAULT_SITE_SETTINGS.siteName;
   const title = tr(`Blog | ${siteName}`, `Blog | ${siteName}`);
   const description = tr(
     "Analyses et articles sur la pate, la cuisson, les ingredients et les choix techniques qui structurent une pizza mieux executee.",

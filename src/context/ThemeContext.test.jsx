@@ -1,5 +1,5 @@
 import { createRoot } from "react-dom/client";
-import { act } from "react";
+import { flushSync } from "react-dom";
 import { ThemeProvider, useTheme } from "./ThemeContext";
 
 function Probe() {
@@ -19,7 +19,6 @@ describe("ThemeContext", () => {
   let root;
 
   beforeEach(() => {
-    global.IS_REACT_ACT_ENVIRONMENT = true;
     window.localStorage.clear();
     document.documentElement.removeAttribute("data-theme");
     container = document.createElement("div");
@@ -28,14 +27,14 @@ describe("ThemeContext", () => {
   });
 
   afterEach(() => {
-    act(() => {
+    flushSync(() => {
       root.unmount();
     });
     container.remove();
   });
 
   it("toggles and persists the selected theme", () => {
-    act(() => {
+    flushSync(() => {
       root.render(
         <ThemeProvider>
           <Probe />
@@ -45,10 +44,9 @@ describe("ThemeContext", () => {
 
     const valueNode = container.querySelector('[data-testid="theme-value"]');
     const button = container.querySelector("button");
-
     const initialTheme = valueNode.textContent;
 
-    act(() => {
+    flushSync(() => {
       button.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
 

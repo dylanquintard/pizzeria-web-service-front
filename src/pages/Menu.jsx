@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { getCategories } from "../api/category.api";
 import { useLanguage } from "../context/LanguageContext";
+import { useSiteSettings } from "../context/SiteSettingsContext";
 import { getAllProductsClient } from "../api/user.api";
 import PageFaqSection from "../components/common/PageFaqSection";
 import SeoHead from "../components/seo/SeoHead";
 import { buildBaseFoodEstablishmentJsonLd } from "../seo/jsonLd";
+import { DEFAULT_SITE_SETTINGS } from "../site/siteSettings";
 
 function formatPrice(value) {
   const numeric = Number(value);
@@ -20,6 +22,7 @@ function normalizeText(value) {
 
 export default function Menu() {
   const { tr } = useLanguage();
+  const { settings } = useSiteSettings();
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -96,6 +99,8 @@ export default function Menu() {
       .map(({ bucket }) => bucket);
   }, [products, categories, tr]);
 
+  const siteName = settings.siteName || DEFAULT_SITE_SETTINGS.siteName;
+
   if (loading) {
     return (
       <div className="section-shell py-12">
@@ -124,21 +129,22 @@ export default function Menu() {
     <div className="section-shell space-y-10 pb-20 pt-12 sm:pt-14">
       <SeoHead
         title={tr(
-          "Menu pizza napolitaine | Pizza Truck Moselle",
-          "Neapolitan pizza menu | Pizza Truck Moselle"
+          `Menu pizza napolitaine | ${siteName}`,
+          `Neapolitan pizza menu | ${siteName}`
         )}
         description={tr(
-          "Consultez le menu pizza napolitaine artisanal de Pizza Truck en Moselle. Recettes, ingredients et prix.",
-          "Browse Pizza Truck's handmade Neapolitan pizza menu in Moselle. Recipes, ingredients and prices."
+          `Consultez le menu pizza napolitaine artisanal de ${siteName} en Moselle. Recettes, ingredients et prix.`,
+          `Browse ${siteName}'s handmade Neapolitan pizza menu in Moselle. Recipes, ingredients and prices.`
         )}
         pathname="/menu"
         jsonLd={buildBaseFoodEstablishmentJsonLd({
           pagePath: "/menu",
           pageName: tr("Menu pizza napolitaine", "Neapolitan pizza menu"),
           description: tr(
-            "Consultez le menu pizza napolitaine artisanal de Pizza Truck en Moselle. Recettes, ingredients et prix.",
-            "Browse Pizza Truck's handmade Neapolitan pizza menu in Moselle. Recipes, ingredients and prices."
+            `Consultez le menu pizza napolitaine artisanal de ${siteName} en Moselle. Recettes, ingredients et prix.`,
+            `Browse ${siteName}'s handmade Neapolitan pizza menu in Moselle. Recipes, ingredients and prices.`
           ),
+          siteName,
         })}
       />
       <header className="space-y-3 text-center">

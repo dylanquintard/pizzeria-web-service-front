@@ -1,11 +1,12 @@
 import { Link } from "react-router-dom";
 import SeoHead from "../components/seo/SeoHead";
+import { DEFAULT_SITE_SETTINGS } from "../site/siteSettings";
 
 export default function NotFound() {
   return (
     <div className="section-shell space-y-8 pb-20 pt-12">
       <SeoHead
-        title="Page non trouvee | Pizza Truck"
+        title={`Page non trouvee | ${DEFAULT_SITE_SETTINGS.siteName}`}
         description="La page demandee est introuvable."
         pathname="/404"
         robots="noindex,nofollow"

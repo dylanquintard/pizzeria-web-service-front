@@ -1,12 +1,12 @@
 import { Link } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
 import { useSiteSettings } from "../../context/SiteSettingsContext";
-import { getLocalizedSiteText } from "../../site/siteSettings";
+import { DEFAULT_SITE_SETTINGS, getLocalizedSiteText } from "../../site/siteSettings";
 
 export default function SiteFooter() {
   const { language } = useLanguage();
   const { settings } = useSiteSettings();
-  const siteName = settings.siteName || "Pizza Truck";
+  const siteName = settings.siteName || DEFAULT_SITE_SETTINGS.siteName;
   const shortText = getLocalizedSiteText(settings.footer?.shortText, language, "").trim();
   const legalText = getLocalizedSiteText(settings.footer?.legalText, language, "").trim();
   const copyrightText = getLocalizedSiteText(

@@ -151,7 +151,9 @@
   html[data-theme="light"] .bg-charcoal\/60,
   html[data-theme="light"] .bg-charcoal\/45,
   html[data-theme="light"] .bg-charcoal\/35,
-  html[data-theme="light"] .bg-black\/20 {
+  html[data-theme="light"] .bg-black\/20,
+  html[data-theme="light"] .bg-black\/30,
+  html[data-theme="light"] .bg-black\/35 {
     background-color: var(--surface-elevated) !important;
     border-color: var(--surface-border) !important;
     box-shadow: 0 12px 30px rgba(26, 24, 23, 0.08);
@@ -180,6 +182,25 @@
 
   html[data-theme="light"] .text-saffron {
     color: var(--brand-accent) !important;
+  }
+
+  html[data-theme="light"] .text-emerald-200,
+  html[data-theme="light"] .text-emerald-300 {
+    color: #166534 !important;
+  }
+
+  html[data-theme="light"] .text-red-200,
+  html[data-theme="light"] .text-red-300 {
+    color: #b91c1c !important;
+  }
+
+  html[data-theme="light"] .text-amber-200,
+  html[data-theme="light"] .text-amber-300 {
+    color: #92400e !important;
+  }
+
+  html[data-theme="light"] .text-sky-200 {
+    color: #075985 !important;
   }
 
   html[data-theme="light"] .bg-saffron {

@@ -4,11 +4,12 @@ import SeoHead from "../components/seo/SeoHead";
 import { useLanguage } from "../context/LanguageContext";
 import { useSiteSettings } from "../context/SiteSettingsContext";
 import { buildBaseFoodEstablishmentJsonLd } from "../seo/jsonLd";
+import { DEFAULT_SITE_SETTINGS } from "../site/siteSettings";
 
 export default function APropos() {
   const { tr } = useLanguage();
   const { settings } = useSiteSettings();
-  const companyName = settings.siteName || "Pizza Truck";
+  const companyName = settings.siteName || DEFAULT_SITE_SETTINGS.siteName;
   const title = tr(
     `A propos | ${companyName}, camion pizza napolitaine en Moselle`,
     `About | ${companyName}, Neapolitan pizza truck in Moselle`
@@ -105,7 +106,7 @@ export default function APropos() {
         </p>
         <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-stone-300">
           <li>{tr("passages hebdomadaires en Moselle", "weekly stops across Moselle")}</li>
-          <li>{tr("secteurs proches de Thionville et Metz", "areas around Thionville and Metz")}</li>
+          <li>{tr("secteurs proches de Thionville et de la Moselle", "areas around Thionville and Moselle")}</li>
           <li>{tr("retrait direct sur les points annonces dans le planning", "direct pickup at the stops announced in the schedule")}</li>
         </ul>
       </section>

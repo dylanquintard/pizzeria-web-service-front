@@ -3,11 +3,15 @@ import { getPublicGallery } from "../api/gallery.api";
 import GalleryShowcase from "../components/gallery/GalleryShowcase";
 import SeoHead from "../components/seo/SeoHead";
 import { useLanguage } from "../context/LanguageContext";
+import { useSiteSettings } from "../context/SiteSettingsContext";
+import { DEFAULT_SITE_SETTINGS } from "../site/siteSettings";
 
 export default function Gallery() {
   const { tr } = useLanguage();
+  const { settings } = useSiteSettings();
   const [galleryImages, setGalleryImages] = useState([]);
-  const title = tr("Galerie | Pizza Truck", "Gallery | Pizza Truck");
+  const siteName = settings.siteName || DEFAULT_SITE_SETTINGS.siteName;
+  const title = tr(`Galerie | ${siteName}`, `Gallery | ${siteName}`);
   const description = tr(
     "Galerie photo du camion pizza, du four et des pizzas artisanales.",
     "Photo gallery of the pizza truck, oven and handmade pizzas."

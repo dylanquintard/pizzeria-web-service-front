@@ -7,6 +7,7 @@ import PageFaqSection from "../components/common/PageFaqSection";
 import SeoHead from "../components/seo/SeoHead";
 import { useSiteSettings } from "../context/SiteSettingsContext";
 import { buildBaseFoodEstablishmentJsonLd, buildBreadcrumbJsonLd } from "../seo/jsonLd";
+import { DEFAULT_SITE_SETTINGS } from "../site/siteSettings";
 import {
   BLOCKED_LOCAL_CITY_SLUGS,
   buildDynamicCityContent,
@@ -121,7 +122,7 @@ function CityPageNotFound({ citySlug }) {
   return (
     <div className="section-shell space-y-6 pb-20 pt-12">
       <SeoHead
-        title="Page locale non disponible | Pizza Truck"
+        title={`Page locale non disponible | ${DEFAULT_SITE_SETTINGS.siteName}`}
         description="Cette page locale n'est pas disponible."
         pathname={pathname}
         robots="noindex,nofollow"
@@ -319,7 +320,7 @@ export default function CitySeoPage({ forcedCitySlug = "" }) {
     [cityDisplay, currentBucket]
   );
   const canonicalPath = catalogEntry?.path || content.pathname;
-  const siteName = settings.siteName || "Pizza Truck";
+  const siteName = settings.siteName || DEFAULT_SITE_SETTINGS.siteName;
   const canonicalSiteUrl = String(settings.seo?.canonicalSiteUrl || "").trim();
   const cityJsonLd = useMemo(
     () =>

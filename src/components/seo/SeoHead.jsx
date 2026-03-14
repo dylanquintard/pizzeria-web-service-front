@@ -2,7 +2,7 @@ import { Helmet } from "react-helmet-async";
 import { SITE_URL } from "../../config/env";
 import { useLanguage } from "../../context/LanguageContext";
 import { useSiteSettings } from "../../context/SiteSettingsContext";
-import { getLocalizedSiteText } from "../../site/siteSettings";
+import { DEFAULT_SITE_SETTINGS, getLocalizedSiteText } from "../../site/siteSettings";
 
 function normalizeBaseUrl(value) {
   return String(value || "").trim().replace(/\/+$/, "");
@@ -33,7 +33,7 @@ export default function SeoHead({
     getLocalizedSiteText(
       settings.seo?.defaultMetaTitle,
       language,
-      settings.siteName || "Pizza Truck"
+      settings.siteName || DEFAULT_SITE_SETTINGS.siteName
     );
   const computedDescription =
     description ||
@@ -54,7 +54,10 @@ export default function SeoHead({
       <link rel="canonical" href={canonical} />
 
       <meta property="og:type" content={ogType} />
-      <meta property="og:site_name" content={settings.siteName || "Pizza Truck"} />
+      <meta
+        property="og:site_name"
+        content={settings.siteName || DEFAULT_SITE_SETTINGS.siteName}
+      />
       <meta property="og:locale" content={language === "en" ? "en_US" : "fr_FR"} />
       <meta property="og:title" content={computedTitle} />
       <meta property="og:description" content={computedDescription} />
