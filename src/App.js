@@ -1,10 +1,13 @@
 import { Suspense, lazy, useContext } from "react";
 import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation, useParams } from "react-router-dom";
 import Header from "./components/layout/Header";
+import SiteAnnouncement from "./components/layout/SiteAnnouncement";
+import SiteFooter from "./components/layout/SiteFooter";
 import MainContent from "./components/layout/MainContent";
 import { AuthContext, AuthProvider } from "./context/AuthContext";
 import { CartProvider } from "./context/CartContext";
 import { LanguageProvider, useLanguage } from "./context/LanguageContext";
+import { SiteSettingsProvider } from "./context/SiteSettingsContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { slugifyCity } from "./seo/localLandingContent";
 
@@ -24,6 +27,7 @@ const CitySeoPage = lazy(() => import("./pages/CitySeoPage"));
 const Blog = lazy(() => import("./pages/Blog"));
 const BlogArticle = lazy(() => import("./pages/BlogArticle"));
 const BlogAdmin = lazy(() => import("./pages/BlogAdmin"));
+const SiteInfoAdmin = lazy(() => import("./pages/SiteInfoAdmin"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Ingredients = lazy(() => import("./pages/Ingredients"));
 const Locations = lazy(() => import("./pages/Locations"));
@@ -60,14 +64,21 @@ const AdminRoute = ({ children }) => {
   return children;
 };
 
-const AppLayout = () => (
-  <>
-    <Header />
-    <MainContent>
-      <Outlet />
-    </MainContent>
-  </>
-);
+const AppLayout = () => {
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith("/admin");
+
+  return (
+    <>
+      <Header />
+      <MainContent>
+        {!isAdminRoute ? <SiteAnnouncement /> : null}
+        <Outlet />
+      </MainContent>
+      {!isAdminRoute ? <SiteFooter /> : null}
+    </>
+  );
+};
 
 const LegacyPizzaCityRoute = () => {
   const { city } = useParams();
@@ -294,6 +305,16 @@ function AppRoutes() {
             }
           />
           <Route
+            path="/admin/site-info"
+            element={
+              <AdminRoute>
+                <Dashboard>
+                  <SiteInfoAdmin />
+                </Dashboard>
+              </AdminRoute>
+            }
+          />
+          <Route
             path="/admin/editproduct/:id"
             element={
               <AdminRoute>
@@ -315,11 +336,13 @@ export default function App() {
     <AuthProvider>
       <ThemeProvider>
         <LanguageProvider>
-          <CartProvider>
-            <BrowserRouter>
-              <AppRoutes />
-            </BrowserRouter>
-          </CartProvider>
+          <SiteSettingsProvider>
+            <CartProvider>
+              <BrowserRouter>
+                <AppRoutes />
+              </BrowserRouter>
+            </CartProvider>
+          </SiteSettingsProvider>
         </LanguageProvider>
       </ThemeProvider>
     </AuthProvider>

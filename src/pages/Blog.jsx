@@ -3,6 +3,9 @@ import { Link } from "react-router-dom";
 import { getPublishedBlogArticles } from "../api/blog.api";
 import SeoHead from "../components/seo/SeoHead";
 import SeoInternalLinks from "../components/seo/SeoInternalLinks";
+import { useLanguage } from "../context/LanguageContext";
+import { useSiteSettings } from "../context/SiteSettingsContext";
+import { getLocalizedSiteText } from "../site/siteSettings";
 
 function formatPublishDate(value) {
   if (!value) return "";
@@ -19,9 +22,21 @@ function formatPublishDate(value) {
 }
 
 export default function Blog() {
+  const { language, tr } = useLanguage();
+  const { settings } = useSiteSettings();
   const title = "Blog pizza napolitaine | Pizza Truck";
   const description =
     "Analyses et articles sur la pate, la cuisson, les ingredients et les choix techniques qui structurent une pizza mieux executee.";
+  const introTitle = getLocalizedSiteText(
+    settings.blog?.introTitle,
+    language,
+    "Farines, tomates, mozzarella & surtout la pizza !"
+  );
+  const introText = getLocalizedSiteText(
+    settings.blog?.introText,
+    language,
+    "Ici on parle d'italie, de saveurs, de savoir faire et de qualite !"
+  );
 
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -68,10 +83,10 @@ export default function Blog() {
           <div className="space-y-4">
             <p className="text-xs uppercase tracking-[0.3em] text-saffron">Blog</p>
             <h1 className="max-w-4xl font-display text-4xl uppercase tracking-wide text-white sm:text-5xl">
-              Farines, tomates, mozzarella & surtout la pizza !
+              {introTitle}
             </h1>
             <p className="max-w-3xl text-sm leading-7 text-stone-300 sm:text-base">
-              Ici on parle d'italie, de saveurs, de savoir faire et de qualite !
+              {introText}
             </p>
           </div>
 
@@ -88,13 +103,13 @@ export default function Blog() {
             to="/menu"
             className="rounded-full bg-saffron px-4 py-2 text-xs font-bold uppercase tracking-wide text-charcoal transition hover:bg-yellow-300"
           >
-            Voir le menu
+            {tr("Voir le menu", "See menu")}
           </Link>
           <Link
             to="/a-propos"
             className="rounded-full border border-white/30 px-4 py-2 text-xs font-semibold text-white transition hover:bg-white/10"
           >
-            Notre approche
+            {tr("Notre approche", "Our approach")}
           </Link>
         </div>
       </header>
@@ -121,11 +136,13 @@ export default function Blog() {
         </section>
       ) : articles.length === 0 ? (
         <section className="glass-panel space-y-3 p-8 text-center">
-          <p className="text-xs uppercase tracking-[0.25em] text-saffron">Blog vide</p>
-          <h2 className="text-2xl font-bold text-white">Aucun article publie pour le moment</h2>
+          <p className="text-xs uppercase tracking-[0.25em] text-saffron">{tr("Blog vide", "Empty blog")}</p>
+          <h2 className="text-2xl font-bold text-white">{tr("Aucun article publie pour le moment", "No published article yet")}</h2>
           <p className="mx-auto max-w-2xl text-sm text-stone-300">
-            Les prochains articles apparaitront ici automatiquement des qu ils seront
-            publies depuis l espace administrateur.
+            {tr(
+              "Les prochains articles apparaitront ici automatiquement des qu ils seront publies depuis l espace administrateur.",
+              "New articles will appear here automatically as soon as they are published from the admin area."
+            )}
           </p>
         </section>
       ) : (
@@ -149,7 +166,7 @@ export default function Blog() {
 
               <div className="flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-stone-400">
                 <span className="rounded-full border border-white/10 px-3 py-1">
-                  {formatPublishDate(article.publishedAt || article.updatedAt) || "Article"}
+                  {formatPublishDate(article.publishedAt || article.updatedAt) || tr("Article", "Article")}
                 </span>
               </div>
 
@@ -165,7 +182,7 @@ export default function Blog() {
                   to={`/${article.slug}`}
                   className="inline-flex rounded-full border border-saffron/60 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-saffron transition hover:bg-saffron/10"
                 >
-                  Lire l'article
+                  {tr("Lire l'article", "Read article")}
                 </Link>
               </div>
             </article>

@@ -13,6 +13,7 @@ const adminLinks = [
   { to: "/admin/users", labelFr: "Clients", labelEn: "Users" },
   { to: "/admin/gallery", labelFr: "Galerie", labelEn: "Gallery" },
   { to: "/admin/blog", labelFr: "Blog", labelEn: "Blog" },
+  { to: "/admin/site-info", labelFr: "Info site", labelEn: "Site info" },
 ];
 
 export default function Dashboard({ children }) {

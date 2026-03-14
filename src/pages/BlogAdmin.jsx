@@ -813,13 +813,13 @@ export default function BlogAdmin() {
             </p>
           </div>
         ) : (
-          <div className="grid gap-4 xl:grid-cols-2">
+          <div className="space-y-4">
             {articles.map((article) => (
               <article
                 key={article.id}
                 className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4"
               >
-                <div className="grid gap-4 sm:grid-cols-[120px_1fr]">
+                <div className="grid gap-4 md:grid-cols-[180px_1fr] md:items-start">
                   <div className="overflow-hidden rounded-[1.1rem] border border-white/10 bg-charcoal/40">
                     {article.featuredImage?.imageUrl ? (
                       <img
@@ -829,10 +829,10 @@ export default function BlogAdmin() {
                           article.featuredImage.caption ||
                           article.title
                         }
-                        className="h-full min-h-[120px] w-full object-cover"
+                        className="h-full min-h-[140px] w-full object-cover"
                       />
                     ) : (
-                      <div className="flex h-full min-h-[120px] items-center justify-center px-3 text-center text-xs text-stone-400">
+                      <div className="flex h-full min-h-[140px] items-center justify-center px-3 text-center text-xs text-stone-400">
                         {tr("Sans visuel", "No image")}
                       </div>
                     )}

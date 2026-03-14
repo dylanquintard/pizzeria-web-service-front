@@ -12,7 +12,9 @@ import {
 import { AuthContext } from "../context/AuthContext";
 import { CartContext } from "../context/CartContext";
 import { useLanguage } from "../context/LanguageContext";
+import { useSiteSettings } from "../context/SiteSettingsContext";
 import { useRealtimeEvents } from "../hooks/useRealtimeEvents";
+import { getLocalizedSiteText } from "../site/siteSettings";
 
 const FOCUSABLE_SELECTOR =
   "button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])";
@@ -216,7 +218,8 @@ function ProductCustomizerModal({
 
 export default function Order() {
   const { token } = useContext(AuthContext);
-  const { tr, locale } = useLanguage();
+  const { language, tr, locale } = useLanguage();
+  const { settings } = useSiteSettings();
   const navigate = useNavigate();
   const { cartItems, itemCount, cartTotal, setCartFromResponse, refreshCart, removeItem, clearCart, loading: cartLoading } =
     useContext(CartContext);
@@ -264,6 +267,19 @@ export default function Order() {
     cartItems.length > 0 &&
     validatedCartSignature !== "" &&
     validatedCartSignature === cartSignature;
+  const pickupIntroText = getLocalizedSiteText(
+    settings.order?.pickupIntroText,
+    language,
+    tr("Choisissez d'abord la date, l'horaire, puis l'adresse de retrait.", "Choose date first, then pickup time and location.")
+  );
+  const pickupConfirmationText = getLocalizedSiteText(
+    settings.order?.pickupConfirmationText,
+    language,
+    tr(
+      "Verifiez bien cette adresse avant de finaliser la commande.",
+      "Please verify this address before finalizing your order."
+    )
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -905,7 +921,7 @@ export default function Order() {
           <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
             <h2 className="mb-1 text-xl font-bold text-white">{tr("Retrait de la commande", "Pickup details")}</h2>
             <p className="mb-4 text-sm text-stone-300">
-              {tr("Choisissez d'abord la date, l'horaire, puis l'adresse de retrait.", "Choose date first, then pickup time and location.")}
+              {pickupIntroText}
             </p>
             <p className="mb-3 text-xs text-stone-300">
               {tr("Flux temps reel", "Live updates")}:{" "}
@@ -1122,10 +1138,7 @@ export default function Order() {
             </div>
 
             <p className="mt-3 text-xs text-amber-200">
-              {tr(
-                "Verifiez bien cette adresse avant de finaliser la commande.",
-                "Please verify this address before finalizing your order."
-              )}
+              {pickupConfirmationText}
             </p>
 
             <div className="mt-5 flex gap-2">

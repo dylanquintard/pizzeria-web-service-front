@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
 import { CartContext } from "../../context/CartContext";
 import { useLanguage } from "../../context/LanguageContext";
+import { useSiteSettings } from "../../context/SiteSettingsContext";
 import { useTheme } from "../../context/ThemeContext";
 import { BRAND_LOGO_URL } from "../../config/env";
 
@@ -87,6 +88,7 @@ export default function Header() {
   const { token, user, logout } = useContext(AuthContext);
   const { cartItems, cartTotal, itemCount, removeItem, clearCart, loading } = useContext(CartContext);
   const { language, setLanguage, tr } = useLanguage();
+  const { settings: siteSettings } = useSiteSettings();
   const { theme, toggleTheme, setTheme } = useTheme();
   const isLightTheme = theme === "light";
   const iconColorClass = isLightTheme ? "text-stone-900" : "text-white";
@@ -121,6 +123,7 @@ export default function Header() {
         { to: "/admin/users", label: tr("Clients", "Users") },
         { to: "/admin/gallery", label: tr("Galerie", "Gallery") },
         { to: "/admin/blog", label: tr("Blog", "Blog") },
+        { to: "/admin/site-info", label: tr("Info site", "Site info") },
       ]
     : [];
   const safeAdminMenuLinks = adminMenuLinks.filter(
@@ -167,14 +170,16 @@ export default function Header() {
             {BRAND_LOGO_URL && !hasLogoError ? (
               <img
                 src={BRAND_LOGO_URL}
-                alt="Pizza Truck"
+                alt={siteSettings.siteName || "Pizza Truck"}
                 className="block h-10 w-auto object-contain"
                 loading="eager"
                 decoding="async"
                 onError={() => setHasLogoError(true)}
               />
             ) : (
-              <span className="text-sm font-semibold uppercase tracking-[0.2em] text-saffron">Pizza Truck</span>
+              <span className="text-sm font-semibold uppercase tracking-[0.2em] text-saffron">
+                {siteSettings.siteName || "Pizza Truck"}
+              </span>
             )}
           </Link>
 

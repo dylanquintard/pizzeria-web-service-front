@@ -8,9 +8,11 @@ import ContactPanel from "../components/contact/ContactPanel";
 import SeoHead from "../components/seo/SeoHead";
 import SeoInternalLinks from "../components/seo/SeoInternalLinks";
 import { useLanguage } from "../context/LanguageContext";
+import { useSiteSettings } from "../context/SiteSettingsContext";
 import { useTheme } from "../context/ThemeContext";
 import { buildBaseFoodEstablishmentJsonLd } from "../seo/jsonLd";
 import { DEFAULT_TOUR_CITIES } from "../seo/localLandingContent";
+import { getLocalizedSiteText } from "../site/siteSettings";
 
 const paymentLogos = [
   {
@@ -95,7 +97,8 @@ function formatHourRange(startTime, endTime) {
 }
 
 export default function Home() {
-  const { tr } = useLanguage();
+  const { language, tr } = useLanguage();
+  const { settings: siteSettings } = useSiteSettings();
   const { theme } = useTheme();
   const isLightTheme = theme === "light";
   const [products, setProducts] = useState([]);
@@ -318,6 +321,62 @@ const truckTourSchedule = useMemo(
     ? "linear-gradient(118deg, rgba(246,235,221,0.90) 6%, rgba(246,235,221,0.68) 42%, rgba(58,38,28,0.48) 100%)"
     : "linear-gradient(120deg, rgba(18,16,13,0.88) 5%, rgba(18,16,13,0.62) 40%, rgba(18,16,13,0.92) 100%)";
 
+  const siteMetaTitle = getLocalizedSiteText(
+    siteSettings.seo?.defaultMetaTitle,
+    language,
+    tr(
+      "Pizza napolitaine au feu de bois en Moselle | Pizza Truck",
+      "Wood-fired Neapolitan pizza in Moselle | Pizza Truck"
+    )
+  );
+  const siteMetaDescription = getLocalizedSiteText(
+    siteSettings.seo?.defaultMetaDescription,
+    language,
+    tr(
+      "Camion pizza en Moselle avec pate travaillee, cuisson bois-gaz et retrait organise autour de Thionville et Metz.",
+      "Pizza truck in Moselle with well-worked dough, wood-and-gas baking and organized pickup around Thionville and Metz."
+    )
+  );
+  const heroTitle = getLocalizedSiteText(
+    siteSettings.home?.heroTitle,
+    language,
+    tr(
+      "Pizza napolitaine au feu de bois en Moselle",
+      "Wood-fired Neapolitan pizza in Moselle"
+    )
+  );
+  const heroSubtitle = getLocalizedSiteText(
+    siteSettings.home?.heroSubtitle,
+    language,
+    tr(
+      "Une pizza travaillee pour l emporter: pate souple, cuisson vive et recettes nettes a recuperer autour de Thionville et Metz.",
+      "Pizza built for pickup: supple dough, lively baking and cleaner recipes around Thionville and Metz."
+    )
+  );
+  const siteTaglineText = getLocalizedSiteText(
+    siteSettings.siteTagline,
+    language,
+    ""
+  );
+  const heroPrimaryCtaLabel = getLocalizedSiteText(
+    siteSettings.home?.primaryCtaLabel,
+    language,
+    tr("Commander", "Order now")
+  );
+  const heroSecondaryCtaLabel = getLocalizedSiteText(
+    siteSettings.home?.secondaryCtaLabel,
+    language,
+    tr("Voir le menu", "See menu")
+  );
+  const heroReassuranceText = getLocalizedSiteText(
+    siteSettings.home?.reassuranceText,
+    language,
+    tr(
+      "Commande en ligne, retrait rapide, cuisson minute",
+      "Online ordering, quick pickup, baked to order"
+    )
+  );
+
   useEffect(() => {
     setActiveHeroIndex((prev) => {
       if (heroGalleryImages.length === 0) return 0;
@@ -338,14 +397,8 @@ const truckTourSchedule = useMemo(
   return (
     <div className="space-y-20 pb-24">
       <SeoHead
-        title={tr(
-          "Pizza napolitaine au feu de bois en Moselle | Pizza Truck",
-          "Wood-fired Neapolitan pizza in Moselle | Pizza Truck"
-        )}
-        description={tr(
-          "Camion pizza en Moselle avec pate travaillee, cuisson bois-gaz et retrait organise autour de Thionville et Metz.",
-          "Pizza truck in Moselle with well-worked dough, wood-and-gas baking and organized pickup around Thionville and Metz."
-        )}
+        title={siteMetaTitle}
+        description={siteMetaDescription}
         pathname="/"
         jsonLd={homeJsonLd}
       />
@@ -374,32 +427,35 @@ const truckTourSchedule = useMemo(
         </div>
         <div className="section-shell relative py-20 sm:py-28 lg:py-32">
           <div className="max-w-3xl">
+            {siteTaglineText ? (
+              <p
+                className={`mb-4 text-xs font-semibold uppercase tracking-[0.28em] ${
+                  isLightTheme ? "text-[#3A261C]/70" : "text-saffron"
+                }`}
+              >
+                {siteTaglineText}
+              </p>
+            ) : null}
             <h1
               className={`font-display text-5xl uppercase leading-none tracking-wide sm:text-6xl lg:text-7xl ${
                 isLightTheme ? "text-[#3A261C]" : "theme-light-keep-white text-white"
               }`}
             >
-              {tr(
-                "Pizza napolitaine au feu de bois en Moselle",
-                "Wood-fired Neapolitan pizza in Moselle"
-              )}
+              {heroTitle}
             </h1>
             <p
               className={`mt-6 max-w-2xl text-base sm:text-lg ${
                 isLightTheme ? "text-[#1A1817]/80" : "theme-light-keep-white text-stone-200"
               }`}
             >
-              {tr(
-                "Une pizza travaillee pour l emporter: pate souple, cuisson vive et recettes nettes a recuperer autour de Thionville et Metz.",
-                "Pizza built for pickup: supple dough, lively baking and cleaner recipes around Thionville and Metz."
-              )}
+              {heroSubtitle}
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <Link
                 to="/order"
                 className="rounded-full bg-saffron px-6 py-3 text-sm font-bold uppercase tracking-wide text-charcoal transition hover:bg-yellow-300"
               >
-                {tr("Commander", "Order now")}
+                {heroPrimaryCtaLabel}
               </Link>
               <a
                 href="#menu"
@@ -409,9 +465,18 @@ const truckTourSchedule = useMemo(
                     : "theme-light-keep-white border border-white/30 text-white hover:bg-white/10"
                 }`}
               >
-                {tr("Voir le menu", "See menu")}
+                {heroSecondaryCtaLabel}
               </a>
             </div>
+            {heroReassuranceText ? (
+              <p
+                className={`mt-4 text-xs font-semibold uppercase tracking-[0.22em] ${
+                  isLightTheme ? "text-[#3A261C]/70" : "text-stone-300"
+                }`}
+              >
+                {heroReassuranceText}
+              </p>
+            ) : null}
           </div>
         </div>
       </section>
