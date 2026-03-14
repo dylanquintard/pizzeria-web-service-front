@@ -163,6 +163,10 @@ function EditorSectionTitle({ eyebrow, title, description }) {
   );
 }
 
+function getDangerButtonClassName(extra = "") {
+  return `rounded-full border border-red-400/50 bg-red-500/10 text-red-200 transition hover:bg-red-500/20 ${extra}`.trim();
+}
+
 function ArticleEditor({
   form,
   setForm,
@@ -366,7 +370,9 @@ function ArticleEditor({
                   type="button"
                   onClick={() => removeParagraph(index)}
                   disabled={form.paragraphs.length === 1}
-                  className="rounded-full border border-red-300/25 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-red-200 transition hover:bg-red-500/10 disabled:cursor-not-allowed disabled:opacity-40"
+                  className={`${getDangerButtonClassName(
+                    "px-3 py-1 text-[11px] font-semibold uppercase tracking-wide disabled:cursor-not-allowed disabled:opacity-40"
+                  )}`}
                 >
                   {tr("Supprimer", "Delete")}
                 </button>
@@ -411,7 +417,9 @@ function ArticleEditor({
                     <button
                       type="button"
                       onClick={() => removeParagraphImage(index)}
-                      className="rounded-full border border-red-300/25 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-red-200 transition hover:bg-red-500/10"
+                      className={getDangerButtonClassName(
+                        "px-3 py-1 text-[11px] font-semibold uppercase tracking-wide"
+                      )}
                     >
                       {tr("Retirer l'image", "Remove image")}
                     </button>
@@ -523,6 +531,7 @@ export default function BlogAdmin() {
 
   const [articles, setArticles] = useState([]);
   const [createForm, setCreateForm] = useState(createEmptyArticleForm);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState(createEmptyArticleForm);
   const [message, setMessage] = useState("");
@@ -570,6 +579,7 @@ export default function BlogAdmin() {
   }, [authLoading, loadArticles, token, user]);
 
   const startEditing = (article) => {
+    setIsCreateOpen(false);
     setEditingId(article.id);
     setEditForm(createArticleFormFromRecord(article));
     setMessage("");
@@ -592,6 +602,7 @@ export default function BlogAdmin() {
       const payload = await normalizeArticlePayload(createForm, token);
       await createBlogArticle(token, payload);
       setCreateForm(createEmptyArticleForm());
+      setIsCreateOpen(false);
       setMessage(tr("Article cree avec succes.", "Article created successfully."));
       await loadArticles();
     } catch (err) {
@@ -652,6 +663,17 @@ export default function BlogAdmin() {
     }
   };
 
+  const toggleCreatePanel = () => {
+    setMessage("");
+    setIsCreateOpen((prev) => {
+      const nextOpen = !prev;
+      if (nextOpen) {
+        cancelEditing();
+      }
+      return nextOpen;
+    });
+  };
+
   if (authLoading) {
     return <p>{tr("Chargement...", "Loading...")}</p>;
   }
@@ -665,45 +687,51 @@ export default function BlogAdmin() {
       <header className="rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,_rgba(250,204,21,0.16),_transparent_36%),linear-gradient(135deg,_rgba(255,255,255,0.06),_rgba(255,255,255,0.02))] p-6 sm:p-8">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="max-w-3xl">
-            <p className="text-xs uppercase tracking-[0.25em] text-saffron">
-              {tr("Administration blog", "Blog administration")}
-            </p>
             <h2 className="mt-2 text-3xl font-bold text-white">
-              {tr("Creation d'articles", "Article creation")}
+              {tr("Creation d'articles blog", "Blog article creation")}
             </h2>
             <p className="mt-3 text-sm leading-7 text-stone-300">
               {tr(
-                "Creez des articles avec plusieurs paragraphes et des images directement rattachees a chaque section, en URL courte du type /la-pizza-italienne.",
-                "Create multi-paragraph articles with images attached directly to each section using short URLs like /la-pizza-italienne."
+                "Creez des articles avec plusieurs paragraphes, documentes vos paragraphes de photos (pas obligatoire), cependant toujours documente au moins une photo dans l'article sinon mauvais rendu. Vous pouvez modifier ces articles une fois ajoutes, le but de ces articles est creer de la visite sur le site et donc de la visibilite, voir guide SEO articles blogs pour plus d'infos.",
+                "Create articles with multiple paragraphs, add photos to your paragraphs when needed, and always include at least one image in the article for a better visual result. You can edit articles after publishing them, and the goal is to bring traffic and visibility to the site. See the blog SEO guide for more details."
               )}
             </p>
           </div>
+          <button
+            type="button"
+            onClick={toggleCreatePanel}
+            className="rounded-full bg-saffron px-5 py-3 text-xs font-bold uppercase tracking-wide text-charcoal transition hover:bg-yellow-300"
+          >
+            {isCreateOpen
+              ? tr("Fermer la creation", "Close creation")
+              : tr("Ajouter un article", "Add article")}
+          </button>
+        </div>
 
-          <div className="grid min-w-[240px] gap-3 sm:grid-cols-4">
-            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-              <p className="text-[11px] uppercase tracking-[0.22em] text-stone-400">
-                {tr("Articles", "Articles")}
-              </p>
-              <p className="mt-2 text-3xl font-bold text-white">{articleStats.articleCount}</p>
-            </div>
-            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-              <p className="text-[11px] uppercase tracking-[0.22em] text-stone-400">
-                {tr("Publies", "Published")}
-              </p>
-              <p className="mt-2 text-3xl font-bold text-white">{articleStats.publishedCount}</p>
-            </div>
-            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-              <p className="text-[11px] uppercase tracking-[0.22em] text-stone-400">
-                {tr("Paragraphes", "Paragraphs")}
-              </p>
-              <p className="mt-2 text-3xl font-bold text-white">{articleStats.paragraphCount}</p>
-            </div>
-            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-              <p className="text-[11px] uppercase tracking-[0.22em] text-stone-400">
-                {tr("Images", "Images")}
-              </p>
-              <p className="mt-2 text-3xl font-bold text-white">{articleStats.imageCount}</p>
-            </div>
+        <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+            <p className="text-[11px] uppercase tracking-[0.22em] text-stone-400">
+              {tr("Articles", "Articles")}
+            </p>
+            <p className="mt-2 text-3xl font-bold text-white">{articleStats.articleCount}</p>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+            <p className="text-[11px] uppercase tracking-[0.22em] text-stone-400">
+              {tr("Publies", "Published")}
+            </p>
+            <p className="mt-2 text-3xl font-bold text-white">{articleStats.publishedCount}</p>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+            <p className="text-[11px] uppercase tracking-[0.22em] text-stone-400">
+              {tr("Paragraphes", "Paragraphs")}
+            </p>
+            <p className="mt-2 text-3xl font-bold text-white">{articleStats.paragraphCount}</p>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+            <p className="text-[11px] uppercase tracking-[0.22em] text-stone-400">
+              {tr("Images", "Images")}
+            </p>
+            <p className="mt-2 text-3xl font-bold text-white">{articleStats.imageCount}</p>
           </div>
         </div>
       </header>
@@ -714,17 +742,20 @@ export default function BlogAdmin() {
         </div>
       ) : null}
 
-      <ArticleEditor
-        form={createForm}
-        setForm={setCreateForm}
-        onSubmit={handleCreate}
-        slugLocked={false}
-        saving={saving && !editingId}
-        submitLabel={tr("Creer l'article", "Create article")}
-        title={tr("Nouvel article", "New article")}
-        subtitle={tr("Creation", "Creation")}
-        tr={tr}
-      />
+      {isCreateOpen ? (
+        <ArticleEditor
+          form={createForm}
+          setForm={setCreateForm}
+          onSubmit={handleCreate}
+          onCancel={() => setIsCreateOpen(false)}
+          slugLocked={false}
+          saving={saving && !editingId}
+          submitLabel={tr("Creer l'article", "Create article")}
+          title={tr("Nouvel article", "New article")}
+          subtitle={tr("Creation", "Creation")}
+          tr={tr}
+        />
+      ) : null}
 
       {editingId ? (
         <ArticleEditor
@@ -782,83 +813,99 @@ export default function BlogAdmin() {
             </p>
           </div>
         ) : (
-          <div className="grid gap-4 lg:grid-cols-2">
+          <div className="grid gap-4 xl:grid-cols-2">
             {articles.map((article) => (
               <article
                 key={article.id}
-                className="rounded-[1.5rem] border border-white/10 bg-black/20 p-5"
+                className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4"
               >
-                {article.featuredImage?.imageUrl ? (
-                  <img
-                    src={article.featuredImage.imageUrl}
-                    alt={article.featuredImage.altText || article.featuredImage.caption || article.title}
-                    className="mb-4 h-52 w-full rounded-[1.25rem] object-cover"
-                  />
-                ) : null}
+                <div className="grid gap-4 sm:grid-cols-[120px_1fr]">
+                  <div className="overflow-hidden rounded-[1.1rem] border border-white/10 bg-charcoal/40">
+                    {article.featuredImage?.imageUrl ? (
+                      <img
+                        src={article.featuredImage.imageUrl}
+                        alt={
+                          article.featuredImage.altText ||
+                          article.featuredImage.caption ||
+                          article.title
+                        }
+                        className="h-full min-h-[120px] w-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full min-h-[120px] items-center justify-center px-3 text-center text-xs text-stone-400">
+                        {tr("Sans visuel", "No image")}
+                      </div>
+                    )}
+                  </div>
 
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <div className="flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.22em]">
-                      <span
-                        className={`rounded-full px-3 py-1 ${
-                          article.published
-                            ? "border border-emerald-300/30 bg-emerald-500/10 text-emerald-200"
-                            : "border border-amber-300/30 bg-amber-500/10 text-amber-200"
-                        }`}
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.22em]">
+                          <span
+                            className={`rounded-full px-3 py-1 ${
+                              article.published
+                                ? "border border-emerald-300/30 bg-emerald-500/10 text-emerald-200"
+                                : "border border-amber-300/30 bg-amber-500/10 text-amber-200"
+                            }`}
+                          >
+                            {article.published
+                              ? tr("Publie", "Published")
+                              : tr("Brouillon", "Draft")}
+                          </span>
+                          <span className="rounded-full border border-white/10 px-3 py-1 text-stone-300">
+                            {formatArticleDate(article.updatedAt)}
+                          </span>
+                        </div>
+                        <h4 className="mt-3 text-lg font-bold text-white">{article.title}</h4>
+                      </div>
+
+                      <code className="rounded-full border border-white/10 bg-charcoal/60 px-3 py-1 text-xs text-saffron">
+                        /{article.slug}
+                      </code>
+                    </div>
+
+                    <p className="mt-3 text-sm leading-6 text-stone-300">{article.description}</p>
+
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => startEditing(article)}
+                        className="rounded-full border border-saffron/40 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-saffron transition hover:bg-saffron/10"
                       >
-                        {article.published
-                          ? tr("Publie", "Published")
-                          : tr("Brouillon", "Draft")}
-                      </span>
-                      <span className="rounded-full border border-white/10 px-3 py-1 text-stone-300">
+                        {tr("Modifier", "Edit")}
+                      </button>
+                      <Link
+                        to={`/${article.slug}`}
+                        className="rounded-full border border-white/20 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white transition hover:bg-white/10"
+                      >
+                        {tr("Ouvrir", "Open")}
+                      </Link>
+                      <span
+                        className="inline-flex rounded-full border border-white/10 px-3 py-2 text-[11px] uppercase tracking-[0.22em] text-stone-400"
+                      >
                         {article.paragraphCount} {tr("paragraphes", "paragraphs")}
                       </span>
-                      <span className="rounded-full border border-white/10 px-3 py-1 text-stone-300">
-                        {article.imageCount || 0} {tr("visuels lies", "linked visuals")}
-                      </span>
                     </div>
-                    <h4 className="mt-4 text-xl font-bold text-white">{article.title}</h4>
+                    <div className="mt-2 text-xs text-stone-400">
+                      <span className="font-semibold text-stone-200">
+                        {tr("Publie le", "Published on")}:{" "}
+                      </span>
+                      {formatArticleDate(article.publishedAt)}
+                    </div>
+
+                    <div className="mt-4">
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(article)}
+                        className={getDangerButtonClassName(
+                          "px-4 py-2 text-xs font-semibold uppercase tracking-wide"
+                        )}
+                      >
+                        {tr("Supprimer", "Delete")}
+                      </button>
+                    </div>
                   </div>
-
-                  <code className="rounded-full border border-white/10 bg-charcoal/60 px-3 py-1 text-xs text-saffron">
-                    /{article.slug}
-                  </code>
-                </div>
-
-                <p className="mt-4 text-sm leading-7 text-stone-300">{article.description}</p>
-
-                <div className="mt-5 grid gap-2 text-xs text-stone-400 sm:grid-cols-2">
-                  <div>
-                    <span className="font-semibold text-stone-200">{tr("Mis a jour", "Updated")}: </span>
-                    {formatArticleDate(article.updatedAt)}
-                  </div>
-                  <div>
-                    <span className="font-semibold text-stone-200">{tr("Publie le", "Published on")}: </span>
-                    {formatArticleDate(article.publishedAt)}
-                  </div>
-                </div>
-
-                <div className="mt-5 flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => startEditing(article)}
-                    className="rounded-full border border-saffron/40 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-saffron transition hover:bg-saffron/10"
-                  >
-                    {tr("Modifier", "Edit")}
-                  </button>
-                  <Link
-                    to={`/${article.slug}`}
-                    className="rounded-full border border-white/20 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white transition hover:bg-white/10"
-                  >
-                    {tr("Ouvrir", "Open")}
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={() => handleDelete(article)}
-                    className="rounded-full border border-red-300/25 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-red-200 transition hover:bg-red-500/10"
-                  >
-                    {tr("Supprimer", "Delete")}
-                  </button>
                 </div>
               </article>
             ))}
