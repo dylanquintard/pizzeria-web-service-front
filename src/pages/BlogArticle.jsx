@@ -4,6 +4,7 @@ import { getPublishedBlogArticleBySlug } from "../api/blog.api";
 import SeoHead from "../components/seo/SeoHead";
 import SeoInternalLinks from "../components/seo/SeoInternalLinks";
 import { SITE_URL } from "../config/env";
+import { useSiteSettings } from "../context/SiteSettingsContext";
 import NotFound from "./NotFound";
 
 function formatArticleDate(value) {
@@ -30,6 +31,15 @@ function splitContentBlocks(content) {
 export default function BlogArticle({ forcedSlug = "" }) {
   const params = useParams();
   const resolvedSlug = String(forcedSlug || params.slug || "").trim().toLowerCase();
+  const { settings } = useSiteSettings();
+  const siteName = settings.siteName || "Pizza Truck";
+  const canonicalSiteUrl = String(settings.seo?.canonicalSiteUrl || "").trim().replace(/\/+$/, "") || SITE_URL;
+  const rawLogoUrl = String(settings.seo?.defaultOgImageUrl || "").trim();
+  const logoUrl = rawLogoUrl
+    ? rawLogoUrl.startsWith("http")
+      ? rawLogoUrl
+      : `${canonicalSiteUrl}${rawLogoUrl.startsWith("/") ? rawLogoUrl : `/${rawLogoUrl}`}`
+    : `${canonicalSiteUrl}/logo.webp`;
 
   const [article, setArticle] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -88,7 +98,7 @@ export default function BlogArticle({ forcedSlug = "" }) {
   const articleJsonLd = useMemo(() => {
     if (!article) return null;
 
-    const articleUrl = `${SITE_URL}${pathname}`;
+    const articleUrl = `${canonicalSiteUrl}${pathname}`;
     const publishedAt = article.publishedAt || article.createdAt;
     const updatedAt = article.updatedAt || publishedAt;
 
@@ -107,18 +117,18 @@ export default function BlogArticle({ forcedSlug = "" }) {
       },
       author: {
         "@type": "Organization",
-        name: "Pizza Truck",
+        name: siteName,
       },
       publisher: {
         "@type": "Organization",
-        name: "Pizza Truck",
+        name: siteName,
         logo: {
           "@type": "ImageObject",
-          url: `${SITE_URL}/logo.webp`,
+          url: logoUrl,
         },
       },
     };
-  }, [article, articleImage, articleSeoDescription, articleSeoTitle, pathname]);
+  }, [article, articleImage, articleSeoDescription, articleSeoTitle, canonicalSiteUrl, logoUrl, pathname, siteName]);
 
   if (loading) {
     return (
@@ -167,7 +177,7 @@ export default function BlogArticle({ forcedSlug = "" }) {
   return (
     <div className="section-shell space-y-8 pb-20 pt-10">
       <SeoHead
-        title={`${articleSeoTitle} | Blog Pizza Truck`}
+        title={`${articleSeoTitle} | ${siteName}`}
         description={articleSeoDescription}
         pathname={pathname}
         image={articleImage}

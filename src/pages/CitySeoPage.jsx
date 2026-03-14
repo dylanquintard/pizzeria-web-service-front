@@ -3,9 +3,11 @@ import { Link, Navigate, useLocation, useParams } from "react-router-dom";
 import { getLocations } from "../api/location.api";
 import { getSeoLocations } from "../api/seo.api";
 import { getPublicWeeklySettings } from "../api/timeslot.api";
+import FaqSection from "../components/common/FaqSection";
 import SeoHead from "../components/seo/SeoHead";
 import SeoInternalLinks from "../components/seo/SeoInternalLinks";
-import { buildBaseFoodEstablishmentJsonLd } from "../seo/jsonLd";
+import { useSiteSettings } from "../context/SiteSettingsContext";
+import { buildBaseFoodEstablishmentJsonLd, buildBreadcrumbJsonLd, buildFaqJsonLd } from "../seo/jsonLd";
 import {
   buildDynamicCityContent,
   FIXED_LOCAL_CITY_SLUGS,
@@ -149,6 +151,7 @@ function CityPageNotFound({ citySlug }) {
 }
 
 export default function CitySeoPage({ forcedCitySlug = "" }) {
+  const { settings } = useSiteSettings();
   const location = useLocation();
   const params = useParams();
   const rawCity = forcedCitySlug || params.city || params["*"] || "";
@@ -316,6 +319,57 @@ export default function CitySeoPage({ forcedCitySlug = "" }) {
     [cityDisplay, currentBucket]
   );
   const canonicalPath = catalogEntry?.path || content.pathname;
+  const siteName = settings.siteName || "Pizza Truck";
+  const canonicalSiteUrl = String(settings.seo?.canonicalSiteUrl || "").trim();
+  const cityJsonLd = useMemo(
+    () =>
+      [
+        buildBaseFoodEstablishmentJsonLd({
+          pagePath: canonicalPath,
+          pageName: content.title,
+          description: content.description,
+          siteName,
+          siteUrl: canonicalSiteUrl || undefined,
+          phone: settings.contact?.phone,
+          email: settings.contact?.email,
+          address: settings.contact?.address,
+          mapUrl: settings.contact?.mapsUrl,
+          image: settings.seo?.defaultOgImageUrl,
+          socialUrls: [
+            settings.social?.instagramUrl,
+            settings.social?.facebookUrl,
+            settings.social?.tiktokUrl,
+          ],
+          areaServed: [cityDisplay, "Moselle"],
+        }),
+        buildBreadcrumbJsonLd(
+          [
+            { name: "Accueil", path: "/" },
+            { name: "Horaires", path: "/planing" },
+            { name: cityDisplay, path: canonicalPath },
+          ],
+          canonicalSiteUrl || undefined
+        ),
+        buildFaqJsonLd(content.faq),
+      ].filter(Boolean),
+    [
+      canonicalPath,
+      canonicalSiteUrl,
+      cityDisplay,
+      content.description,
+      content.faq,
+      content.title,
+      settings.contact?.address,
+      settings.contact?.email,
+      settings.contact?.mapsUrl,
+      settings.contact?.phone,
+      settings.seo?.defaultOgImageUrl,
+      settings.social?.facebookUrl,
+      settings.social?.instagramUrl,
+      settings.social?.tiktokUrl,
+      siteName,
+    ]
+  );
 
   const effectiveAllowedSlugs = useMemo(() => {
     const combined = new Set(FIXED_LOCAL_CITY_SLUGS);
@@ -370,11 +424,7 @@ export default function CitySeoPage({ forcedCitySlug = "" }) {
         title={content.title}
         description={content.description}
         pathname={canonicalPath}
-        jsonLd={buildBaseFoodEstablishmentJsonLd({
-          pagePath: canonicalPath,
-          pageName: content.title,
-          description: content.description,
-        })}
+        jsonLd={cityJsonLd}
       />
 
       <header className="space-y-3">
@@ -427,19 +477,9 @@ export default function CitySeoPage({ forcedCitySlug = "" }) {
         </section>
       )}
 
-      {Array.isArray(content.faq) && content.faq.length > 0 && (
-        <section className="glass-panel p-6">
-          <h2 className="text-lg font-bold text-white">Questions frequentes</h2>
-          <div className="mt-4 space-y-4">
-            {content.faq.map((item, index) => (
-              <article key={`faq-${index}`} className="rounded-xl border border-white/15 bg-white/5 p-4">
-                <h3 className="text-sm font-semibold text-white">{item.question}</h3>
-                <p className="mt-2 text-sm text-stone-300">{item.answer}</p>
-              </article>
-            ))}
-          </div>
-        </section>
-      )}
+      {Array.isArray(content.faq) && content.faq.length > 0 ? (
+        <FaqSection title="Questions frequentes" items={content.faq} />
+      ) : null}
 
       <section className="glass-panel p-6">
         <h2 className="text-lg font-bold text-white">Commander votre pizza</h2>

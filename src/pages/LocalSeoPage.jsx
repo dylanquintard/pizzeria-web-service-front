@@ -1,7 +1,9 @@
 import { Link } from "react-router-dom";
+import FaqSection from "../components/common/FaqSection";
 import SeoHead from "../components/seo/SeoHead";
 import SeoInternalLinks from "../components/seo/SeoInternalLinks";
-import { buildBaseFoodEstablishmentJsonLd } from "../seo/jsonLd";
+import { useSiteSettings } from "../context/SiteSettingsContext";
+import { buildBaseFoodEstablishmentJsonLd, buildBreadcrumbJsonLd, buildFaqJsonLd } from "../seo/jsonLd";
 import { buildDynamicCityFaq, LOCAL_PAGE_CONTENT } from "../seo/localLandingContent";
 
 function buildFixedLocalFaq(cityLabel) {
@@ -25,10 +27,42 @@ function buildFixedLocalFaq(cityLabel) {
 }
 
 export default function LocalSeoPage({ cityKey }) {
+  const { settings } = useSiteSettings();
   const content = LOCAL_PAGE_CONTENT[cityKey] || LOCAL_PAGE_CONTENT.moselle;
   const cityLabel = cityKey === "moselle" ? "Moselle" : cityKey === "metz" ? "Metz" : "Thionville";
   const isFixedLocalPage = ["thionville", "metz", "moselle"].includes(cityKey);
   const faq = isFixedLocalPage ? buildFixedLocalFaq(cityLabel) : buildDynamicCityFaq(cityLabel);
+  const siteName = settings.siteName || "Pizza Truck";
+  const canonicalSiteUrl = String(settings.seo?.canonicalSiteUrl || "").trim();
+  const localJsonLd = [
+    buildBaseFoodEstablishmentJsonLd({
+      pagePath: content.pathname,
+      pageName: content.title,
+      description: content.description,
+      siteName,
+      siteUrl: canonicalSiteUrl || undefined,
+      phone: settings.contact?.phone,
+      email: settings.contact?.email,
+      address: settings.contact?.address,
+      mapUrl: settings.contact?.mapsUrl,
+      image: settings.seo?.defaultOgImageUrl,
+      socialUrls: [
+        settings.social?.instagramUrl,
+        settings.social?.facebookUrl,
+        settings.social?.tiktokUrl,
+      ],
+      areaServed: [cityLabel, "Moselle"],
+    }),
+        buildBreadcrumbJsonLd(
+          [
+            { name: "Accueil", path: "/" },
+            { name: "Horaires", path: "/planing" },
+            { name: cityLabel, path: content.pathname },
+          ],
+          canonicalSiteUrl || undefined
+        ),
+    buildFaqJsonLd(faq),
+  ].filter(Boolean);
 
   return (
     <div className="section-shell space-y-8 pb-20 pt-10">
@@ -36,11 +70,7 @@ export default function LocalSeoPage({ cityKey }) {
         title={content.title}
         description={content.description}
         pathname={content.pathname}
-        jsonLd={buildBaseFoodEstablishmentJsonLd({
-          pagePath: content.pathname,
-          pageName: content.title,
-          description: content.description,
-        })}
+        jsonLd={localJsonLd}
       />
 
       <header className="space-y-3">
@@ -60,27 +90,19 @@ export default function LocalSeoPage({ cityKey }) {
           </section>
         ))}
 
-      {Array.isArray(faq) && faq.length > 0 && (
-        <section className="glass-panel p-6">
-          <h2 className="text-lg font-bold text-white">Questions frequentes</h2>
+      {Array.isArray(faq) && faq.length > 0 ? (
+        <div className="space-y-3">
           {isFixedLocalPage && (
-            <p className="mt-2 text-sm font-semibold text-saffron">
+            <p className="text-sm font-semibold text-saffron">
               Le camion n&apos;est pas disponible en permanence dans cette ville.{" "}
               <Link to="/planing" className="underline decoration-saffron underline-offset-2">
                 Horaires & deplacements du camion
               </Link>
             </p>
           )}
-          <div className="mt-4 space-y-4">
-            {faq.map((item, index) => (
-              <article key={`faq-${index}`} className="rounded-xl border border-white/15 bg-white/5 p-4">
-                <h3 className="text-sm font-semibold text-white">{item.question}</h3>
-                <p className="mt-2 text-sm text-stone-300">{item.answer}</p>
-              </article>
-            ))}
-          </div>
-        </section>
-      )}
+          <FaqSection title="Questions frequentes" items={faq} />
+        </div>
+      ) : null}
 
       <section className="glass-panel p-6">
         <h2 className="text-lg font-bold text-white">Commander votre pizza</h2>

@@ -1,12 +1,15 @@
 import { Link } from "react-router-dom";
+import FaqSection from "../components/common/FaqSection";
 import SeoHead from "../components/seo/SeoHead";
 import SeoInternalLinks from "../components/seo/SeoInternalLinks";
-import { SITE_URL } from "../config/env";
 import { useLanguage } from "../context/LanguageContext";
+import { useSiteSettings } from "../context/SiteSettingsContext";
+import { buildBaseFoodEstablishmentJsonLd, buildFaqJsonLd } from "../seo/jsonLd";
 
 export default function APropos() {
   const { tr } = useLanguage();
-  const companyName = "Pizza Truck";
+  const { settings } = useSiteSettings();
+  const companyName = settings.siteName || "Pizza Truck";
   const title = tr(
     `A propos | ${companyName}, camion pizza napolitaine en Moselle`,
     `About | ${companyName}, Neapolitan pizza truck in Moselle`
@@ -15,36 +18,72 @@ export default function APropos() {
     `${companyName} est un camion pizza en Moselle, actif autour de Metz et Thionville, avec une carte courte, une cuisson bois-gaz et un retrait organise.`,
     `${companyName} is a pizza truck in Moselle, active around Metz and Thionville, with a focused menu, wood-gas baking and organized pickup.`
   );
-  const rootUrl = new URL("/", `${SITE_URL}/`).toString();
-  const menuUrl = new URL("/menu", `${SITE_URL}/`).toString();
-
-  const localFoodTruckJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "FoodTruck",
-    name: companyName,
-    description: tr(
-      "Camion pizza en Moselle, proche Metz et Thionville, proposant des pizzas a emporter avec cuisson bois-gaz.",
-      "Pizza truck in Moselle, near Metz and Thionville, serving takeaway pizzas baked in a wood-gas oven."
-    ),
-    servesCuisine: "Pizza Napolitaine",
-    areaServed: [
-      {
-        "@type": "AdministrativeArea",
-        name: "Moselle",
+  const canonicalSiteUrl = String(settings.seo?.canonicalSiteUrl || "").trim();
+  const defaultOgImageUrl = String(settings.seo?.defaultOgImageUrl || "").trim();
+  const menuUrl = canonicalSiteUrl ? `${canonicalSiteUrl.replace(/\/+$/, "")}/menu` : "/menu";
+  const socialUrls = [
+    settings.social?.instagramUrl,
+    settings.social?.facebookUrl,
+    settings.social?.tiktokUrl,
+  ].filter(Boolean);
+  const faqItems = [
+    {
+      question: tr(`Ou trouver ${companyName} cette semaine ?`, `Where can you find ${companyName} this week?`),
+      answer: tr(
+        "Les points de passage et les horaires sont publies sur la page planning. C est la reference a consulter avant de vous deplacer.",
+        "Stops and opening hours are published on the schedule page. That is the page to check before coming."
+      ),
+    },
+    {
+      question: tr("Les pizzas sont-elles a emporter ?", "Are the pizzas takeaway only?"),
+      answer: tr(
+        "Oui. Le service est pense pour l emporter uniquement, afin de garder un rythme plus propre et une pizza remise au bon moment.",
+        "Yes. The service is designed for takeaway only, so the pace stays smooth and the pizza is handed over at the right moment."
+      ),
+    },
+    {
+      question: tr("Faut-il commander a l avance ?", "Should you order in advance?"),
+      answer: tr(
+        "C est recommande, surtout sur les creneaux charges. Cela permet de limiter l attente et de mieux caler la cuisson.",
+        "Yes, especially during busy slots. It helps reduce waiting time and makes baking easier to plan."
+      ),
+    },
+    {
+      question: tr("Combien de temps dure l attente ?", "How long is the wait?"),
+      answer: tr(
+        "Le systeme de creneaux sert justement a reduire l attente. La commande anticipee reste la solution la plus fluide.",
+        "The timeslot system is designed to reduce waiting time. Ordering in advance is still the smoothest option."
+      ),
+    },
+    {
+      question: tr("Quels moyens de paiement acceptez-vous ?", "Which payment methods do you accept?"),
+      answer: tr(
+        "Les moyens de paiement disponibles sont indiques sur le site et peuvent inclure carte bancaire, especes et autres solutions selon l organisation du service.",
+        "Available payment methods are shown on the site and may include card, cash and other options depending on the service setup."
+      ),
+    },
+  ];
+  const aboutJsonLd = [
+    buildBaseFoodEstablishmentJsonLd({
+      pagePath: "/a-propos",
+      pageName: title,
+      description,
+      siteName: companyName,
+      siteUrl: canonicalSiteUrl || undefined,
+      phone: settings.contact?.phone,
+      email: settings.contact?.email,
+      address: settings.contact?.address,
+      mapUrl: settings.contact?.mapsUrl,
+      image: defaultOgImageUrl,
+      socialUrls,
+      areaServed: ["Moselle", "Thionville", "Metz"],
+      extra: {
+        "@type": "FoodTruck",
+        hasMenu: menuUrl,
       },
-      {
-        "@type": "City",
-        name: "Thionville",
-      },
-      {
-        "@type": "City",
-        name: "Metz",
-      },
-    ],
-    priceRange: "EUR EUR",
-    url: rootUrl,
-    hasMenu: menuUrl,
-  };
+    }),
+    buildFaqJsonLd(faqItems),
+  ].filter(Boolean);
 
   return (
     <div className="section-shell space-y-8 pb-20 pt-10">
@@ -52,7 +91,7 @@ export default function APropos() {
         title={title}
         description={description}
         pathname="/a-propos"
-        jsonLd={localFoodTruckJsonLd}
+        jsonLd={aboutJsonLd}
       />
 
       <header className="space-y-3">
@@ -230,58 +269,10 @@ export default function APropos() {
         </ul>
       </section>
 
-      <section className="glass-panel p-6">
-        <h2 className="font-display text-3xl uppercase tracking-wide text-white">
-          {tr("Questions frequentes", "Frequently asked questions")}
-        </h2>
-        <div className="mt-4 space-y-4">
-          <article>
-            <h3 className="text-base font-semibold text-white">{tr(`Ou trouver ${companyName} cette semaine ?`, `Where can you find ${companyName} this week?`)}</h3>
-            <p className="mt-1 text-sm text-stone-300">
-              {tr(
-                "Les points de passage et les horaires sont publies sur la page planning. C est la reference a consulter avant de vous deplacer.",
-                "Stops and opening hours are published on the schedule page. That is the page to check before coming."
-              )}
-            </p>
-          </article>
-          <article>
-            <h3 className="text-base font-semibold text-white">{tr("Les pizzas sont-elles a emporter ?", "Are the pizzas takeaway only?")}</h3>
-            <p className="mt-1 text-sm text-stone-300">
-              {tr(
-                "Oui. Le service est pense pour l emporter uniquement, afin de garder un rythme plus propre et une pizza remise au bon moment.",
-                "Yes. The service is designed for takeaway only, so the pace stays smooth and the pizza is handed over at the right moment."
-              )}
-            </p>
-          </article>
-          <article>
-            <h3 className="text-base font-semibold text-white">{tr("Faut-il commander a l avance ?", "Should you order in advance?")}</h3>
-            <p className="mt-1 text-sm text-stone-300">
-              {tr(
-                "C est recommande, surtout sur les creneaux charges. Cela permet de limiter l attente et de mieux caler la cuisson.",
-                "Yes, especially during busy slots. It helps reduce waiting time and makes baking easier to plan."
-              )}
-            </p>
-          </article>
-          <article>
-            <h3 className="text-base font-semibold text-white">{tr("Combien de temps dure l attente ?", "How long is the wait?")}</h3>
-            <p className="mt-1 text-sm text-stone-300">
-              {tr(
-                "Le systeme de creneaux sert justement a reduire l attente. La commande anticipee reste la solution la plus fluide.",
-                "The timeslot system is designed to reduce waiting time. Ordering in advance is still the smoothest option."
-              )}
-            </p>
-          </article>
-          <article>
-            <h3 className="text-base font-semibold text-white">{tr("Quels moyens de paiement acceptez-vous ?", "Which payment methods do you accept?")}</h3>
-            <p className="mt-1 text-sm text-stone-300">
-              {tr(
-                "Les moyens de paiement disponibles sont indiques sur le site et peuvent inclure carte bancaire, especes et autres solutions selon l organisation du service.",
-                "Available payment methods are shown on the site and may include card, cash and other options depending on the service setup."
-              )}
-            </p>
-          </article>
-        </div>
-      </section>
+      <FaqSection
+        title={tr("Questions frequentes", "Frequently asked questions")}
+        items={faqItems}
+      />
 
       <SeoInternalLinks />
     </div>

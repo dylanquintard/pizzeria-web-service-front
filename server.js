@@ -17,56 +17,45 @@ const FIXED_CITY_CATALOG = [
 ];
 const FIXED_CITY_SLUGS = new Set(FIXED_CITY_CATALOG.map((item) => item.slug));
 
-const STATIC_PAGE_META = {
-  "/": {
-    title: "Pizza Truck | Pizza napolitaine au feu de bois en Moselle",
-    description:
-      "Pizza napolitaine au feu de bois en Moselle. Camion pizza artisanal autour de Thionville et Metz, commande en ligne et retrait rapide.",
+const DEFAULT_SITE_SETTINGS = Object.freeze({
+  siteName: "Pizza Truck",
+  seo: {
+    defaultMetaTitle: {
+      fr: "Pizza Truck | Pizza napolitaine au feu de bois en Moselle",
+    },
+    defaultMetaDescription: {
+      fr: "Pizza napolitaine au feu de bois en Moselle. Camion pizza artisanal autour de Thionville et Metz, commande en ligne et retrait rapide.",
+    },
+    defaultOgImageUrl: "",
+    canonicalSiteUrl: "",
   },
-  "/menu": {
-    title: "Menu pizzas napolitaines | Pizza Truck",
-    description:
-      "Consultez la carte Pizza Truck: pizzas napolitaines artisanales, ingredients italiens et cuisson au four a bois et gaz.",
+  blog: {
+    introTitle: {
+      fr: "Farines, tomates, mozzarella & surtout la pizza !",
+    },
+    introText: {
+      fr: "Ici on parle d'italie, de saveurs, de savoir faire et de qualite !",
+    },
   },
-  "/planing": {
-    title: "Horaires & deplacements du camion pizza | Pizza Truck",
-    description:
-      "Retrouvez les horaires d'ouvertures, emplacements et deplacements du camion pizza napolitain.",
+  contact: {
+    phone: "",
+    email: "",
+    address: "",
+    mapsUrl: "",
+    serviceArea: {
+      fr: "Thionville, Metz et alentours",
+    },
   },
-  "/a-propos": {
-    title: "A propos | Pizza Truck",
-    description:
-      "Decouvrez Pizza Truck: pate maison, produits italiens, cuisson au four a bois et gaz et service a emporter.",
+  social: {
+    instagramUrl: "",
+    facebookUrl: "",
+    tiktokUrl: "",
   },
-  "/contact": {
-    title: "Contact | Pizza Truck",
-    description:
-      "Contactez Pizza Truck pour toute question sur la commande, les horaires d'ouvertures et les emplacements du camion.",
-  },
-  "/blog": {
-    title: "Blog pizza napolitaine | Pizza Truck",
-    description:
-      "Articles Pizza Truck: pizza napolitaine, cuisson, ingredients italiens et savoir-faire artisanal.",
-  },
-  "/pizza-napolitaine-thionville": {
-    title: "Pizza napolitaine proche de Thionville | Camion pizza artisanal",
-    description:
-      "Pizza napolitaine artisanale proche de Thionville: cuisson bois-gaz, produits italiens selectionnes et retrait rapide.",
-  },
-  "/pizza-napolitaine-metz": {
-    title: "Pizza napolitaine proche de Metz | Camion pizza artisanal",
-    description:
-      "Pizza napolitaine artisanale proche de Metz: camion pizza, produits italiens et cuisson au four a bois et gaz.",
-  },
-  "/food-truck-pizza-moselle": {
-    title: "Food truck pizza en Moselle | Pizza napolitaine artisanale",
-    description:
-      "Food truck pizza en Moselle: pizzas napolitaines artisanales, ingredients italiens et retrait rapide.",
-  },
-};
+});
 
 const EXACT_SPA_ROUTES = new Set([
   "/",
+  "/gallery",
   "/menu",
   "/planing",
   "/tournee",
@@ -74,6 +63,9 @@ const EXACT_SPA_ROUTES = new Set([
   "/a-propos",
   "/contact",
   "/blog",
+  "/mentions-legales",
+  "/confidentialite",
+  "/conditions-generales",
   "/pizza-napolitaine-thionville",
   "/pizza-napolitaine-metz",
   "/food-truck-pizza-moselle",
@@ -97,6 +89,7 @@ const seoCache = {
   citySlugByLocationId: new Map(),
   blogSlugs: new Set(),
   blogMetaBySlug: new Map(),
+  siteSettings: JSON.parse(JSON.stringify(DEFAULT_SITE_SETTINGS)),
 };
 
 let indexTemplate = "";
@@ -155,6 +148,74 @@ function titleizeSlug(slug) {
     .filter(Boolean)
     .map((chunk) => chunk.charAt(0).toUpperCase() + chunk.slice(1))
     .join(" ");
+}
+
+function getLocalizedValue(value, fallback = "") {
+  if (value && typeof value === "object") {
+    const frValue = String(value.fr || "").trim();
+    const enValue = String(value.en || "").trim();
+    return frValue || enValue || fallback;
+  }
+  return String(value || "").trim() || fallback;
+}
+
+function normalizeSiteSettings(payload) {
+  const source = payload && typeof payload === "object" ? payload : {};
+
+  return {
+    siteName: String(source.siteName || "").trim() || DEFAULT_SITE_SETTINGS.siteName,
+    seo: {
+      defaultMetaTitle: {
+        fr: getLocalizedValue(
+          source.seo?.defaultMetaTitle,
+          DEFAULT_SITE_SETTINGS.seo.defaultMetaTitle.fr
+        ),
+      },
+      defaultMetaDescription: {
+        fr: getLocalizedValue(
+          source.seo?.defaultMetaDescription,
+          DEFAULT_SITE_SETTINGS.seo.defaultMetaDescription.fr
+        ),
+      },
+      defaultOgImageUrl:
+        String(source.seo?.defaultOgImageUrl || "").trim() ||
+        DEFAULT_SITE_SETTINGS.seo.defaultOgImageUrl,
+      canonicalSiteUrl:
+        String(source.seo?.canonicalSiteUrl || "").trim() ||
+        DEFAULT_SITE_SETTINGS.seo.canonicalSiteUrl,
+    },
+    blog: {
+      introTitle: {
+        fr: getLocalizedValue(
+          source.blog?.introTitle,
+          DEFAULT_SITE_SETTINGS.blog.introTitle.fr
+        ),
+      },
+      introText: {
+        fr: getLocalizedValue(
+          source.blog?.introText,
+          DEFAULT_SITE_SETTINGS.blog.introText.fr
+        ),
+      },
+    },
+    contact: {
+      phone: String(source.contact?.phone || "").trim(),
+      email: String(source.contact?.email || "").trim(),
+      address: String(source.contact?.address || "").trim(),
+      mapsUrl: String(source.contact?.mapsUrl || "").trim(),
+      serviceArea: {
+        fr: getLocalizedValue(
+          source.contact?.serviceArea,
+          DEFAULT_SITE_SETTINGS.contact.serviceArea.fr
+        ),
+      },
+    },
+    social: {
+      instagramUrl: String(source.social?.instagramUrl || "").trim(),
+      facebookUrl: String(source.social?.facebookUrl || "").trim(),
+      tiktokUrl: String(source.social?.tiktokUrl || "").trim(),
+    },
+  };
 }
 
 function normalizeSeoLocationCatalog(payload) {
@@ -321,9 +382,10 @@ async function refreshSeoCacheIfNeeded(options = {}) {
   }
 
   try {
-    const [seoLocationsData, blogArticlesData] = await Promise.all([
+    const [seoLocationsData, blogArticlesData, siteSettingsData] = await Promise.all([
       fetchJsonWithTimeout(buildApiUrl("/seo/locations")),
       fetchJsonWithTimeout(buildApiUrl("/seo/blog-articles")),
+      fetchJsonWithTimeout(buildApiUrl("/site-settings/public")),
     ]);
 
     const hasCatalogData = addSeoLocationCatalog(seoLocationsData);
@@ -347,10 +409,12 @@ async function refreshSeoCacheIfNeeded(options = {}) {
     seoCache.citySlugByLocationId = nextCitySlugByLocationId;
     seoCache.blogSlugs = nextBlogSlugs;
     seoCache.blogMetaBySlug = nextBlogMetaBySlug;
+    seoCache.siteSettings = normalizeSiteSettings(siteSettingsData);
     seoCache.expiresAt = now + SEO_CACHE_TTL_MS;
   } catch (_error) {
     // Keep fallback cache windows short so dynamic routes recover quickly
     // after transient API cold starts/timeouts.
+    seoCache.siteSettings = seoCache.siteSettings || normalizeSiteSettings(null);
     seoCache.expiresAt = now + Math.min(SEO_CACHE_TTL_MS, 15000);
   }
 
@@ -367,6 +431,101 @@ function isDynamicSeoPath(pathname) {
 }
 
 function buildSeoMeta(pathname, cache) {
+  const settings = normalizeSiteSettings(cache?.siteSettings);
+  const siteName = String(settings.siteName || DEFAULT_SITE_SETTINGS.siteName).trim();
+  const defaultTitle = getLocalizedValue(
+    settings.seo?.defaultMetaTitle,
+    DEFAULT_SITE_SETTINGS.seo.defaultMetaTitle.fr
+  );
+  const defaultDescription = getLocalizedValue(
+    settings.seo?.defaultMetaDescription,
+    DEFAULT_SITE_SETTINGS.seo.defaultMetaDescription.fr
+  );
+  const defaultImage =
+    String(settings.seo?.defaultOgImageUrl || "").trim() || "/pizza-background-1920.webp";
+  const canonicalBaseUrl = String(settings.seo?.canonicalSiteUrl || "").trim();
+  const blogIntroText = getLocalizedValue(
+    settings.blog?.introText,
+    DEFAULT_SITE_SETTINGS.blog.introText.fr
+  );
+  const staticPageMeta = {
+    "/": {
+      title: defaultTitle,
+      description: defaultDescription,
+      image: defaultImage,
+    },
+    "/gallery": {
+      title: `Galerie | ${siteName}`,
+      description:
+        "Photos du camion pizza, des cuissons et des pizzas napolitaines servies en Moselle.",
+      image: defaultImage,
+    },
+    "/menu": {
+      title: `Menu pizzas napolitaines | ${siteName}`,
+      description:
+        `Consultez la carte ${siteName}: pizzas napolitaines artisanales, ingredients italiens et cuisson au four a bois et gaz.`,
+      image: defaultImage,
+    },
+    "/planing": {
+      title: `Horaires & deplacements du camion pizza | ${siteName}`,
+      description:
+        "Retrouvez les horaires d'ouvertures, emplacements et deplacements du camion pizza napolitain.",
+      image: defaultImage,
+    },
+    "/a-propos": {
+      title: `A propos | ${siteName}`,
+      description:
+        `Decouvrez ${siteName}: pate maison, produits italiens, cuisson au four a bois et gaz et service a emporter.`,
+      image: defaultImage,
+    },
+    "/contact": {
+      title: `Contact | ${siteName}`,
+      description:
+        `Contactez ${siteName}. Informations de contact, reseaux et formulaire pour vos demandes.`,
+      image: defaultImage,
+    },
+    "/blog": {
+      title: `Blog | ${siteName}`,
+      description:
+        blogIntroText ||
+        `Articles ${siteName}: pizza napolitaine, cuisson, ingredients italiens et savoir-faire artisanal.`,
+      image: defaultImage,
+    },
+    "/mentions-legales": {
+      title: `Mentions legales | ${siteName}`,
+      description: `Mentions legales et informations de publication du site ${siteName}.`,
+      image: defaultImage,
+    },
+    "/confidentialite": {
+      title: `Confidentialite | ${siteName}`,
+      description: `Politique de confidentialite du site ${siteName}.`,
+      image: defaultImage,
+    },
+    "/conditions-generales": {
+      title: `Conditions d'utilisation | ${siteName}`,
+      description: `Conditions d'utilisation du site ${siteName}.`,
+      image: defaultImage,
+    },
+    "/pizza-napolitaine-thionville": {
+      title: `Pizza napolitaine proche de Thionville | ${siteName}`,
+      description:
+        "Camion pizza autour de Thionville: pate travaillee, cuisson bois-gaz, carte courte et retrait organise sur les points de passage.",
+      image: defaultImage,
+    },
+    "/pizza-napolitaine-metz": {
+      title: `Pizza napolitaine proche de Metz | ${siteName}`,
+      description:
+        "Camion pizza autour de Metz: recettes d inspiration napolitaine, ingredients selectionnes et retrait rapide sur planning hebdomadaire.",
+      image: defaultImage,
+    },
+    "/food-truck-pizza-moselle": {
+      title: `Food truck pizza en Moselle | ${siteName}`,
+      description:
+        "Food truck pizza en Moselle: carte courte, cuisson vive et passages hebdomadaires autour de Metz, Thionville et des communes voisines.",
+      image: defaultImage,
+    },
+  };
+
   if (pathname === "/pizza") {
     return {
       title: "Redirection vers la page locale",
@@ -374,15 +533,20 @@ function buildSeoMeta(pathname, cache) {
       robots: "noindex,follow",
       ogType: "website",
       pathname,
+      siteName,
+      image: defaultImage,
+      canonicalBaseUrl,
     };
   }
 
-  if (STATIC_PAGE_META[pathname]) {
+  if (staticPageMeta[pathname]) {
     return {
-      ...STATIC_PAGE_META[pathname],
+      ...staticPageMeta[pathname],
       robots: "index,follow",
       ogType: "website",
       pathname,
+      siteName,
+      canonicalBaseUrl,
     };
   }
 
@@ -392,14 +556,16 @@ function buildSeoMeta(pathname, cache) {
     if (!cache.blogSlugs.has(slug)) return null;
     const articleMeta = cache.blogMetaBySlug.get(slug);
     return {
-      title: articleMeta ? `${articleMeta.title} | Blog Pizza Truck` : "Article | Blog Pizza Truck",
+      title: articleMeta ? `${articleMeta.title} | ${siteName}` : `Article | ${siteName}`,
       description:
         articleMeta?.description ||
-        "Article du blog Pizza Truck sur la pizza napolitaine artisanale et les ingredients italiens.",
-      image: articleMeta?.image || "/pizza-background-1920.webp",
+        `Article du blog ${siteName} sur la pizza napolitaine artisanale et les ingredients italiens.`,
+      image: articleMeta?.image || defaultImage,
       robots: "index,follow",
       ogType: "article",
       pathname,
+      siteName,
+      canonicalBaseUrl,
     };
   }
 
@@ -409,12 +575,15 @@ function buildSeoMeta(pathname, cache) {
     if (!cache.citySlugs.has(slug)) return null;
     const city = cache.cityLabelsBySlug.get(slug) || titleizeSlug(slug);
     return {
-      title: `Pizza napolitaine a ${city} | Camion pizza artisanal`,
+      title: `Pizza napolitaine a ${city} | ${siteName}`,
       description:
         `Pizza napolitaine artisanale a ${city}: ingredients italiens, cuisson au four a bois et gaz, service a emporter.`,
       robots: "index,follow",
       ogType: "website",
       pathname,
+      siteName,
+      image: defaultImage,
+      canonicalBaseUrl,
     };
   }
 
@@ -424,30 +593,39 @@ function buildSeoMeta(pathname, cache) {
     if (!cache.citySlugs.has(slug)) return null;
     return {
       title: "Redirection vers la page locale",
-      description: "Redirection vers la page locale officielle Pizza Truck.",
+      description: `Redirection vers la page locale officielle ${siteName}.`,
       robots: "noindex,follow",
       ogType: "website",
       pathname,
+      siteName,
+      image: defaultImage,
+      canonicalBaseUrl,
     };
   }
 
   if (PREFIX_SPA_ROUTES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`))) {
     return {
-      title: "Backoffice | Pizza Truck",
-      description: "Interface d'administration Pizza Truck.",
+      title: `Backoffice | ${siteName}`,
+      description: `Interface d'administration ${siteName}.`,
       robots: "noindex,nofollow",
       ogType: "website",
       pathname,
+      siteName,
+      image: defaultImage,
+      canonicalBaseUrl,
     };
   }
 
   if (EXACT_SPA_ROUTES.has(pathname)) {
     return {
-      title: "Pizza Truck",
-      description: "Pizza napolitaine artisanale et commande a emporter.",
+      title: defaultTitle,
+      description: defaultDescription,
       robots: "index,follow",
       ogType: "website",
       pathname,
+      siteName,
+      image: defaultImage,
+      canonicalBaseUrl,
     };
   }
 
@@ -456,8 +634,11 @@ function buildSeoMeta(pathname, cache) {
 
 function renderHtmlWithSeo(req, meta) {
   const template = ensureIndexTemplate();
-  const safeMeta = meta || STATIC_PAGE_META["/"];
-  const baseUrl = getCanonicalBaseUrl(req);
+  const safeMeta = meta || {
+    title: DEFAULT_SITE_SETTINGS.seo.defaultMetaTitle.fr,
+    description: DEFAULT_SITE_SETTINGS.seo.defaultMetaDescription.fr,
+  };
+  const baseUrl = normalizeBaseUrl(safeMeta.canonicalBaseUrl) || getCanonicalBaseUrl(req);
   const pathname = safeMeta.pathname || req.path || "/";
   const canonical = `${baseUrl}${pathname}`;
   const image = String(safeMeta.image || "/pizza-background-1920.webp").startsWith("http")
@@ -470,7 +651,7 @@ function renderHtmlWithSeo(req, meta) {
   const canonicalTag = `<link rel="canonical" href="${escapeHtmlAttr(canonical)}" />`;
   const ogTags = [
     `<meta property="og:type" content="${escapeHtmlAttr(safeMeta.ogType || "website")}" />`,
-    '<meta property="og:site_name" content="Pizza Truck" />',
+    `<meta property="og:site_name" content="${escapeHtmlAttr(safeMeta.siteName || DEFAULT_SITE_SETTINGS.siteName)}" />`,
     '<meta property="og:locale" content="fr_FR" />',
     `<meta property="og:title" content="${escapeHtmlAttr(safeMeta.title)}" />`,
     `<meta property="og:description" content="${escapeHtmlAttr(safeMeta.description)}" />`,

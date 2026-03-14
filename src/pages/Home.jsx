@@ -4,13 +4,15 @@ import { getCategories } from "../api/category.api";
 import { getPublicGallery } from "../api/gallery.api";
 import { getPublicWeeklySettings } from "../api/timeslot.api";
 import { getAllProductsClient } from "../api/user.api";
+import FaqSection from "../components/common/FaqSection";
 import ContactPanel from "../components/contact/ContactPanel";
 import SeoHead from "../components/seo/SeoHead";
 import SeoInternalLinks from "../components/seo/SeoInternalLinks";
+import TrustHighlightsSection from "../components/trust/TrustHighlightsSection";
 import { useLanguage } from "../context/LanguageContext";
 import { useSiteSettings } from "../context/SiteSettingsContext";
 import { useTheme } from "../context/ThemeContext";
-import { buildBaseFoodEstablishmentJsonLd } from "../seo/jsonLd";
+import { buildBaseFoodEstablishmentJsonLd, buildFaqJsonLd } from "../seo/jsonLd";
 import { DEFAULT_TOUR_CITIES } from "../seo/localLandingContent";
 import { getLocalizedSiteText } from "../site/siteSettings";
 
@@ -236,26 +238,14 @@ const truckTourSchedule = useMemo(
     return [...new Set([...DEFAULT_TOUR_CITIES, ...dynamicLocations])];
   }, [weeklySettings]);
 
-  const homeJsonLd = useMemo(() => {
-    const base = buildBaseFoodEstablishmentJsonLd({
-      pagePath: "/",
-      pageName: tr(
-        "Pizza napolitaine au feu de bois en Moselle",
-        "Wood-fired Neapolitan pizza in Moselle"
-      ),
-      description: tr(
-        "Camion pizza en Moselle avec pate travaillee, cuisson bois-gaz et retrait organise autour de Thionville et Metz.",
-        "Pizza truck in Moselle with well-worked dough, wood-and-gas baking and organized pickup around Thionville and Metz."
-      ),
-    });
-
-    const payload = {
-      ...base,
-      areaServed: truckTourCities,
-    };
-
-    return payload;
-  }, [truckTourCities, tr]);
+  const siteName = siteSettings.siteName || "Pizza Truck";
+  const canonicalSiteUrl = String(siteSettings.seo?.canonicalSiteUrl || "").trim();
+  const defaultOgImageUrl = String(siteSettings.seo?.defaultOgImageUrl || "").trim();
+  const socialUrls = [
+    siteSettings.social?.instagramUrl,
+    siteSettings.social?.facebookUrl,
+    siteSettings.social?.tiktokUrl,
+  ].filter(Boolean);
 
   const menuByCategory = useMemo(() => {
     const grouped = categories.map((category) => ({
@@ -376,6 +366,119 @@ const truckTourSchedule = useMemo(
       "Online ordering, quick pickup, baked to order"
     )
   );
+
+  const trustHighlights = useMemo(
+    () => [
+      {
+        kicker: tr("Produit", "Product"),
+        title: tr("Une pate pensee pour le retrait", "Dough designed for pickup"),
+        text: tr(
+          "La pizza est travaillee pour rester souple, chaude et nette au moment ou elle quitte le camion.",
+          "Each pizza is worked so it stays supple, hot and clean when it leaves the truck."
+        ),
+      },
+      {
+        kicker: tr("Service", "Service"),
+        title: tr("Un retrait simple a suivre", "A simple pickup flow"),
+        text: tr(
+          "Commande, creneau, puis retrait sur le point de passage actif sans attente inutile.",
+          "Order, choose a timeslot, then collect from the active stop without unnecessary waiting."
+        ),
+      },
+      {
+        kicker: tr("Selection", "Selection"),
+        title: tr("Des produits italiens bien choisis", "Well-chosen Italian products"),
+        text: tr(
+          "Farine, tomates, mozzarella et charcuteries sont choisis pour leur tenue au four et leur equilibre en bouche.",
+          "Flour, tomatoes, mozzarella and charcuterie are chosen for oven balance and clean flavor."
+        ),
+      },
+    ],
+    [tr]
+  );
+
+  const homeFaqItems = useMemo(
+    () => [
+      {
+        question: tr(
+          "Comment commander une pizza ?",
+          "How do I order a pizza?"
+        ),
+        answer: tr(
+          "Choisissez votre pizza, selectionnez un creneau puis recuperez la commande directement au camion sur le point de retrait actif.",
+          "Choose your pizza, select a timeslot, then pick up your order directly at the truck at the active pickup point."
+        ),
+      },
+      {
+        question: tr(
+          "Le camion pizza est-il au meme endroit chaque jour ?",
+          "Is the pizza truck in the same place every day?"
+        ),
+        answer: tr(
+          "Non. Les emplacements suivent la tournee hebdomadaire. La page horaires indique les jours, lieux et horaires ouverts.",
+          "No. Locations follow the weekly route. The schedule page shows active days, places and opening hours."
+        ),
+      },
+      {
+        question: tr(
+          "Faut-il commander a l'avance ?",
+          "Should I order in advance?"
+        ),
+        answer: tr(
+          "C'est recommande, surtout sur les creneaux charges. Cela permet de reduire l'attente et de mieux caler la cuisson.",
+          "Yes, especially on busy slots. It helps reduce waiting time and keeps baking well paced."
+        ),
+      },
+      {
+        question: tr(
+          "Quels moyens de paiement sont acceptes ?",
+          "Which payment methods are accepted?"
+        ),
+        answer: tr(
+          "Le site indique les moyens de paiement acceptes pour le service, avec notamment carte bancaire et especes selon l'organisation.",
+          "The website shows the accepted payment methods for the service, including card and cash depending on the setup."
+        ),
+      },
+    ],
+    [tr]
+  );
+
+  const homeJsonLd = useMemo(() => {
+    const base = buildBaseFoodEstablishmentJsonLd({
+      pagePath: "/",
+      pageName: heroTitle,
+      description: siteMetaDescription,
+      siteName,
+      siteUrl: canonicalSiteUrl || undefined,
+      phone: siteSettings.contact?.phone,
+      email: siteSettings.contact?.email,
+      address: siteSettings.contact?.address,
+      mapUrl: siteSettings.contact?.mapsUrl,
+      image: defaultOgImageUrl,
+      socialUrls,
+    });
+
+    const payload = {
+      ...base,
+      areaServed: truckTourCities,
+    };
+
+    const faqSchema = buildFaqJsonLd(homeFaqItems);
+    return faqSchema ? [payload, faqSchema] : payload;
+  }, [
+    canonicalSiteUrl,
+    defaultOgImageUrl,
+    heroTitle,
+    homeFaqItems,
+    siteMetaDescription,
+    siteName,
+    siteSettings.contact?.address,
+    siteSettings.contact?.email,
+    siteSettings.contact?.mapsUrl,
+    siteSettings.contact?.phone,
+    socialUrls,
+    truckTourCities,
+  ]);
 
   useEffect(() => {
     setActiveHeroIndex((prev) => {
@@ -746,7 +849,29 @@ const truckTourSchedule = useMemo(
         </div>
       </section>
 
+      <TrustHighlightsSection
+        eyebrow={tr("Ce qui fait revenir", "Why people come back")}
+        title={tr("Une pizza claire, un retrait fluide, un service mobile serieux", "Clear pizza, smooth pickup, serious mobile service")}
+        intro={tr(
+          "Sans inventer de faux avis, on met en avant les points de confiance qui comptent le plus pour un client local avant de commander.",
+          "Without inventing fake reviews, we highlight the trust points that matter most to local customers before they order."
+        )}
+        items={trustHighlights}
+      />
+
       <ContactPanel sectionId="contact" sectionClassName="section-shell" />
+
+      <section className="section-shell">
+        <FaqSection
+          eyebrow={tr("Questions frequentes", "Frequently asked questions")}
+          title={tr("Ce qu'il faut savoir avant de commander", "What to know before ordering")}
+          intro={tr(
+            "Voici les reponses les plus utiles pour commander rapidement et recuperer votre pizza sans surprise.",
+            "Here are the most useful answers to order quickly and pick up your pizza without surprises."
+          )}
+          items={homeFaqItems}
+        />
+      </section>
 
       <section className="section-shell">
         <SeoInternalLinks />

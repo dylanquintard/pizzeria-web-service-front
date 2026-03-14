@@ -1,6 +1,7 @@
 import { Suspense, lazy, useContext } from "react";
 import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation, useParams } from "react-router-dom";
 import Header from "./components/layout/Header";
+import MobileStickyCta from "./components/layout/MobileStickyCta";
 import SiteAnnouncement from "./components/layout/SiteAnnouncement";
 import SiteFooter from "./components/layout/SiteFooter";
 import MainContent from "./components/layout/MainContent";
@@ -32,13 +33,16 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const Ingredients = lazy(() => import("./pages/Ingredients"));
 const Locations = lazy(() => import("./pages/Locations"));
 const Login = lazy(() => import("./pages/Login"));
+const LegalMentions = lazy(() => import("./pages/LegalMentions"));
 const Order = lazy(() => import("./pages/Order"));
 const OrderConfirmation = lazy(() => import("./pages/OrderConfirmation"));
 const OrderList = lazy(() => import("./pages/OrderList"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const Products = lazy(() => import("./pages/Products"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Register = lazy(() => import("./pages/Register"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const TermsPage = lazy(() => import("./pages/TermsPage"));
 const TimeslotsAdmin = lazy(() => import("./pages/Timeslots"));
 const PrintAdmin = lazy(() => import("./pages/PrintAdmin"));
 const TicketsAdmin = lazy(() => import("./pages/TicketsAdmin"));
@@ -76,6 +80,7 @@ const AppLayout = () => {
         <Outlet />
       </MainContent>
       {!isAdminRoute ? <SiteFooter /> : null}
+      {!isAdminRoute ? <MobileStickyCta /> : null}
     </>
   );
 };
@@ -135,6 +140,9 @@ function AppRoutes() {
           <Route path="/a-propos" element={<APropos />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/blog" element={<Blog />} />
+          <Route path="/mentions-legales" element={<LegalMentions />} />
+          <Route path="/confidentialite" element={<PrivacyPolicy />} />
+          <Route path="/conditions-generales" element={<TermsPage />} />
           <Route path="/blog/:slug" element={<LegacyBlogArticleRoute />} />
           <Route path="/pizza-napolitaine-thionville" element={<LocalSeoPage cityKey="thionville" />} />
           <Route path="/pizza-napolitaine-metz" element={<LocalSeoPage cityKey="metz" />} />

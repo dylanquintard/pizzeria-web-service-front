@@ -24,9 +24,12 @@ function formatPublishDate(value) {
 export default function Blog() {
   const { language, tr } = useLanguage();
   const { settings } = useSiteSettings();
-  const title = "Blog pizza napolitaine | Pizza Truck";
-  const description =
-    "Analyses et articles sur la pate, la cuisson, les ingredients et les choix techniques qui structurent une pizza mieux executee.";
+  const siteName = settings.siteName || "Pizza Truck";
+  const title = tr(`Blog | ${siteName}`, `Blog | ${siteName}`);
+  const description = tr(
+    "Analyses et articles sur la pate, la cuisson, les ingredients et les choix techniques qui structurent une pizza mieux executee.",
+    "Articles about dough, baking, ingredients and the technical choices behind a better pizza."
+  );
   const introTitle = getLocalizedSiteText(
     settings.blog?.introTitle,
     language,
