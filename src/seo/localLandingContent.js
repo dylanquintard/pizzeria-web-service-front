@@ -1,4 +1,4 @@
-export const DEFAULT_TOUR_CITIES = ["Thionville", "Metz"];
+export const DEFAULT_TOUR_CITIES = ["Thionville", "Moselle"];
 
 const SPECIAL_CITY_PATHS = {
   thionville: "/pizza-napolitaine-thionville",
@@ -77,7 +77,7 @@ export const LOCAL_PAGE_CONTENT = {
     pathname: "/food-truck-pizza-moselle",
     title: "Food truck pizza en Moselle | Pizza napolitaine artisanale",
     description:
-      "Food truck pizza en Moselle: carte courte, cuisson vive et passages hebdomadaires autour de Metz, Thionville et des communes voisines.",
+      "Food truck pizza en Moselle: carte courte, cuisson vive et passages hebdomadaires autour de Thionville et des communes voisines.",
     h1: "Food truck pizza en Moselle",
     intro:
       "Le camion circule dans plusieurs communes de Moselle avec une offre construite pour l emporter: une pate tenue, un four bois-gaz et un retrait simple a suivre.",
@@ -85,7 +85,7 @@ export const LOCAL_PAGE_CONTENT = {
       {
         heading: "Une tournee locale plutot qu un point fixe",
         paragraphs: [
-          "La tournee passe par differents points autour de Thionville, Metz et d autres communes voisines selon la semaine.",
+          "La tournee passe par differents points autour de Thionville et d autres communes voisines selon la semaine.",
           "Les emplacements et horaires sont mis a jour regulierement pour rendre la commande et le retrait faciles a suivre.",
         ],
       },

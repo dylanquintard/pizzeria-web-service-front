@@ -15,8 +15,8 @@ export default function APropos() {
     `About | ${companyName}, Neapolitan pizza truck in Moselle`
   );
   const description = tr(
-    `${companyName} est un camion pizza en Moselle, actif autour de Metz et Thionville, avec une carte courte, une cuisson bois-gaz et un retrait organise.`,
-    `${companyName} is a pizza truck in Moselle, active around Metz and Thionville, with a focused menu, wood-gas baking and organized pickup.`
+    `${companyName} est un camion pizza en Moselle, actif autour de Thionville et des communes voisines, avec une carte courte, une cuisson bois-gaz et un retrait organise.`,
+    `${companyName} is a pizza truck in Moselle, active around Thionville and nearby towns, with a focused menu, wood-gas baking and organized pickup.`
   );
   const canonicalSiteUrl = String(settings.seo?.canonicalSiteUrl || "").trim();
   const defaultOgImageUrl = String(settings.seo?.defaultOgImageUrl || "").trim();
@@ -39,7 +39,7 @@ export default function APropos() {
       mapUrl: settings.contact?.mapsUrl,
       image: defaultOgImageUrl,
       socialUrls,
-      areaServed: ["Moselle", "Thionville", "Metz"],
+      areaServed: ["Moselle", "Thionville"],
       extra: {
         "@type": "FoodTruck",
         hasMenu: menuUrl,
@@ -72,8 +72,8 @@ export default function APropos() {
         </p>
         <p className="max-w-3xl text-sm text-stone-300 sm:text-base">
           {tr(
-            "Le camion se deplace chaque semaine autour de Thionville, Metz et d autres communes de Moselle pour proposer une offre plus nette que la restauration rapide standard.",
-            "The truck moves every week around Thionville, Metz and other towns in Moselle to offer something sharper than standard fast food."
+            "Le camion se deplace chaque semaine autour de Thionville et dans d autres communes de Moselle pour proposer une offre plus nette que la restauration rapide standard.",
+            "The truck moves every week around Thionville and across other towns in Moselle to offer something sharper than standard fast food."
           )}
         </p>
         <p className="max-w-3xl text-sm text-stone-300 sm:text-base">
@@ -195,8 +195,8 @@ export default function APropos() {
         <h2 className="text-xl font-bold text-white">{tr("Ou trouver le camion en Moselle ?", "Where can you find the truck in Moselle?")}</h2>
         <p className="mt-3 text-sm text-stone-300">
           {tr(
-            `${companyName} se deplace chaque semaine sur plusieurs communes de Moselle, autour de Thionville, Metz et des secteurs voisins.`,
-            `${companyName} moves every week across several towns in Moselle, around Thionville, Metz and nearby areas.`
+            `${companyName} se deplace chaque semaine sur plusieurs communes de Moselle, autour de Thionville et des secteurs voisins.`,
+            `${companyName} moves every week across several towns in Moselle, around Thionville and nearby areas.`
           )}
         </p>
         <p className="mt-3 text-sm text-stone-300">
@@ -227,7 +227,7 @@ export default function APropos() {
           <li>{tr("une pizza plus nette et moins standardisee", "a cleaner, less standardized pizza")}</li>
           <li>{tr("un retrait simple sur les points de passage", "simple pickup at each stop")}</li>
           <li>{tr("une cuisson minute qui reste reguliere", "made-to-order baking that stays consistent")}</li>
-          <li>{tr("une offre mobile serieuse autour de Metz et Thionville", "a serious mobile offer around Metz and Thionville")}</li>
+          <li>{tr("une offre mobile serieuse autour de Thionville et en Moselle", "a serious mobile offer around Thionville and across Moselle")}</li>
         </ul>
       </section>
 

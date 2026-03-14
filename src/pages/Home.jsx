@@ -752,8 +752,8 @@ const truckTourSchedule = useMemo(
             </h2>
             <p className="mt-3 text-sm leading-7 text-stone-300 sm:text-base">
               {tr(
-                "Le camion passe sur plusieurs points autour de Thionville, Metz et des communes voisines.",
-                "The truck stops at several pickup points around Thionville, Metz and nearby towns."
+                "Le camion passe sur plusieurs points autour de Thionville et dans les communes voisines de Moselle.",
+                "The truck stops at several pickup points around Thionville and nearby towns across Moselle."
               )}
             </p>
             <p className="mt-2 text-sm leading-7 text-stone-300 sm:text-base">

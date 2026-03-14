@@ -1,4 +1,5 @@
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { useLanguage } from "../context/LanguageContext";
 import { getPrintJobsAdmin, reprintJobAdmin } from "../api/admin.api";
@@ -174,6 +175,34 @@ function compareTicketsByPickupAsc(left, right) {
   return leftCreated - rightCreated;
 }
 
+function getTicketState(status) {
+  const normalized = String(status || "").toUpperCase();
+  if (normalized === "FAILED") return "error";
+  if (["RETRY_WAITING", "CLAIMED", "PRINTING", "PENDING"].includes(normalized)) return "warning";
+  if (["READY", "PRINTED"].includes(normalized)) return "healthy";
+  return "muted";
+}
+
+function cardTone(state) {
+  if (state === "error") {
+    return "border-red-400/35 bg-red-500/10";
+  }
+  if (state === "warning") {
+    return "border-amber-300/35 bg-amber-500/10";
+  }
+  if (state === "healthy") {
+    return "border-emerald-300/25 bg-emerald-500/5";
+  }
+  return "border-white/10 bg-black/20";
+}
+
+function getStateLabel(state, tr) {
+  if (state === "error") return tr("Erreur ticket", "Ticket issue");
+  if (state === "warning") return tr("A surveiller", "Needs attention");
+  if (state === "healthy") return tr("OK / reimprimable", "OK / reprintable");
+  return tr("Secondaire", "Secondary");
+}
+
 export default function TicketsAdmin() {
   const { user, token, loading: authLoading } = useContext(AuthContext);
   const { tr, locale } = useLanguage();
@@ -185,6 +214,7 @@ export default function TicketsAdmin() {
   const [message, setMessage] = useState("");
   const [previewJob, setPreviewJob] = useState(null);
   const [ticketTab, setTicketTab] = useState("today");
+  const [statusFilter, setStatusFilter] = useState("attention");
 
   const refreshAll = useCallback(async () => {
     if (!token || user?.role !== "ADMIN") return;
@@ -220,7 +250,33 @@ export default function TicketsAdmin() {
   }, [jobs]);
 
   const allTickets = useMemo(() => [...jobs].sort(compareTicketsByPickupAsc), [jobs]);
-  const visibleTickets = ticketTab === "all" ? allTickets : todayTickets;
+  const scopedTickets = ticketTab === "all" ? allTickets : todayTickets;
+  const ticketSummary = useMemo(
+    () =>
+      scopedTickets.reduce(
+        (acc, job) => {
+          const state = getTicketState(job?.status);
+          acc.total += 1;
+          acc[state] += 1;
+          return acc;
+        },
+        { total: 0, error: 0, warning: 0, healthy: 0, muted: 0 }
+      ),
+    [scopedTickets]
+  );
+  const visibleTickets = useMemo(() => {
+    if (statusFilter === "all") return scopedTickets;
+    if (statusFilter === "error") {
+      return scopedTickets.filter((job) => getTicketState(job?.status) === "error");
+    }
+    if (statusFilter === "healthy") {
+      return scopedTickets.filter((job) => getTicketState(job?.status) === "healthy");
+    }
+    return scopedTickets.filter((job) => {
+      const state = getTicketState(job?.status);
+      return state === "error" || state === "warning";
+    });
+  }, [scopedTickets, statusFilter]);
 
   const handleReprint = async (jobId) => {
     if (!window.confirm(tr("Relancer l'impression de ce ticket ?", "Reprint this ticket?"))) return;
@@ -276,14 +332,33 @@ export default function TicketsAdmin() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h2 className="text-2xl font-bold text-white">{tr("Tickets", "Tickets")}</h2>
-        <button
-          type="button"
-          onClick={refreshAll}
-          className="rounded-lg border border-white/25 bg-white/5 px-3 py-2 text-xs font-semibold text-stone-100 transition hover:bg-white/15"
-        >
-          {loading ? tr("Actualisation...", "Refreshing...") : tr("Actualiser", "Refresh")}
-        </button>
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-saffron">
+            {tr("Suivi impression", "Print monitoring")}
+          </p>
+          <h2 className="text-2xl font-bold text-white">{tr("Tickets", "Tickets")}</h2>
+          <p className="mt-1 max-w-2xl text-sm text-stone-300">
+            {tr(
+              "Verifiez en un coup d'oeil si un ticket est en erreur, a surveiller ou pret a etre reimprime.",
+              "Check at a glance whether a ticket has an issue, needs attention, or is ready to reprint."
+            )}
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            to="/admin/orders"
+            className="rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-xs font-semibold text-stone-100 transition hover:bg-white/15"
+          >
+            {tr("Voir les commandes", "Open orders")}
+          </Link>
+          <button
+            type="button"
+            onClick={refreshAll}
+            className="rounded-lg border border-white/25 bg-white/5 px-3 py-2 text-xs font-semibold text-stone-100 transition hover:bg-white/15"
+          >
+            {loading ? tr("Actualisation...", "Refreshing...") : tr("Actualiser", "Refresh")}
+          </button>
+        </div>
       </div>
 
       {message && (
@@ -291,6 +366,45 @@ export default function TicketsAdmin() {
       )}
 
       <section className="rounded-xl border border-white/10 bg-white/5 p-4 md:p-5">
+        <div className="mb-4 grid gap-3 md:grid-cols-4">
+          <article className="rounded-xl border border-red-400/25 bg-red-500/10 p-4">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-red-200">
+              {tr("Erreurs ticket", "Ticket issues")}
+            </p>
+            <p className="mt-2 text-3xl font-bold text-white">{ticketSummary.error}</p>
+            <p className="mt-1 text-xs text-red-100/80">
+              {tr("FAILED a traiter rapidement.", "FAILED jobs that need action quickly.")}
+            </p>
+          </article>
+          <article className="rounded-xl border border-amber-300/25 bg-amber-500/10 p-4">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-amber-100">
+              {tr("A surveiller", "Needs attention")}
+            </p>
+            <p className="mt-2 text-3xl font-bold text-white">{ticketSummary.warning}</p>
+            <p className="mt-1 text-xs text-amber-100/80">
+              {tr("Retry, printing ou claimed.", "Retry, printing or claimed jobs.")}
+            </p>
+          </article>
+          <article className="rounded-xl border border-emerald-300/20 bg-emerald-500/10 p-4">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-emerald-100">
+              {tr("OK / reimprimable", "OK / reprintable")}
+            </p>
+            <p className="mt-2 text-3xl font-bold text-white">{ticketSummary.healthy}</p>
+            <p className="mt-1 text-xs text-emerald-100/80">
+              {tr("PRINTED ou READY, reimpression possible.", "PRINTED or READY, reprint available.")}
+            </p>
+          </article>
+          <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-stone-300">
+              {tr("Tickets visibles", "Visible tickets")}
+            </p>
+            <p className="mt-2 text-3xl font-bold text-white">{visibleTickets.length}</p>
+            <p className="mt-1 text-xs text-stone-400">
+              {tr("Sur", "Out of")} {scopedTickets.length} {tr("tickets dans la vue active.", "tickets in the active view.")}
+            </p>
+          </article>
+        </div>
+
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
           <h3 className="text-sm font-semibold uppercase tracking-wider text-saffron">{tr("Gestion tickets", "Ticket management")}</h3>
           <div className="flex flex-wrap items-center gap-3">
@@ -328,11 +442,35 @@ export default function TicketsAdmin() {
             </button>
           </div>
         </div>
+
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          {[
+            { key: "attention", label: tr("Priorite tickets", "Priority tickets"), count: ticketSummary.error + ticketSummary.warning },
+            { key: "error", label: tr("Erreurs", "Issues"), count: ticketSummary.error },
+            { key: "healthy", label: tr("OK / reimprimables", "OK / reprintable"), count: ticketSummary.healthy },
+            { key: "all", label: tr("Tout afficher", "Show all"), count: scopedTickets.length },
+          ].map((option) => (
+            <button
+              key={option.key}
+              type="button"
+              onClick={() => setStatusFilter(option.key)}
+              className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
+                statusFilter === option.key
+                  ? "border-saffron/40 bg-saffron/15 text-saffron"
+                  : "border-white/20 bg-white/5 text-stone-200 hover:bg-white/10"
+              }`}
+            >
+              {option.label} ({option.count})
+            </button>
+          ))}
+        </div>
         {visibleTickets.length === 0 ? (
           <p className="text-xs text-stone-400">
-            {ticketTab === "all"
-              ? tr("Aucun ticket", "No ticket")
-              : tr("Aucun ticket du jour", "No ticket for today")}
+            {statusFilter === "attention"
+              ? tr("Aucun ticket prioritaire dans cette vue.", "No priority ticket in this view.")
+              : ticketTab === "all"
+                ? tr("Aucun ticket", "No ticket")
+                : tr("Aucun ticket du jour", "No ticket for today")}
           </p>
         ) : (
           <div className="space-y-3">
@@ -340,25 +478,43 @@ export default function TicketsAdmin() {
               const parsedName = splitPersonName(job?.order?.user || {});
               const note = getOrderNote(job?.order || {});
               const canReprint = ["PRINTED", "FAILED", "RETRY_WAITING"].includes(String(job.status || "").toUpperCase());
+              const ticketState = getTicketState(job?.status);
               return (
-                <article key={job.id} className="rounded-lg border border-white/10 bg-black/20 p-3">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <p className="text-sm font-semibold text-white">
-                      #{job.orderId} - {job.printer?.code || "-"}
-                    </p>
-                    <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase ${statusBadge(job.status)}`}>
-                      {formatStatusLabel(job.status, tr)}
-                    </span>
+                <article key={job.id} className={`rounded-xl border p-4 ${cardTone(ticketState)}`}>
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="text-sm font-semibold text-white">
+                          #{job.orderId} - {job.printer?.code || "-"}
+                        </p>
+                        <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase ${statusBadge(job.status)}`}>
+                          {formatStatusLabel(job.status, tr)}
+                        </span>
+                        <span className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] font-bold uppercase text-stone-200">
+                          {getStateLabel(ticketState, tr)}
+                        </span>
+                      </div>
+                      <p className="mt-2 text-xs text-stone-300">
+                        {tr("Client", "Customer")}: {parsedName.fullName || job?.order?.user?.name || "-"} |{" "}
+                        {tr("Retrait", "Pickup")}: {formatDateTime(job?.payload?.order?.pickup_time, locale)} |{" "}
+                        {tr("Total", "Total")}: {job?.payload?.order?.total || "-"} EUR
+                      </p>
+                    </div>
+                    <div className="text-right text-[11px] text-stone-400">
+                      <p>{tr("Job", "Job")}: {job.id}</p>
+                      {job?.reprintOfJobId ? <p>{tr("Copie de", "Copy of")}: {job.reprintOfJobId}</p> : null}
+                    </div>
                   </div>
-                  <p className="mt-1 text-xs text-stone-300">
-                    {tr("Client", "Customer")}: {parsedName.fullName || job?.order?.user?.name || "-"} |{" "}
-                    {tr("Retrait", "Pickup")}: {formatDateTime(job?.payload?.order?.pickup_time, locale)} |{" "}
-                    {tr("Total", "Total")}: {job?.payload?.order?.total || "-"} EUR
-                  </p>
                   {note && <p className="mt-1 text-xs text-stone-200">{tr("Note", "Note")}: {note}</p>}
+                  {job?.lastErrorMessage ? (
+                    <div className="mt-2 rounded-lg border border-red-300/20 bg-red-500/10 px-3 py-2 text-xs text-red-100">
+                      <strong className="font-semibold">{tr("Erreur", "Issue")}:</strong> {job.lastErrorMessage}
+                    </div>
+                  ) : null}
                   <p className="mt-1 text-[11px] text-stone-400">
                     {tr("Planifie", "Scheduled")}: {formatDateTime(job.scheduledAt, locale)} |{" "}
-                    {tr("Derniere MAJ", "Last update")}: {formatDateTime(job.updatedAt, locale)}
+                    {tr("Derniere MAJ", "Last update")}: {formatDateTime(job.updatedAt, locale)} |{" "}
+                    {tr("Tentatives", "Attempts")}: {job?.attemptCount ?? 0}
                   </p>
                   <div className="mt-2 flex flex-wrap gap-2">
                     <button
@@ -376,6 +532,12 @@ export default function TicketsAdmin() {
                     >
                       {reprintingByJobId[job.id] ? tr("Reimpression...", "Reprinting...") : tr("Reimprimer", "Reprint")}
                     </button>
+                    <Link
+                      to={`/admin/orders`}
+                      className="rounded-lg border border-white/20 bg-white/5 px-3 py-1.5 text-xs font-semibold text-stone-100 transition hover:bg-white/10"
+                    >
+                      {tr("Ouvrir commandes", "Open orders")}
+                    </Link>
                   </div>
                 </article>
               );
