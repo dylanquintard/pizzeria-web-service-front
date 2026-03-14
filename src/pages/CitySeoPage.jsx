@@ -5,10 +5,10 @@ import { getSeoLocations } from "../api/seo.api";
 import { getPublicWeeklySettings } from "../api/timeslot.api";
 import FaqSection from "../components/common/FaqSection";
 import SeoHead from "../components/seo/SeoHead";
-import SeoInternalLinks from "../components/seo/SeoInternalLinks";
 import { useSiteSettings } from "../context/SiteSettingsContext";
 import { buildBaseFoodEstablishmentJsonLd, buildBreadcrumbJsonLd, buildFaqJsonLd } from "../seo/jsonLd";
 import {
+  BLOCKED_LOCAL_CITY_SLUGS,
   buildDynamicCityContent,
   FIXED_LOCAL_CITY_SLUGS,
   getFixedCityPathBySlug,
@@ -104,7 +104,7 @@ function buildCatalogFromLocations(entries) {
     const labelCandidates = [location?.city, location?.name].filter(Boolean);
     for (const candidate of labelCandidates) {
       const slug = slugifyCity(candidate);
-      if (!slug) continue;
+      if (!slug || BLOCKED_LOCAL_CITY_SLUGS.includes(slug)) continue;
       fallback.push({
         slug,
         label: String(candidate).trim(),
@@ -394,6 +394,10 @@ export default function CitySeoPage({ forcedCitySlug = "" }) {
     return <CityPageNotFound citySlug="" />;
   }
 
+  if (BLOCKED_LOCAL_CITY_SLUGS.includes(resolvedCitySlug)) {
+    return <CityPageNotFound citySlug={resolvedCitySlug} />;
+  }
+
   if (queryLocationId && catalogByLocationId.size > 0) {
     const locationEntry = catalogByLocationId.get(queryLocationId);
     if (!locationEntry || locationEntry.slug !== resolvedCitySlug) {
@@ -498,8 +502,6 @@ export default function CitySeoPage({ forcedCitySlug = "" }) {
           </Link>
         </div>
       </section>
-
-      <SeoInternalLinks />
     </div>
   );
 }

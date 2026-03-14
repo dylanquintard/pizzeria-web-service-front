@@ -6,8 +6,8 @@ import { getPublicWeeklySettings } from "../api/timeslot.api";
 import { getAllProductsClient } from "../api/user.api";
 import FaqSection from "../components/common/FaqSection";
 import ContactPanel from "../components/contact/ContactPanel";
+import PublicReviewsSection from "../components/reviews/PublicReviewsSection";
 import SeoHead from "../components/seo/SeoHead";
-import SeoInternalLinks from "../components/seo/SeoInternalLinks";
 import TrustHighlightsSection from "../components/trust/TrustHighlightsSection";
 import { useLanguage } from "../context/LanguageContext";
 import { useSiteSettings } from "../context/SiteSettingsContext";
@@ -849,6 +849,8 @@ const truckTourSchedule = useMemo(
         </div>
       </section>
 
+      <PublicReviewsSection />
+
       <TrustHighlightsSection
         eyebrow={tr("Ce qui fait revenir", "Why people come back")}
         title={tr("Une pizza claire, un retrait fluide, un service mobile serieux", "Clear pizza, smooth pickup, serious mobile service")}
@@ -871,10 +873,6 @@ const truckTourSchedule = useMemo(
           )}
           items={homeFaqItems}
         />
-      </section>
-
-      <section className="section-shell">
-        <SeoInternalLinks />
       </section>
     </div>
   );

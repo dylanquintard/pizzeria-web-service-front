@@ -109,3 +109,12 @@ export const getUserOrders = async (token) => {
   const response = await api.get("/users/orders", authConfig(token));
   return response.data;
 };
+
+export const saveOrderReview = async (token, orderId, payload) => {
+  const response = await api.put(
+    `/users/orders/${orderId}/review`,
+    payload,
+    authConfig(token)
+  );
+  return response.data;
+};

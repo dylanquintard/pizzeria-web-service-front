@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import FaqSection from "../components/common/FaqSection";
 import SeoHead from "../components/seo/SeoHead";
-import SeoInternalLinks from "../components/seo/SeoInternalLinks";
 import { useLanguage } from "../context/LanguageContext";
 import { useSiteSettings } from "../context/SiteSettingsContext";
 import { buildBaseFoodEstablishmentJsonLd, buildFaqJsonLd } from "../seo/jsonLd";
@@ -273,8 +272,6 @@ export default function APropos() {
         title={tr("Questions frequentes", "Frequently asked questions")}
         items={faqItems}
       />
-
-      <SeoInternalLinks />
     </div>
   );
 }

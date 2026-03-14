@@ -2,9 +2,9 @@ export const DEFAULT_TOUR_CITIES = ["Thionville", "Metz"];
 
 const SPECIAL_CITY_PATHS = {
   thionville: "/pizza-napolitaine-thionville",
-  metz: "/pizza-napolitaine-metz",
   moselle: "/food-truck-pizza-moselle",
 };
+export const BLOCKED_LOCAL_CITY_SLUGS = Object.freeze(["metz"]);
 
 export const FIXED_LOCAL_CITY_SLUGS = Object.freeze(Object.keys(SPECIAL_CITY_PATHS));
 
@@ -24,6 +24,7 @@ export function getFixedCityPathBySlug(citySlug) {
 export function getCityPath(city) {
   const slug = slugifyCity(city);
   if (!slug) return "/food-truck-pizza-moselle";
+  if (BLOCKED_LOCAL_CITY_SLUGS.includes(slug)) return "";
   return SPECIAL_CITY_PATHS[slug] || `/pizza-${slug}`;
 }
 
@@ -35,7 +36,6 @@ export const SEO_KEYWORDS_SENTENCES = [
   "pizza a emporter",
   "camion pizza thionville",
   "pizza artisanale moselle",
-  "pizza napolitaine metz",
   "pizza feu de bois thionville",
   "pizza produits italiens",
 ];
@@ -69,38 +69,6 @@ export const LOCAL_PAGE_CONTENT = {
         paragraphs: [
           "Le service est entierement tourne vers l emporter pour garder un rythme fluide et une cuisson bien cadree.",
           "Vous pouvez commander en ligne ou sur place selon disponibilite, puis recuperer votre pizza chaude au moment prevu.",
-        ],
-      },
-    ],
-  },
-  metz: {
-    pathname: "/pizza-napolitaine-metz",
-    title: "Pizza napolitaine proche de Metz | Camion pizza artisanal",
-    description:
-      "Camion pizza autour de Metz: recettes d inspiration napolitaine, ingredients selectionnes et retrait rapide sur planning hebdomadaire.",
-    h1: "Pizza napolitaine artisanale autour de Metz",
-    intro:
-      "Autour de Metz, le camion sert une pizza travaillee avec une vraie logique de produit: pate preparee en avance, four bois-gaz et recettes qui vont a l essentiel.",
-    sections: [
-      {
-        heading: "Une pizza pensee pour rester nette du four a la degustation",
-        paragraphs: [
-          "La pate est preparee pour offrir une base souple, une bordure aerienne et un ensemble lisible en bouche.",
-          "Les ingredients sont choisis pour leur regularite et leur tenue au service: farine Nuvola Super, tomates San Marzano, mozzarella fior di latte, parmigiano reggiano et charcuteries italiennes.",
-        ],
-      },
-      {
-        heading: "Une tournee qui couvre Metz et ses alentours",
-        paragraphs: [
-          "Notre camion pizza se deplace dans differents secteurs proches de Metz et du nord mosellan.",
-          "Chaque semaine, le planning precise les points de retrait et les horaires disponibles.",
-        ],
-      },
-      {
-        heading: "Retrait rapide, cuisson minute",
-        paragraphs: [
-          "Les pizzas sont preparees a la commande pour garder la bonne temperature et une sortie de four propre.",
-          "Le retrait se fait directement au camion, sur creneau clair, avec peu d attente lorsque la commande est anticipee.",
         ],
       },
     ],

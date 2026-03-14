@@ -145,7 +145,6 @@ function AppRoutes() {
           <Route path="/conditions-generales" element={<TermsPage />} />
           <Route path="/blog/:slug" element={<LegacyBlogArticleRoute />} />
           <Route path="/pizza-napolitaine-thionville" element={<LocalSeoPage cityKey="thionville" />} />
-          <Route path="/pizza-napolitaine-metz" element={<LocalSeoPage cityKey="metz" />} />
           <Route path="/food-truck-pizza-moselle" element={<LocalSeoPage cityKey="moselle" />} />
           <Route path="/pizza" element={<CitySeoPage />} />
           <Route path="/pizza/:city" element={<LegacyPizzaCityRoute />} />

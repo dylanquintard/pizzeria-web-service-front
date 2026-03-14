@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getPublishedBlogArticles } from "../api/blog.api";
 import SeoHead from "../components/seo/SeoHead";
-import SeoInternalLinks from "../components/seo/SeoInternalLinks";
 import { useLanguage } from "../context/LanguageContext";
 import { useSiteSettings } from "../context/SiteSettingsContext";
 import { getLocalizedSiteText } from "../site/siteSettings";
@@ -192,8 +191,6 @@ export default function Blog() {
           ))}
         </section>
       )}
-
-      <SeoInternalLinks />
     </div>
   );
 }

@@ -3,7 +3,6 @@ import { getCategories } from "../api/category.api";
 import { useLanguage } from "../context/LanguageContext";
 import { getAllProductsClient } from "../api/user.api";
 import SeoHead from "../components/seo/SeoHead";
-import SeoInternalLinks from "../components/seo/SeoInternalLinks";
 import { buildBaseFoodEstablishmentJsonLd } from "../seo/jsonLd";
 
 function formatPrice(value) {
@@ -184,8 +183,6 @@ export default function Menu() {
           </section>
         ))}
       </div>
-
-      <SeoInternalLinks />
     </div>
   );
 }

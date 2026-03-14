@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import SeoHead from "../components/seo/SeoHead";
-import SeoInternalLinks from "../components/seo/SeoInternalLinks";
 import { getPublicWeeklySettings } from "../api/timeslot.api";
 import { getLocations } from "../api/location.api";
 import { useLanguage } from "../context/LanguageContext";
@@ -265,21 +264,25 @@ export default function TourneeCamion() {
         </div>
         {visibleCities.length > 0 && (
           <ul className="mt-6 flex flex-wrap gap-2">
-            {visibleCities.map((city) => (
-              <li key={city}>
+            {visibleCities
+              .map((city) => ({
+                city,
+                path: getCityPath(city),
+              }))
+              .filter((entry) => entry.path)
+              .map((entry) => (
+              <li key={entry.city}>
                 <Link
-                  to={getCityPath(city)}
+                  to={entry.path}
                   className="inline-flex rounded-full border border-white/20 px-3 py-1 text-xs text-stone-200 transition hover:border-saffron/70 hover:text-saffron"
                 >
-                  {city}
+                  {entry.city}
                 </Link>
               </li>
             ))}
           </ul>
         )}
       </section>
-
-      <SeoInternalLinks />
     </div>
   );
 }

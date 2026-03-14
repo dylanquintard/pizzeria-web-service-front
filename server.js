@@ -12,9 +12,9 @@ const SEO_FETCH_TIMEOUT_MS = Number(process.env.SEO_FETCH_TIMEOUT_MS || 6000);
 
 const FIXED_CITY_CATALOG = [
   { slug: "thionville", label: "Thionville" },
-  { slug: "metz", label: "Metz" },
   { slug: "moselle", label: "Moselle" },
 ];
+const BLOCKED_CITY_SLUGS = new Set(["metz"]);
 const FIXED_CITY_SLUGS = new Set(FIXED_CITY_CATALOG.map((item) => item.slug));
 
 const DEFAULT_SITE_SETTINGS = Object.freeze({
@@ -67,7 +67,6 @@ const EXACT_SPA_ROUTES = new Set([
   "/confidentialite",
   "/conditions-generales",
   "/pizza-napolitaine-thionville",
-  "/pizza-napolitaine-metz",
   "/food-truck-pizza-moselle",
   "/login",
   "/forgot-password",
@@ -227,7 +226,7 @@ function normalizeSeoLocationCatalog(payload) {
     const slug = slugify(row?.slug);
     const locationId = Number(row?.locationId);
     const label = String(row?.label || "").trim();
-    if (!slug) continue;
+    if (!slug || BLOCKED_CITY_SLUGS.has(slug)) continue;
 
     const existing = deduped.get(slug) || {};
     deduped.set(slug, {
@@ -319,7 +318,7 @@ async function refreshSeoCacheIfNeeded(options = {}) {
     const fromName = slugify(source?.name);
     const fromCity = slugify(source?.city);
     const sourceId = Number(source?.id);
-    if (fromName) {
+    if (fromName && !BLOCKED_CITY_SLUGS.has(fromName)) {
       nextCitySlugs.add(fromName);
       if (!nextCityLabelsBySlug.has(fromName)) {
         nextCityLabelsBySlug.set(fromName, String(preferredLabel || source?.name || "").trim() || titleizeSlug(fromName));
@@ -328,7 +327,7 @@ async function refreshSeoCacheIfNeeded(options = {}) {
         nextCitySlugByLocationId.set(sourceId, fromName);
       }
     }
-    if (fromCity) {
+    if (fromCity && !BLOCKED_CITY_SLUGS.has(fromCity)) {
       nextCitySlugs.add(fromCity);
       if (!nextCityLabelsBySlug.has(fromCity)) {
         nextCityLabelsBySlug.set(fromCity, String(preferredLabel || source?.city || "").trim() || titleizeSlug(fromCity));
@@ -510,12 +509,6 @@ function buildSeoMeta(pathname, cache) {
       title: `Pizza napolitaine proche de Thionville | ${siteName}`,
       description:
         "Camion pizza autour de Thionville: pate travaillee, cuisson bois-gaz, carte courte et retrait organise sur les points de passage.",
-      image: defaultImage,
-    },
-    "/pizza-napolitaine-metz": {
-      title: `Pizza napolitaine proche de Metz | ${siteName}`,
-      description:
-        "Camion pizza autour de Metz: recettes d inspiration napolitaine, ingredients selectionnes et retrait rapide sur planning hebdomadaire.",
       image: defaultImage,
     },
     "/food-truck-pizza-moselle": {

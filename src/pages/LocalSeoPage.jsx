@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import FaqSection from "../components/common/FaqSection";
 import SeoHead from "../components/seo/SeoHead";
-import SeoInternalLinks from "../components/seo/SeoInternalLinks";
 import { useSiteSettings } from "../context/SiteSettingsContext";
 import { buildBaseFoodEstablishmentJsonLd, buildBreadcrumbJsonLd, buildFaqJsonLd } from "../seo/jsonLd";
 import { buildDynamicCityFaq, LOCAL_PAGE_CONTENT } from "../seo/localLandingContent";
@@ -29,8 +28,8 @@ function buildFixedLocalFaq(cityLabel) {
 export default function LocalSeoPage({ cityKey }) {
   const { settings } = useSiteSettings();
   const content = LOCAL_PAGE_CONTENT[cityKey] || LOCAL_PAGE_CONTENT.moselle;
-  const cityLabel = cityKey === "moselle" ? "Moselle" : cityKey === "metz" ? "Metz" : "Thionville";
-  const isFixedLocalPage = ["thionville", "metz", "moselle"].includes(cityKey);
+  const cityLabel = cityKey === "moselle" ? "Moselle" : "Thionville";
+  const isFixedLocalPage = ["thionville", "moselle"].includes(cityKey);
   const faq = isFixedLocalPage ? buildFixedLocalFaq(cityLabel) : buildDynamicCityFaq(cityLabel);
   const siteName = settings.siteName || "Pizza Truck";
   const canonicalSiteUrl = String(settings.seo?.canonicalSiteUrl || "").trim();
@@ -121,8 +120,6 @@ export default function LocalSeoPage({ cityKey }) {
           </Link>
         </div>
       </section>
-
-      <SeoInternalLinks />
     </div>
   );
 }

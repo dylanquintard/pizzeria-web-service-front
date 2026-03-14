@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getPublishedBlogArticleBySlug } from "../api/blog.api";
 import SeoHead from "../components/seo/SeoHead";
-import SeoInternalLinks from "../components/seo/SeoInternalLinks";
 import { SITE_URL } from "../config/env";
 import { useSiteSettings } from "../context/SiteSettingsContext";
 import NotFound from "./NotFound";
@@ -317,8 +316,6 @@ export default function BlogArticle({ forcedSlug = "" }) {
           </div>
         </aside>
       </div>
-
-      <SeoInternalLinks />
     </div>
   );
 }
