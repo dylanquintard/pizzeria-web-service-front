@@ -1,4 +1,4 @@
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import {
   getAdminSiteSettings,
   translateSiteSettingsToEnglish,
@@ -23,21 +23,25 @@ function createFormFromSettings(settings) {
 }
 
 function AccordionSection({
+  sectionRef,
   eyebrow,
   title,
   description,
   isOpen,
   onToggle,
   onSave,
+  onTranslate,
   saving,
+  translating,
   saveLabel,
   children,
 }) {
   return (
     <section
-      className={`rounded-[1.75rem] border p-5 transition sm:p-6 ${
+      ref={sectionRef}
+      className={`scroll-mt-24 rounded-[1.75rem] border p-5 transition sm:p-6 ${
         isOpen
-          ? "border-saffron/40 bg-white/8 shadow-[0_18px_60px_rgba(0,0,0,0.18)]"
+          ? "border-white/15 bg-black/20 shadow-[0_18px_60px_rgba(0,0,0,0.18)]"
           : "border-white/10 bg-white/5"
       }`}
     >
@@ -50,12 +54,12 @@ function AccordionSection({
         <span
           className={`mt-1 inline-flex h-11 w-11 flex-none items-center justify-center rounded-full border text-lg font-bold transition ${
             isOpen
-              ? "border-saffron/40 bg-saffron text-charcoal"
+              ? "border-white/20 bg-white/10 text-white"
               : "border-white/15 bg-black/20 text-white"
           }`}
           aria-hidden="true"
         >
-          {isOpen ? "^" : "v"}
+          {isOpen ? "˄" : "˅"}
         </span>
       </button>
 
@@ -63,10 +67,22 @@ function AccordionSection({
         <div className="mt-5 border-t border-white/10 pt-5">
           {children}
           <div className="mt-5 flex flex-wrap gap-3">
+            {onTranslate ? (
+              <button
+                type="button"
+                onClick={onTranslate}
+                disabled={saving || translating}
+                className="rounded-full border border-white/20 bg-black/20 px-5 py-3 text-xs font-semibold uppercase tracking-wide text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {translating
+                  ? "Generation..."
+                  : "Generer l'anglais"}
+              </button>
+            ) : null}
             <button
               type="button"
               onClick={onSave}
-              disabled={saving}
+              disabled={saving || translating}
               className="rounded-full bg-saffron px-5 py-3 text-xs font-bold uppercase tracking-wide text-charcoal transition hover:bg-yellow-300 disabled:cursor-not-allowed disabled:opacity-70"
             >
               {saving ? `${saveLabel}...` : saveLabel}
@@ -130,10 +146,11 @@ export default function SiteInfoAdmin() {
   const [form, setForm] = useState(() => createFormFromSettings(publicSettings));
   const [loading, setLoading] = useState(false);
   const [savingSectionId, setSavingSectionId] = useState(null);
-  const [translating, setTranslating] = useState(false);
+  const [translatingSectionId, setTranslatingSectionId] = useState(null);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("info");
   const [openSectionId, setOpenSectionId] = useState("identity");
+  const sectionRefs = useRef({});
 
   useEffect(() => {
     if (authLoading || !token || user?.role !== "ADMIN") return;
@@ -236,6 +253,54 @@ export default function SiteInfoAdmin() {
     setOpenSectionId((current) => (current === sectionId ? null : sectionId));
   };
 
+  useEffect(() => {
+    if (!openSectionId) return;
+    const targetNode = sectionRefs.current[openSectionId];
+    if (targetNode && typeof targetNode.scrollIntoView === "function") {
+      window.requestAnimationFrame(() => {
+        targetNode.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    }
+  }, [openSectionId]);
+
+  const getSectionPayload = (sectionId) => {
+    switch (sectionId) {
+      case "identity":
+        return {
+          siteName: form.siteName.trim(),
+          siteTagline: form.siteTagline,
+          siteDescription: form.siteDescription,
+        };
+      case "contact":
+        return { contact: form.contact };
+      case "social":
+        return { social: form.social };
+      case "seo":
+        return {
+          seo: {
+            defaultMetaTitle: form.seo.defaultMetaTitle,
+            defaultMetaDescription: form.seo.defaultMetaDescription,
+            defaultOgImageUrl: form.seo.defaultOgImageUrl,
+            canonicalSiteUrl: form.seo.canonicalSiteUrl,
+          },
+        };
+      case "home":
+        return { home: form.home };
+      case "announcement":
+        return { announcement: form.announcement };
+      case "blog":
+        return { blog: form.blog };
+      case "contactPage":
+        return { contactPage: form.contactPage };
+      case "order":
+        return { order: form.order };
+      case "footer":
+        return { footer: form.footer };
+      default:
+        throw new Error("Unknown section");
+    }
+  };
+
   const saveSection = async (sectionId) => {
     if (!token) return;
 
@@ -314,47 +379,72 @@ export default function SiteInfoAdmin() {
     }
   };
 
-  const handleTranslateToEnglish = async () => {
+  const mergeTranslatedSection = (sectionId, translated) => {
+    setForm((prev) => {
+      const next = { ...prev };
+
+      switch (sectionId) {
+        case "identity":
+          next.siteName = translated.siteName ?? prev.siteName;
+          next.siteTagline = translated.siteTagline ?? prev.siteTagline;
+          next.siteDescription = translated.siteDescription ?? prev.siteDescription;
+          break;
+        case "contact":
+          next.contact = {
+            ...prev.contact,
+            ...(translated.contact || {}),
+          };
+          break;
+        case "seo":
+          next.seo = {
+            ...prev.seo,
+            ...(translated.seo || {}),
+            defaultOgImageFile: prev.seo.defaultOgImageFile,
+            defaultOgImagePreviewUrl:
+              prev.seo.defaultOgImagePreviewUrl ||
+              translated.seo?.defaultOgImageUrl ||
+              prev.seo.defaultOgImageUrl ||
+              "",
+          };
+          break;
+        case "home":
+          next.home = translated.home ?? prev.home;
+          break;
+        case "announcement":
+          next.announcement = translated.announcement ?? prev.announcement;
+          break;
+        case "blog":
+          next.blog = translated.blog ?? prev.blog;
+          break;
+        case "contactPage":
+          next.contactPage = translated.contactPage ?? prev.contactPage;
+          break;
+        case "order":
+          next.order = translated.order ?? prev.order;
+          break;
+        case "footer":
+          next.footer = translated.footer ?? prev.footer;
+          break;
+        default:
+          break;
+      }
+
+      return next;
+    });
+  };
+
+  const handleTranslateSection = async (sectionId) => {
     if (!token) return;
 
     try {
-      setTranslating(true);
+      setTranslatingSectionId(sectionId);
       setMessage("");
-      const translated = await translateSiteSettingsToEnglish(token, {
-        siteName: form.siteName,
-        siteTagline: form.siteTagline,
-        siteDescription: form.siteDescription,
-        contact: form.contact,
-        social: form.social,
-        seo: {
-          defaultMetaTitle: form.seo.defaultMetaTitle,
-          defaultMetaDescription: form.seo.defaultMetaDescription,
-          defaultOgImageUrl: form.seo.defaultOgImageUrl,
-          canonicalSiteUrl: form.seo.canonicalSiteUrl,
-        },
-        home: form.home,
-        blog: form.blog,
-        contactPage: form.contactPage,
-        order: form.order,
-        footer: form.footer,
-        announcement: form.announcement,
-      });
-
-      setForm((prev) => ({
-        ...prev,
-        ...translated,
-        seo: {
-          ...prev.seo,
-          ...translated.seo,
-          defaultOgImageFile: prev.seo.defaultOgImageFile,
-          defaultOgImagePreviewUrl:
-            prev.seo.defaultOgImagePreviewUrl || translated.seo?.defaultOgImageUrl || "",
-        },
-      }));
+      const translated = await translateSiteSettingsToEnglish(token, getSectionPayload(sectionId));
+      mergeTranslatedSection(sectionId, translated);
       setMessage(
         tr(
-          "Traduction anglaise generee. Vous pouvez relire puis sauvegarder section par section.",
-          "English translation generated. You can review it and save section by section."
+          "Traduction anglaise generee pour cette section.",
+          "English translation generated for this section."
         )
       );
       setMessageType("success");
@@ -368,7 +458,7 @@ export default function SiteInfoAdmin() {
       );
       setMessageType("error");
     } finally {
-      setTranslating(false);
+      setTranslatingSectionId(null);
     }
   };
 
@@ -395,18 +485,6 @@ export default function SiteInfoAdmin() {
             "Each block opens on click, closes when clicked again, and saves independently for a cleaner admin experience."
           )}
         </p>
-        <div className="mt-5 flex flex-wrap gap-3">
-          <button
-            type="button"
-            onClick={handleTranslateToEnglish}
-            disabled={translating || Boolean(savingSectionId)}
-            className="rounded-full border border-white/20 px-5 py-3 text-xs font-semibold uppercase tracking-wide text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {translating
-              ? tr("Generation de l'anglais...", "Generating English...")
-              : tr("Generer l'anglais", "Generate English")}
-          </button>
-        </div>
       </header>
 
       {message ? (
@@ -415,6 +493,9 @@ export default function SiteInfoAdmin() {
 
       <div className="space-y-6">
         <AccordionSection
+          sectionRef={(node) => {
+            sectionRefs.current.identity = node;
+          }}
           eyebrow={tr("Identite", "Identity")}
           title={tr("Nom, baseline et description", "Name, tagline and description")}
           description={tr(
@@ -424,7 +505,9 @@ export default function SiteInfoAdmin() {
           isOpen={openSectionId === "identity"}
           onToggle={() => toggleSection("identity")}
           onSave={() => saveSection("identity")}
+          onTranslate={() => handleTranslateSection("identity")}
           saving={savingSectionId === "identity"}
+          translating={translatingSectionId === "identity"}
           saveLabel={saveButtonLabel}
         >
           <div className="grid gap-4">
@@ -453,6 +536,9 @@ export default function SiteInfoAdmin() {
         </AccordionSection>
 
         <AccordionSection
+          sectionRef={(node) => {
+            sectionRefs.current.contact = node;
+          }}
           eyebrow={tr("Coordonnees", "Contact details")}
           title={tr("Infos de contact", "Contact information")}
           description={tr(
@@ -462,7 +548,9 @@ export default function SiteInfoAdmin() {
           isOpen={openSectionId === "contact"}
           onToggle={() => toggleSection("contact")}
           onSave={() => saveSection("contact")}
+          onTranslate={() => handleTranslateSection("contact")}
           saving={savingSectionId === "contact"}
+          translating={translatingSectionId === "contact"}
           saveLabel={saveButtonLabel}
         >
           <div className="grid gap-4 lg:grid-cols-2">
@@ -524,6 +612,9 @@ export default function SiteInfoAdmin() {
         </AccordionSection>
 
         <AccordionSection
+          sectionRef={(node) => {
+            sectionRefs.current.social = node;
+          }}
           eyebrow={tr("Reseaux", "Social media")}
           title={tr("Liens publics", "Public links")}
           description={tr(
@@ -534,6 +625,7 @@ export default function SiteInfoAdmin() {
           onToggle={() => toggleSection("social")}
           onSave={() => saveSection("social")}
           saving={savingSectionId === "social"}
+          translating={false}
           saveLabel={saveButtonLabel}
         >
           <div className="grid gap-4 lg:grid-cols-3">
@@ -568,6 +660,9 @@ export default function SiteInfoAdmin() {
         </AccordionSection>
 
         <AccordionSection
+          sectionRef={(node) => {
+            sectionRefs.current.seo = node;
+          }}
           eyebrow={tr("SEO global", "Global SEO")}
           title={tr("Meta par defaut", "Default metadata")}
           description={tr(
@@ -577,7 +672,9 @@ export default function SiteInfoAdmin() {
           isOpen={openSectionId === "seo"}
           onToggle={() => toggleSection("seo")}
           onSave={() => saveSection("seo")}
+          onTranslate={() => handleTranslateSection("seo")}
           saving={savingSectionId === "seo"}
+          translating={translatingSectionId === "seo"}
           saveLabel={saveButtonLabel}
         >
           <div className="grid gap-4">
@@ -648,6 +745,9 @@ export default function SiteInfoAdmin() {
         </AccordionSection>
 
         <AccordionSection
+          sectionRef={(node) => {
+            sectionRefs.current.home = node;
+          }}
           eyebrow={tr("Accueil", "Home")}
           title={tr("Hero et reassurance", "Hero and reassurance")}
           description={tr(
@@ -657,7 +757,9 @@ export default function SiteInfoAdmin() {
           isOpen={openSectionId === "home"}
           onToggle={() => toggleSection("home")}
           onSave={() => saveSection("home")}
+          onTranslate={() => handleTranslateSection("home")}
           saving={savingSectionId === "home"}
+          translating={translatingSectionId === "home"}
           saveLabel={saveButtonLabel}
         >
           <div className="grid gap-4">
@@ -697,6 +799,9 @@ export default function SiteInfoAdmin() {
         </AccordionSection>
 
         <AccordionSection
+          sectionRef={(node) => {
+            sectionRefs.current.announcement = node;
+          }}
           eyebrow={tr("Annonce", "Announcement")}
           title={tr("Bandeau public", "Public banner")}
           description={tr(
@@ -706,7 +811,9 @@ export default function SiteInfoAdmin() {
           isOpen={openSectionId === "announcement"}
           onToggle={() => toggleSection("announcement")}
           onSave={() => saveSection("announcement")}
+          onTranslate={() => handleTranslateSection("announcement")}
           saving={savingSectionId === "announcement"}
+          translating={translatingSectionId === "announcement"}
           saveLabel={saveButtonLabel}
         >
           <div className="grid gap-4">
@@ -754,6 +861,9 @@ export default function SiteInfoAdmin() {
         </AccordionSection>
 
         <AccordionSection
+          sectionRef={(node) => {
+            sectionRefs.current.blog = node;
+          }}
           eyebrow={tr("Blog", "Blog")}
           title={tr("Introduction du blog", "Blog introduction")}
           description={tr(
@@ -763,7 +873,9 @@ export default function SiteInfoAdmin() {
           isOpen={openSectionId === "blog"}
           onToggle={() => toggleSection("blog")}
           onSave={() => saveSection("blog")}
+          onTranslate={() => handleTranslateSection("blog")}
           saving={savingSectionId === "blog"}
+          translating={translatingSectionId === "blog"}
           saveLabel={saveButtonLabel}
         >
           <div className="grid gap-4">
@@ -782,6 +894,9 @@ export default function SiteInfoAdmin() {
         </AccordionSection>
 
         <AccordionSection
+          sectionRef={(node) => {
+            sectionRefs.current.contactPage = node;
+          }}
           eyebrow={tr("Contact", "Contact")}
           title={tr("Page contact", "Contact page")}
           description={tr(
@@ -791,7 +906,9 @@ export default function SiteInfoAdmin() {
           isOpen={openSectionId === "contactPage"}
           onToggle={() => toggleSection("contactPage")}
           onSave={() => saveSection("contactPage")}
+          onTranslate={() => handleTranslateSection("contactPage")}
           saving={savingSectionId === "contactPage"}
+          translating={translatingSectionId === "contactPage"}
           saveLabel={saveButtonLabel}
         >
           <div className="grid gap-4">
@@ -822,6 +939,9 @@ export default function SiteInfoAdmin() {
         </AccordionSection>
 
         <AccordionSection
+          sectionRef={(node) => {
+            sectionRefs.current.order = node;
+          }}
           eyebrow={tr("Commande", "Ordering")}
           title={tr("Messages du parcours commande", "Order flow messages")}
           description={tr(
@@ -831,7 +951,9 @@ export default function SiteInfoAdmin() {
           isOpen={openSectionId === "order"}
           onToggle={() => toggleSection("order")}
           onSave={() => saveSection("order")}
+          onTranslate={() => handleTranslateSection("order")}
           saving={savingSectionId === "order"}
+          translating={translatingSectionId === "order"}
           saveLabel={saveButtonLabel}
         >
           <div className="grid gap-4">
@@ -853,6 +975,9 @@ export default function SiteInfoAdmin() {
         </AccordionSection>
 
         <AccordionSection
+          sectionRef={(node) => {
+            sectionRefs.current.footer = node;
+          }}
           eyebrow={tr("Footer", "Footer")}
           title={tr("Pied de page", "Footer")}
           description={tr(
@@ -862,7 +987,9 @@ export default function SiteInfoAdmin() {
           isOpen={openSectionId === "footer"}
           onToggle={() => toggleSection("footer")}
           onSave={() => saveSection("footer")}
+          onTranslate={() => handleTranslateSection("footer")}
           saving={savingSectionId === "footer"}
+          translating={translatingSectionId === "footer"}
           saveLabel={saveButtonLabel}
         >
           <div className="grid gap-4">

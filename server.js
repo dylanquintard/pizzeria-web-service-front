@@ -543,6 +543,24 @@ function buildSeoMeta(pathname, cache) {
     };
   }
 
+  const pizzaDashMatch = /^\/pizza-([a-z0-9-]+)$/.exec(pathname);
+  if (pizzaDashMatch) {
+    const slug = slugify(pizzaDashMatch[1]);
+    if (!cache.citySlugs.has(slug)) return null;
+    const city = cache.cityLabelsBySlug.get(slug) || titleizeSlug(slug);
+    return {
+      title: `Pizza napolitaine ${city} | ${siteName}`,
+      description:
+        `Pizza napolitaine artisanale ${city}: ingredients italiens, cuisson au four a bois et gaz, service a emporter.`,
+      robots: "index,follow",
+      ogType: "website",
+      pathname,
+      siteName,
+      image: defaultImage,
+      canonicalBaseUrl,
+    };
+  }
+
   const blogMatch = /^\/([a-z0-9-]+)$/.exec(pathname);
   if (blogMatch) {
     const slug = slugify(blogMatch[1]);
@@ -558,24 +576,6 @@ function buildSeoMeta(pathname, cache) {
       ogType: "article",
       pathname,
       siteName,
-      canonicalBaseUrl,
-    };
-  }
-
-  const pizzaDashMatch = /^\/pizza-([a-z0-9-]+)$/.exec(pathname);
-  if (pizzaDashMatch) {
-    const slug = slugify(pizzaDashMatch[1]);
-    if (!cache.citySlugs.has(slug)) return null;
-    const city = cache.cityLabelsBySlug.get(slug) || titleizeSlug(slug);
-    return {
-      title: `Pizza napolitaine ${city} | ${siteName}`,
-      description:
-        `Pizza napolitaine artisanale ${city}: ingredients italiens, cuisson au four a bois et gaz, service a emporter.`,
-      robots: "index,follow",
-      ogType: "website",
-      pathname,
-      siteName,
-      image: defaultImage,
       canonicalBaseUrl,
     };
   }

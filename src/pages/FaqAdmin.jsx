@@ -6,7 +6,6 @@ import {
   getAdminFaqTargets,
   updateFaqEntry,
 } from "../api/faq.api";
-import FaqSection from "../components/common/FaqSection";
 import { AuthContext } from "../context/AuthContext";
 import { useLanguage } from "../context/LanguageContext";
 
@@ -140,15 +139,6 @@ export default function FaqAdmin() {
       faqCount: items.length,
       type: "custom",
     };
-
-  const previewItems = useMemo(() => {
-    return sortFaqItems(items)
-      .filter((item) => item?.question && item?.answer && item?.active)
-      .map((item) => ({
-        question: item.question,
-        answer: item.answer,
-      }));
-  }, [items]);
 
   useEffect(() => {
     if (authLoading || !token || user?.role !== "ADMIN") return;
@@ -370,7 +360,7 @@ export default function FaqAdmin() {
         <div className={`rounded-2xl border px-4 py-3 text-sm ${feedbackClassName}`}>{message}</div>
       ) : null}
 
-      <div className="grid gap-6 2xl:grid-cols-[320px_minmax(0,1fr)_360px]">
+      <div className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
         <aside className="rounded-[1.75rem] border border-white/10 bg-white/5 p-4">
           <label className="grid gap-2 text-xs text-stone-300">
             <span>{tr("Rechercher une page", "Search a page")}</span>
@@ -392,7 +382,7 @@ export default function FaqAdmin() {
                   onClick={() => setSelectedPath(target.path)}
                   className={`w-full rounded-[1.25rem] border px-4 py-3 text-left transition ${
                     isActive
-                      ? "border-saffron/40 bg-saffron/10"
+                      ? "border-white/20 bg-black/20 shadow-[0_12px_32px_rgba(0,0,0,0.16)]"
                       : "border-white/10 bg-black/10 hover:border-white/20 hover:bg-white/5"
                   }`}
                 >
@@ -447,7 +437,7 @@ export default function FaqAdmin() {
             <button
               type="button"
               onClick={handleAddFaq}
-              className="rounded-full bg-saffron px-5 py-3 text-xs font-bold uppercase tracking-wide text-charcoal transition hover:bg-yellow-300"
+              className="rounded-full border border-white/20 bg-black/20 px-5 py-3 text-xs font-bold uppercase tracking-wide text-white transition hover:bg-white/10"
             >
               {tr("Ajouter une FAQ", "Add FAQ")}
             </button>
@@ -479,7 +469,7 @@ export default function FaqAdmin() {
                   >
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-saffron/35 bg-saffron/10 text-sm font-bold text-saffron">
+                        <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-black/20 text-sm font-bold text-white">
                           {index + 1}
                         </span>
                         <span
@@ -598,33 +588,6 @@ export default function FaqAdmin() {
           </div>
         </section>
 
-        <aside className="space-y-4">
-          <div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5">
-            <p className="text-xs uppercase tracking-[0.25em] text-saffron">{tr("Apercu", "Preview")}</p>
-            <h3 className="mt-2 text-xl font-bold text-white">{tr("Rendu public", "Public rendering")}</h3>
-            <p className="mt-2 text-sm leading-7 text-stone-300">
-              {tr(
-                "Voici a quoi ressembleront les questions actives sur la page selectionnee.",
-                "This is how the active questions will look on the selected page."
-              )}
-            </p>
-          </div>
-
-          {previewItems.length > 0 ? (
-            <FaqSection
-              eyebrow={tr("Preview", "Preview")}
-              title={tr("Questions frequentes", "Frequently asked questions")}
-              items={previewItems}
-            />
-          ) : (
-            <div className="rounded-[1.75rem] border border-dashed border-white/15 bg-black/10 px-5 py-6 text-sm text-stone-300">
-              {tr(
-                "Aucune FAQ active prete a etre affichee pour cette page.",
-                "No active FAQ ready to be displayed for this page."
-              )}
-            </div>
-          )}
-        </aside>
       </div>
     </div>
   );
