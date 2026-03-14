@@ -16,6 +16,8 @@ function createFormFromSettings(settings) {
     ...merged,
     seo: {
       ...merged.seo,
+      headerLogoFile: null,
+      headerLogoPreviewUrl: merged.seo.headerLogoUrl || "",
       defaultOgImageFile: null,
       defaultOgImagePreviewUrl: merged.seo.defaultOgImageUrl || "",
     },
@@ -59,7 +61,7 @@ function AccordionSection({
           }`}
           aria-hidden="true"
         >
-          {isOpen ? "˄" : "˅"}
+          {isOpen ? "\u2191" : "\u2193"}
         </span>
       </button>
 
@@ -249,6 +251,19 @@ export default function SiteInfoAdmin() {
     }));
   };
 
+  const handleHeaderLogoUpload = (file) => {
+    if (!file) return;
+    const previewUrl = URL.createObjectURL(file);
+    setForm((prev) => ({
+      ...prev,
+      seo: {
+        ...prev.seo,
+        headerLogoFile: file,
+        headerLogoPreviewUrl: previewUrl,
+      },
+    }));
+  };
+
   const toggleSection = (sectionId) => {
     setOpenSectionId((current) => (current === sectionId ? null : sectionId));
   };
@@ -270,6 +285,9 @@ export default function SiteInfoAdmin() {
           siteName: form.siteName.trim(),
           siteTagline: form.siteTagline,
           siteDescription: form.siteDescription,
+          seo: {
+            headerLogoUrl: form.seo.headerLogoUrl,
+          },
         };
       case "contact":
         return { contact: form.contact };
@@ -312,10 +330,19 @@ export default function SiteInfoAdmin() {
 
       switch (sectionId) {
         case "identity":
+          let headerLogoUrl = String(form.seo.headerLogoUrl || "").trim();
+          if (form.seo.headerLogoFile) {
+            const uploaded = await uploadGalleryImage(token, form.seo.headerLogoFile);
+            headerLogoUrl = uploaded.imageUrl;
+          }
+
           payload = {
             siteName: form.siteName.trim(),
             siteTagline: form.siteTagline,
             siteDescription: form.siteDescription,
+            seo: {
+              headerLogoUrl,
+            },
           };
           break;
         case "contact":
@@ -388,6 +415,18 @@ export default function SiteInfoAdmin() {
           next.siteName = translated.siteName ?? prev.siteName;
           next.siteTagline = translated.siteTagline ?? prev.siteTagline;
           next.siteDescription = translated.siteDescription ?? prev.siteDescription;
+          next.seo = {
+            ...prev.seo,
+            ...(translated.seo || {}),
+            headerLogoFile: prev.seo.headerLogoFile,
+            headerLogoPreviewUrl:
+              prev.seo.headerLogoPreviewUrl ||
+              translated.seo?.headerLogoUrl ||
+              prev.seo.headerLogoUrl ||
+              "",
+            defaultOgImageFile: prev.seo.defaultOgImageFile,
+            defaultOgImagePreviewUrl: prev.seo.defaultOgImagePreviewUrl,
+          };
           break;
         case "contact":
           next.contact = {
@@ -532,6 +571,45 @@ export default function SiteInfoAdmin() {
               multiline
               onChange={(locale, value) => updateRootLocalized("siteDescription", locale, value)}
             />
+
+            <div className="grid gap-4 lg:grid-cols-[240px_1fr]">
+              <div className="overflow-hidden rounded-[1.25rem] border border-white/10 bg-black/20">
+                {form.seo.headerLogoPreviewUrl || form.seo.headerLogoUrl ? (
+                  <img
+                    src={form.seo.headerLogoPreviewUrl || form.seo.headerLogoUrl}
+                    alt={tr("Logo du site", "Site logo")}
+                    className="h-40 w-full object-contain p-5"
+                  />
+                ) : (
+                  <div className="flex h-40 items-center justify-center px-4 text-center text-sm text-stone-400">
+                    {tr("Aucun logo defini.", "No logo set.")}
+                  </div>
+                )}
+              </div>
+
+              <div className="grid gap-3">
+                <label className="grid gap-1 text-xs text-stone-300">
+                  <span>{tr("Uploader le logo header", "Upload header logo")}</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(event) => handleHeaderLogoUpload(event.target.files?.[0] || null)}
+                    className="rounded-2xl border border-white/15 bg-charcoal/70 px-4 py-3 text-sm text-white file:mr-3 file:rounded-full file:border-0 file:bg-saffron file:px-3 file:py-2 file:text-xs file:font-bold file:text-charcoal"
+                  />
+                </label>
+                <label className="grid gap-1 text-xs text-stone-300">
+                  <span>{tr("URL logo actuelle", "Current logo URL")}</span>
+                  <input
+                    value={form.seo.headerLogoUrl}
+                    onChange={(event) => {
+                      updateNestedField("seo", "headerLogoUrl", event.target.value);
+                      updateNestedField("seo", "headerLogoPreviewUrl", event.target.value);
+                    }}
+                    className="rounded-2xl border border-white/15 bg-charcoal/70 px-4 py-3 text-sm text-white"
+                  />
+                </label>
+              </div>
+            </div>
           </div>
         </AccordionSection>
 

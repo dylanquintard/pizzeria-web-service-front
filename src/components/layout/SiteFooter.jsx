@@ -14,6 +14,7 @@ export default function SiteFooter() {
     language,
     "All rights reserved."
   ).trim();
+  const headerLogoUrl = String(settings.seo?.headerLogoUrl || "").trim();
   const phone = String(settings.contact?.phone || "").trim();
   const email = String(settings.contact?.email || "").trim();
   const serviceArea = getLocalizedSiteText(settings.contact?.serviceArea, language, "").trim();
@@ -45,6 +46,15 @@ export default function SiteFooter() {
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,0.8fr)_minmax(0,0.8fr)_minmax(0,1fr)]">
           <div>
             <p className="text-xs uppercase tracking-[0.24em] text-saffron">{siteName}</p>
+            {headerLogoUrl ? (
+              <img
+                src={headerLogoUrl}
+                alt={siteName}
+                className="mt-3 h-14 w-auto object-contain"
+                loading="lazy"
+                decoding="async"
+              />
+            ) : null}
             {shortText ? <p className="mt-3 text-sm text-stone-300">{shortText}</p> : null}
             {legalText ? <p className="mt-3 text-xs text-stone-400">{legalText}</p> : null}
           </div>

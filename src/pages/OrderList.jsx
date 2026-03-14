@@ -5,6 +5,7 @@ import {
   getOrdersAdmin,
   getAllUsers,
   deleteOrderAdmin,
+  updateOrderStatusAdmin,
 } from "../api/admin.api";
 import { useRealtimeEvents } from "../hooks/useRealtimeEvents";
 import { ActionIconButton, DeleteIcon } from "../components/ui/AdminActions";
@@ -77,6 +78,7 @@ function normalizeWorkflowStatus(order) {
   const value = String(order?.workflowStatus || order?.status || "")
     .trim()
     .toUpperCase();
+  if (value === "VALIDATED" || value === "VALIDATE") return "VALIDATED";
   if (value === "PRINTED" || value === "FINALIZED") return "PRINTED";
   if (value === "CANCELED") return "CANCELED";
   return "IN_PROGRESS";
@@ -90,6 +92,7 @@ export default function OrderList() {
   const [selectedDate, setSelectedDate] = useState(toLocalIsoDate(new Date()));
   const [loading, setLoading] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState("IN_PROGRESS");
+  const [updatingOrderId, setUpdatingOrderId] = useState(null);
   const [usersById, setUsersById] = useState({});
   const [usersByEmail, setUsersByEmail] = useState({});
   const [usersByName, setUsersByName] = useState({});
@@ -262,6 +265,23 @@ export default function OrderList() {
     } catch (err) {
       console.error(err);
       setMessage(err.response?.data?.error || tr("Impossible de supprimer la commande", "Unable to delete order"));
+    }
+  };
+
+  const handleValidateOrder = async (orderId) => {
+    try {
+      setUpdatingOrderId(orderId);
+      await updateOrderStatusAdmin(token, orderId, "VALIDATE");
+      await fetchOrders();
+      setMessage(tr("Commande validee et email envoye.", "Order validated and email sent."));
+    } catch (err) {
+      console.error(err);
+      setMessage(
+        err.response?.data?.error ||
+          tr("Impossible de valider la commande.", "Unable to validate the order.")
+      );
+    } finally {
+      setUpdatingOrderId(null);
     }
   };
 
@@ -442,6 +462,7 @@ export default function OrderList() {
               <div className="space-y-2">
                 {groupedOrders[slot].map((order) => {
                   const workflowStatus = normalizeWorkflowStatus(order);
+                  const rawStatus = String(order?.status || "").trim().toUpperCase();
                   const orderTotal = formatPrice(order.total ?? order.totalPrice);
                   const clientPhone = resolveClientPhone(order);
                   const clientIdentity = getClientIdentity(order, tr);
@@ -465,17 +486,37 @@ export default function OrderList() {
                             <span>{orderTotal} EUR</span>
                             <span
                               className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
-                                workflowStatus === "PRINTED"
+                                workflowStatus === "VALIDATED"
+                                  ? "bg-saffron text-charcoal"
+                                  : workflowStatus === "PRINTED"
                                   ? "bg-emerald-500/20 text-black"
                                   : "bg-amber-500/20 text-black"
                               }`}
                             >
-                              {workflowStatus}
+                              {workflowStatus === "VALIDATED"
+                                ? tr("VALIDEE", "VALIDATED")
+                                : workflowStatus === "PRINTED"
+                                  ? tr("IMPRIMEE", "PRINTED")
+                                  : workflowStatus === "CANCELED"
+                                    ? tr("ANNULEE", "CANCELED")
+                                    : tr("EN COURS", "IN PROGRESS")}
                             </span>
                           </div>
                         </div>
 
-                        <div className="shrink-0">
+                        <div className="flex shrink-0 items-center gap-2">
+                          {rawStatus === "FINALIZED" ? (
+                            <button
+                              type="button"
+                              onClick={() => handleValidateOrder(order.id)}
+                              disabled={updatingOrderId === order.id}
+                              className="rounded-full bg-saffron px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-charcoal transition hover:bg-yellow-300 disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                              {updatingOrderId === order.id
+                                ? tr("Validation...", "Validating...")
+                                : tr("Valider", "Validate")}
+                            </button>
+                          ) : null}
                           <ActionIconButton
                             onClick={() => handleDelete(order.id)}
                             label={tr("Supprimer la commande", "Delete order")}

@@ -30,12 +30,14 @@ function getStatusLabel(status, tr) {
   if (normalized === "PENDING") return tr("En attente", "Pending");
   if (normalized === "COMPLETED") return tr("En cours", "Preparing");
   if (normalized === "FINALIZED") return tr("Imprimee", "Ready");
+  if (normalized === "VALIDATE") return tr("Validee", "Validated");
   if (normalized === "CANCELED") return tr("Annulee", "Canceled");
   return normalized || "-";
 }
 
 function getStatusClass(status) {
   const normalized = String(status || "").trim().toUpperCase();
+  if (normalized === "VALIDATE") return "bg-emerald-500/20 text-emerald-100 border-emerald-300/40";
   if (normalized === "FINALIZED") return "bg-emerald-500/20 text-emerald-200 border-emerald-300/40";
   if (normalized === "CANCELED") return "bg-red-500/20 text-red-200 border-red-300/40";
   if (normalized === "PENDING") return "bg-amber-500/20 text-amber-200 border-amber-300/40";

@@ -130,6 +130,8 @@ export default function Header() {
   const safeAdminMenuLinks = adminMenuLinks.filter(
     (item) => item && typeof item.to === "string" && item.to
   );
+  const configuredLogoUrl = String(siteSettings.seo?.headerLogoUrl || "").trim();
+  const headerLogoUrl = configuredLogoUrl || BRAND_LOGO_URL;
 
   const closeMobileMenus = () => {
     setMobileOpen(false);
@@ -163,14 +165,18 @@ export default function Header() {
     }
   }, [isAdminRoute, setTheme, theme]);
 
+  useEffect(() => {
+    setHasLogoError(false);
+  }, [headerLogoUrl]);
+
   return (
     <header className="app-header fixed inset-x-0 top-0 z-50 border-b border-saffron/20 bg-charcoal/90 backdrop-blur-xl">
       <div className="section-shell">
         <div className="flex min-h-[84px] items-center justify-between gap-3 py-2">
           <Link to="/" className="shrink-0 rounded-full border border-saffron/30 bg-white/5 px-4 py-2">
-            {BRAND_LOGO_URL && !hasLogoError ? (
+            {headerLogoUrl && !hasLogoError ? (
               <img
-                src={BRAND_LOGO_URL}
+                src={headerLogoUrl}
                 alt={siteSettings.siteName || "Pizza Truck"}
                 className="block h-10 w-auto object-contain"
                 loading="eager"

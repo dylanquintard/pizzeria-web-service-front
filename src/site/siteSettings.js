@@ -33,6 +33,7 @@ export const DEFAULT_SITE_SETTINGS = Object.freeze({
       en: "Wood-fired Neapolitan pizza in Moselle. Artisan pizza truck around Thionville and Metz with online ordering and quick pickup.",
     },
     defaultOgImageUrl: "",
+    headerLogoUrl: "",
     canonicalSiteUrl: "",
   },
   home: {
@@ -204,6 +205,10 @@ export function mergeSiteSettings(nextValue) {
         typeof source.seo?.defaultOgImageUrl === "string"
           ? source.seo.defaultOgImageUrl.trim()
           : defaults.seo.defaultOgImageUrl,
+      headerLogoUrl:
+        typeof source.seo?.headerLogoUrl === "string"
+          ? source.seo.headerLogoUrl.trim()
+          : defaults.seo.headerLogoUrl,
       canonicalSiteUrl:
         typeof source.seo?.canonicalSiteUrl === "string"
           ? source.seo.canonicalSiteUrl.trim()
