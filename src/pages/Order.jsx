@@ -72,6 +72,18 @@ function isPizzaCategoryLabel(value) {
   return normalizeText(value).includes("pizza");
 }
 
+function isCustomizableProduct(product, categoryTitle) {
+  if (!product) return false;
+
+  if (isPizzaCategoryLabel(categoryTitle)) return true;
+
+  if (isPizzaCategoryLabel(product.name) || isPizzaCategoryLabel(product.description)) {
+    return true;
+  }
+
+  return Array.isArray(product.ingredients) && product.ingredients.length > 0;
+}
+
 function formatPickupAddress(location, tr) {
   if (!location) return tr("Adresse de retrait non disponible", "Pickup address unavailable");
   const cityLine = `${location.postalCode || ""} ${location.city || ""}`.trim();
@@ -487,6 +499,10 @@ export default function Order() {
       .map(({ entry }) => ({
         ...entry,
         isPizzaCategory: isPizzaCategoryLabel(entry.title),
+        items: entry.items.map((product) => ({
+          ...product,
+          isCustomizable: isCustomizableProduct(product, entry.title),
+        })),
       }));
   }, [categories, products, tr]);
 
@@ -802,16 +818,16 @@ export default function Order() {
                           <button
                             type="button"
                             onClick={() =>
-                              visibleMenuGroup.isPizzaCategory ? openProductModal(product) : handleQuickAdd(product)
+                              product.isCustomizable ? openProductModal(product) : handleQuickAdd(product)
                             }
                             disabled={loading}
                             title={
-                              visibleMenuGroup.isPizzaCategory
+                              product.isCustomizable
                                 ? tr("Configurer et ajouter", "Customize and add")
                                 : tr("Ajouter au panier", "Add to cart")
                             }
                             aria-label={
-                              visibleMenuGroup.isPizzaCategory
+                              product.isCustomizable
                                 ? `${tr("Configurer", "Customize")} ${product.name}`
                                 : `${tr("Ajouter", "Add")} ${product.name}`
                             }
