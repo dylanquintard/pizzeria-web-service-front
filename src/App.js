@@ -28,6 +28,7 @@ const CitySeoPage = lazy(() => import("./pages/CitySeoPage"));
 const Blog = lazy(() => import("./pages/Blog"));
 const BlogArticle = lazy(() => import("./pages/BlogArticle"));
 const BlogAdmin = lazy(() => import("./pages/BlogAdmin"));
+const FaqAdmin = lazy(() => import("./pages/FaqAdmin"));
 const SiteInfoAdmin = lazy(() => import("./pages/SiteInfoAdmin"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Ingredients = lazy(() => import("./pages/Ingredients"));
@@ -307,6 +308,16 @@ function AppRoutes() {
               <AdminRoute>
                 <Dashboard>
                   <BlogAdmin />
+                </Dashboard>
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/faq"
+            element={
+              <AdminRoute>
+                <Dashboard>
+                  <FaqAdmin />
                 </Dashboard>
               </AdminRoute>
             }

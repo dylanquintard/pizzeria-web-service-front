@@ -1,36 +1,14 @@
 import { Link } from "react-router-dom";
-import FaqSection from "../components/common/FaqSection";
+import PageFaqSection from "../components/common/PageFaqSection";
 import SeoHead from "../components/seo/SeoHead";
 import { useSiteSettings } from "../context/SiteSettingsContext";
-import { buildBaseFoodEstablishmentJsonLd, buildBreadcrumbJsonLd, buildFaqJsonLd } from "../seo/jsonLd";
-import { buildDynamicCityFaq, LOCAL_PAGE_CONTENT } from "../seo/localLandingContent";
-
-function buildFixedLocalFaq(cityLabel) {
-  return [
-    {
-      question: `Le camion est-il present en permanence a ${cityLabel} ?`,
-      answer:
-        "Non. Le camion pizza n'est pas installe en permanence dans cette ville. Les passages dependent du planning actif.",
-    },
-    {
-      question: "Ou voir les prochains passages du camion ?",
-      answer:
-        "Consultez la page Horaires & deplacements du camion pour voir les emplacements, jours et horaires mis a jour.",
-    },
-    {
-      question: "Comment recuperer ma commande ?",
-      answer:
-        "Vous commandez en ligne puis vous recuperez votre pizza sur un point de passage actif du camion.",
-    },
-  ];
-}
+import { buildBaseFoodEstablishmentJsonLd, buildBreadcrumbJsonLd } from "../seo/jsonLd";
+import { LOCAL_PAGE_CONTENT } from "../seo/localLandingContent";
 
 export default function LocalSeoPage({ cityKey }) {
   const { settings } = useSiteSettings();
   const content = LOCAL_PAGE_CONTENT[cityKey] || LOCAL_PAGE_CONTENT.moselle;
   const cityLabel = cityKey === "moselle" ? "Moselle" : "Thionville";
-  const isFixedLocalPage = ["thionville", "moselle"].includes(cityKey);
-  const faq = isFixedLocalPage ? buildFixedLocalFaq(cityLabel) : buildDynamicCityFaq(cityLabel);
   const siteName = settings.siteName || "Pizza Truck";
   const canonicalSiteUrl = String(settings.seo?.canonicalSiteUrl || "").trim();
   const localJsonLd = [
@@ -60,7 +38,6 @@ export default function LocalSeoPage({ cityKey }) {
           ],
           canonicalSiteUrl || undefined
         ),
-    buildFaqJsonLd(faq),
   ].filter(Boolean);
 
   return (
@@ -89,19 +66,18 @@ export default function LocalSeoPage({ cityKey }) {
           </section>
         ))}
 
-      {Array.isArray(faq) && faq.length > 0 ? (
-        <div className="space-y-3">
-          {isFixedLocalPage && (
-            <p className="text-sm font-semibold text-saffron">
-              Le camion n&apos;est pas disponible en permanence dans cette ville.{" "}
-              <Link to="/planing" className="underline decoration-saffron underline-offset-2">
-                Horaires & deplacements du camion
-              </Link>
-            </p>
-          )}
-          <FaqSection title="Questions frequentes" items={faq} />
-        </div>
-      ) : null}
+      <div className="space-y-3">
+        <p className="text-sm font-semibold text-saffron">
+          Le camion n&apos;est pas disponible en permanence dans cette ville.{" "}
+          <Link to="/planing" className="underline decoration-saffron underline-offset-2">
+            Horaires & deplacements du camion
+          </Link>
+        </p>
+        <PageFaqSection
+          pathname={content.pathname}
+          title={`Questions frequentes sur ${cityLabel}`}
+        />
+      </div>
 
       <section className="glass-panel p-6">
         <h2 className="text-lg font-bold text-white">Commander votre pizza</h2>

@@ -3,10 +3,10 @@ import { Link, Navigate, useLocation, useParams } from "react-router-dom";
 import { getLocations } from "../api/location.api";
 import { getSeoLocations } from "../api/seo.api";
 import { getPublicWeeklySettings } from "../api/timeslot.api";
-import FaqSection from "../components/common/FaqSection";
+import PageFaqSection from "../components/common/PageFaqSection";
 import SeoHead from "../components/seo/SeoHead";
 import { useSiteSettings } from "../context/SiteSettingsContext";
-import { buildBaseFoodEstablishmentJsonLd, buildBreadcrumbJsonLd, buildFaqJsonLd } from "../seo/jsonLd";
+import { buildBaseFoodEstablishmentJsonLd, buildBreadcrumbJsonLd } from "../seo/jsonLd";
 import {
   BLOCKED_LOCAL_CITY_SLUGS,
   buildDynamicCityContent,
@@ -350,14 +350,12 @@ export default function CitySeoPage({ forcedCitySlug = "" }) {
           ],
           canonicalSiteUrl || undefined
         ),
-        buildFaqJsonLd(content.faq),
       ].filter(Boolean),
     [
       canonicalPath,
       canonicalSiteUrl,
       cityDisplay,
       content.description,
-      content.faq,
       content.title,
       settings.contact?.address,
       settings.contact?.email,
@@ -481,9 +479,10 @@ export default function CitySeoPage({ forcedCitySlug = "" }) {
         </section>
       )}
 
-      {Array.isArray(content.faq) && content.faq.length > 0 ? (
-        <FaqSection title="Questions frequentes" items={content.faq} />
-      ) : null}
+      <PageFaqSection
+        pathname={canonicalPath}
+        title={`Questions frequentes sur ${cityDisplay}`}
+      />
 
       <section className="glass-panel p-6">
         <h2 className="text-lg font-bold text-white">Commander votre pizza</h2>

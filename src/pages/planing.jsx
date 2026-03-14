@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import SeoHead from "../components/seo/SeoHead";
 import { getPublicWeeklySettings } from "../api/timeslot.api";
 import { getLocations } from "../api/location.api";
+import PageFaqSection from "../components/common/PageFaqSection";
 import { useLanguage } from "../context/LanguageContext";
 import { buildBaseFoodEstablishmentJsonLd } from "../seo/jsonLd";
 import { getCityPath } from "../seo/localLandingContent";
@@ -283,6 +284,15 @@ export default function TourneeCamion() {
           </ul>
         )}
       </section>
+
+      <PageFaqSection
+        pathname="/planing"
+        title={tr("Questions frequentes sur les horaires", "Frequently asked questions about opening hours")}
+        intro={tr(
+          "Ajoute ici les reponses utiles sur les emplacements, le planning et le retrait.",
+          "Add here the useful answers about locations, schedule and pickup."
+        )}
+      />
     </div>
   );
 }

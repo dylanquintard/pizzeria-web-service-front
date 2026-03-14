@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { getCategories } from "../api/category.api";
 import { useLanguage } from "../context/LanguageContext";
 import { getAllProductsClient } from "../api/user.api";
+import PageFaqSection from "../components/common/PageFaqSection";
 import SeoHead from "../components/seo/SeoHead";
 import { buildBaseFoodEstablishmentJsonLd } from "../seo/jsonLd";
 
@@ -183,6 +184,15 @@ export default function Menu() {
           </section>
         ))}
       </div>
+
+      <PageFaqSection
+        pathname="/menu"
+        title={tr("Questions frequentes sur le menu", "Frequently asked questions about the menu")}
+        intro={tr(
+          "Ajoute ici les reponses les plus utiles sur les pizzas, les ingredients et la commande.",
+          "Add here the most useful answers about pizzas, ingredients and ordering."
+        )}
+      />
     </div>
   );
 }

@@ -123,6 +123,7 @@ export default function Header() {
         { to: "/admin/users", label: tr("Clients", "Users") },
         { to: "/admin/gallery", label: tr("Galerie", "Gallery") },
         { to: "/admin/blog", label: tr("Blog", "Blog") },
+        { to: "/admin/faq", label: tr("FAQ", "FAQ") },
         { to: "/admin/site-info", label: tr("Info site", "Site info") },
       ]
     : [];

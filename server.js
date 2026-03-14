@@ -568,9 +568,9 @@ function buildSeoMeta(pathname, cache) {
     if (!cache.citySlugs.has(slug)) return null;
     const city = cache.cityLabelsBySlug.get(slug) || titleizeSlug(slug);
     return {
-      title: `Pizza napolitaine a ${city} | ${siteName}`,
+      title: `Pizza napolitaine ${city} | ${siteName}`,
       description:
-        `Pizza napolitaine artisanale a ${city}: ingredients italiens, cuisson au four a bois et gaz, service a emporter.`,
+        `Pizza napolitaine artisanale ${city}: ingredients italiens, cuisson au four a bois et gaz, service a emporter.`,
       robots: "index,follow",
       ogType: "website",
       pathname,

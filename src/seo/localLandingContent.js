@@ -125,8 +125,8 @@ function hashToIndex(value, modulo) {
 
 const DYNAMIC_CITY_VARIANTS = [
   {
-    title: "Pizza napolitaine a {city} | Camion pizza artisanal",
-    h1: "Pizza napolitaine artisanale a {city}",
+    title: "Pizza napolitaine {city} | Camion pizza artisanal",
+    h1: "Pizza napolitaine artisanale {city}",
     description:
       "Camion pizza a {city}: recettes d inspiration napolitaine, cuisson bois-gaz et retrait organise sur les passages de la semaine.",
     intro: [
@@ -145,7 +145,7 @@ const DYNAMIC_CITY_VARIANTS = [
         ],
       },
       {
-        heading: "Le camion pizza passe a {city} selon la tournee active",
+        heading: "Le camion pizza {city} et la tournee active",
         paragraphs: [
           "Le camion dessert regulierement {city}, mais pas en point fixe permanent.",
           "Les emplacements changent selon la tournee hebdomadaire et les points de retrait ouverts.",
@@ -153,7 +153,7 @@ const DYNAMIC_CITY_VARIANTS = [
         ],
       },
       {
-        heading: "Un format pense pour l emporter a {city}",
+        heading: "Un format pense pour l emporter autour de {city}",
         paragraphs: [
           "Les pizzas sont disponibles uniquement a emporter directement au camion.",
           "Chaque commande est lancee pour le retrait afin de remettre une pizza chaude, cuite minute et prete a repartir.",
@@ -162,10 +162,10 @@ const DYNAMIC_CITY_VARIANTS = [
     ],
   },
   {
-    title: "Pizza artisanale a {city} | Camion pizza napolitain",
-    h1: "Pizza italienne artisanale a {city}",
+    title: "Pizza artisanale {city} | Camion pizza napolitain",
+    h1: "Pizza italienne artisanale {city}",
     description:
-      "Pizza artisanale a {city}: pate preparee avec soin, produits selectionnes et cuisson bois-gaz pour le retrait.",
+      "Pizza artisanale {city}: pate preparee avec soin, produits selectionnes et cuisson bois-gaz pour le retrait.",
     intro: [
       "Le camion pizza dessert {city} avec une carte artisanale inspiree des codes napolitains, sans chercher l effet de catalogue.",
       "Chaque pizza est preparee avec une pate maison et des produits choisis pour leur tenue au four comme pour leur gout.",
@@ -181,7 +181,7 @@ const DYNAMIC_CITY_VARIANTS = [
         ],
       },
       {
-        heading: "Le camion pizza se deplace a {city} selon le planning",
+        heading: "Le camion pizza {city} et le planning",
         paragraphs: [
           "Le camion pizza passe a {city} selon le planning hebdomadaire publie.",
           "Les points de retrait peuvent varier, mais l objectif reste identique: servir une pizza preparee sur place, dans un format simple a recuperer.",
@@ -197,10 +197,10 @@ const DYNAMIC_CITY_VARIANTS = [
     ],
   },
   {
-    title: "Pizza feu de bois a {city} | Camion pizza",
-    h1: "Pizza feu de bois artisanale a {city}",
+    title: "Pizza feu de bois {city} | Camion pizza",
+    h1: "Pizza feu de bois artisanale {city}",
     description:
-      "Pizza feu de bois a {city}: cuisson vive, produits bien choisis et retrait direct au camion.",
+      "Pizza feu de bois {city}: cuisson vive, produits bien choisis et retrait direct au camion.",
     intro: [
       "A {city}, le camion propose des pizzas cuites dans un four bois-gaz pour garder une cuisson rapide et une pate plus aerienne.",
       "Le travail ne se limite pas a la flamme: il repose aussi sur une pate bien tenue et des recettes qui restent lisibles.",
@@ -216,14 +216,14 @@ const DYNAMIC_CITY_VARIANTS = [
         ],
       },
       {
-        heading: "Le camion pizza suit une tournee a {city}",
+        heading: "Le camion pizza et la tournee {city}",
         paragraphs: [
           "Le camion pizza se deplace a {city} selon les emplacements definis dans le planning.",
           "Les pizzas sont preparees directement au camion afin de garder une sortie de four propre et fraiche.",
         ],
       },
       {
-        heading: "Retrait pizza a {city}",
+        heading: "Retrait pizza {city}",
         paragraphs: [
           "Les pizzas sont disponibles uniquement a emporter.",
           "Le retrait se fait directement au camion lors du passage a {city}, sur creneau quand la commande est anticipee.",
@@ -232,10 +232,10 @@ const DYNAMIC_CITY_VARIANTS = [
     ],
   },
   {
-    title: "Camion pizza a {city} | Pizza napolitaine artisanale",
-    h1: "Camion pizza napolitaine a {city}",
+    title: "Camion pizza {city} | Pizza napolitaine artisanale",
+    h1: "Camion pizza napolitaine {city}",
     description:
-      "Camion pizza a {city}: pizza d inspiration napolitaine, cuisson bois-gaz et organisation simple pour le retrait.",
+      "Camion pizza {city}: pizza d inspiration napolitaine, cuisson bois-gaz et organisation simple pour le retrait.",
     intro: [
       "Le camion pizza dessert {city} selon la tournee hebdomadaire.",
       "Chaque pizza est preparee avec une pate maison et des ingredients choisis pour rester coherents de la cuisson a la degustation.",
@@ -251,7 +251,7 @@ const DYNAMIC_CITY_VARIANTS = [
         ],
       },
       {
-        heading: "Ou retrouver le camion pizza a {city}",
+        heading: "Ou retrouver le camion pizza autour de {city}",
         paragraphs: [
           "Le camion pizza passe a {city} selon les emplacements prevus dans la tournee.",
           "Les horaires et points de retrait sont consultables sur la page planning.",
@@ -267,10 +267,10 @@ const DYNAMIC_CITY_VARIANTS = [
     ],
   },
   {
-    title: "Pizza napolitaine traditionnelle a {city} | Camion pizza",
-    h1: "Pizza napolitaine traditionnelle a {city}",
+    title: "Pizza napolitaine traditionnelle {city} | Camion pizza",
+    h1: "Pizza napolitaine traditionnelle {city}",
     description:
-      "Pizza napolitaine traditionnelle a {city}: travail de pate, cuisson vive et retrait au camion.",
+      "Pizza napolitaine traditionnelle {city}: travail de pate, cuisson vive et retrait au camion.",
     intro: [
       "Vous cherchez une pizza napolitaine traditionnelle a {city} ?",
       "Le camion pizza propose des pizzas preparees avec une pate artisanale, une cuisson bois-gaz et une lecture plus serieuse du produit.",
@@ -285,7 +285,7 @@ const DYNAMIC_CITY_VARIANTS = [
         ],
       },
       {
-        heading: "Le camion pizza a {city}",
+        heading: "Le camion pizza autour de {city}",
         paragraphs: [
           "Le camion pizza se deplace a {city} selon les emplacements annonces dans la tournee.",
           "Les pizzas sont preparees sur place afin de garantir leur fraicheur et une sortie de four propre.",
@@ -313,7 +313,7 @@ const DYNAMIC_NEARBY_VARIANTS = [
     footer: "Les jours et horaires peuvent evoluer selon la tournee de la semaine.",
   },
   {
-    heading: "Points de retrait disponibles a {city}",
+    heading: "Points de retrait disponibles autour de {city}",
     lead: "Retrouvez ci-dessous quelques emplacements ou le camion peut passer.",
     footer: "Pour la version complete et mise a jour, consultez la page planning du camion pizza.",
   },
@@ -328,104 +328,6 @@ const DYNAMIC_NEARBY_VARIANTS = [
     footer: "Tous les details de passage restent centralises sur la page planning.",
   },
 ];
-
-const DYNAMIC_FAQ_VARIANTS = [
-  [
-    {
-      question: "Ou trouver le camion pizza a {city} ?",
-      answer:
-        "Le camion pizza passe a {city} selon le planning hebdomadaire. Les prochains passages et horaires sont indiques sur la page planning du site.",
-    },
-    {
-      question: "Les pizzas sont-elles disponibles sur place ?",
-      answer: "Les pizzas sont disponibles uniquement a emporter directement au camion pizza.",
-    },
-    {
-      question: "Quel type de pizza proposez-vous a {city} ?",
-      answer:
-        "Nous proposons des pizzas napolitaines artisanales preparees avec des ingredients italiens et une cuisson au four a bois et gaz.",
-    },
-  ],
-  [
-    {
-      question: "Le camion pizza passe-t-il a {city} chaque semaine ?",
-      answer:
-        "Le passage du camion pizza a {city} depend de la tournee et des emplacements disponibles. Les horaires et jours de passage sont indiques dans la page planning.",
-    },
-    {
-      question: "Peut-on commander une pizza a l'avance ?",
-      answer:
-        "Selon les creneaux disponibles, il est possible de commander votre pizza et de venir la recuperer directement au camion.",
-    },
-    {
-      question: "Les pizzas sont-elles faites maison ?",
-      answer:
-        "Oui. La pate est preparee maison et les pizzas sont realisees avec des ingredients italiens selectionnes.",
-    },
-  ],
-  [
-    {
-      question: "Ou acheter une pizza napolitaine a {city} ?",
-      answer:
-        "Le camion pizza propose des pizzas napolitaines artisanales a {city} selon les emplacements prevus dans le planning.",
-    },
-    {
-      question: "Comment fonctionne le retrait des pizzas ?",
-      answer:
-        "Les pizzas sont preparees a la commande et disponibles a emporter directement au camion pizza.",
-    },
-    {
-      question: "Quels ingredients utilisez-vous ?",
-      answer:
-        "Les pizzas sont preparees avec des ingredients italiens comme la mozzarella fior di latte, les tomates San Marzano et la farine Nuvola.",
-    },
-  ],
-  [
-    {
-      question: "Quand trouver le camion pizza a {city} ?",
-      answer:
-        "Le camion pizza passe regulierement a {city} selon le planning hebdomadaire. Consultez la page planning pour connaitre les prochains passages.",
-    },
-    {
-      question: "Les pizzas sont-elles cuites au feu de bois ?",
-      answer:
-        "Les pizzas sont cuites dans un four a bois et gaz afin d'obtenir une cuisson rapide et une pate legere.",
-    },
-    {
-      question: "Le service est-il uniquement a emporter ?",
-      answer: "Oui, les pizzas sont proposees uniquement a emporter directement au camion pizza.",
-    },
-  ],
-  [
-    {
-      question: "Le camion pizza propose-t-il des pizzas napolitaines a {city} ?",
-      answer:
-        "Oui, le camion pizza propose regulierement des pizzas napolitaines artisanales a {city} selon les emplacements disponibles sur la tournee.",
-    },
-    {
-      question: "Combien de temps faut-il attendre pour une pizza ?",
-      answer:
-        "Les pizzas sont preparees a la commande et la cuisson est generalement tres rapide grace au four a haute temperature.",
-    },
-    {
-      question: "Quels types de pizzas sont disponibles ?",
-      answer:
-        "Le menu propose differentes pizzas napolitaines avec des ingredients italiens selectionnes.",
-    },
-  ],
-];
-
-export function buildDynamicCityFaq(cityValue) {
-  const city = String(cityValue || "").trim() || "Moselle";
-  const slug = slugifyCity(city) || "moselle";
-  const faqVariantIndex = hashToIndex(`${slug}-faq`, DYNAMIC_FAQ_VARIANTS.length);
-  const faqVariant = DYNAMIC_FAQ_VARIANTS[faqVariantIndex];
-
-  return faqVariant.map((item) => ({
-    question: withCity(item.question, city),
-    answer: withCity(item.answer, city),
-  }));
-}
 
 export function buildDynamicCityContent(cityValue, options = {}) {
   const city = String(cityValue || "").trim() || "Moselle";
@@ -442,7 +344,6 @@ export function buildDynamicCityContent(cityValue, options = {}) {
     heading: withCity(section.heading, city),
     paragraphs: section.paragraphs.map((paragraph) => withCity(paragraph, city)),
   }));
-  const faq = buildDynamicCityFaq(city);
 
   return {
     pathname: `/pizza-${slug}`,
@@ -452,7 +353,6 @@ export function buildDynamicCityContent(cityValue, options = {}) {
     intro: introParagraphs.join(" "),
     introParagraphs,
     sections,
-    faq,
     nearbySection: {
       heading: withCity(nearbyVariant.heading, city),
       lead: withCity(nearbyVariant.lead, city),

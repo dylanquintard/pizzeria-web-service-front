@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getPublishedBlogArticles } from "../api/blog.api";
+import PageFaqSection from "../components/common/PageFaqSection";
 import SeoHead from "../components/seo/SeoHead";
 import { useLanguage } from "../context/LanguageContext";
 import { useSiteSettings } from "../context/SiteSettingsContext";
@@ -191,6 +192,15 @@ export default function Blog() {
           ))}
         </section>
       )}
+
+      <PageFaqSection
+        pathname="/blog"
+        title={tr("Questions frequentes sur le blog", "Frequently asked questions about the blog")}
+        intro={tr(
+          "Ajoute ici les questions utiles autour des articles, des sujets traites et de l'approche maison.",
+          "Add here useful questions about articles, covered topics and the house approach."
+        )}
+      />
     </div>
   );
 }

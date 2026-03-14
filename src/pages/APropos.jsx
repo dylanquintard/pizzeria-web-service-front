@@ -1,9 +1,9 @@
 import { Link } from "react-router-dom";
-import FaqSection from "../components/common/FaqSection";
+import PageFaqSection from "../components/common/PageFaqSection";
 import SeoHead from "../components/seo/SeoHead";
 import { useLanguage } from "../context/LanguageContext";
 import { useSiteSettings } from "../context/SiteSettingsContext";
-import { buildBaseFoodEstablishmentJsonLd, buildFaqJsonLd } from "../seo/jsonLd";
+import { buildBaseFoodEstablishmentJsonLd } from "../seo/jsonLd";
 
 export default function APropos() {
   const { tr } = useLanguage();
@@ -25,43 +25,6 @@ export default function APropos() {
     settings.social?.facebookUrl,
     settings.social?.tiktokUrl,
   ].filter(Boolean);
-  const faqItems = [
-    {
-      question: tr(`Ou trouver ${companyName} cette semaine ?`, `Where can you find ${companyName} this week?`),
-      answer: tr(
-        "Les points de passage et les horaires sont publies sur la page planning. C est la reference a consulter avant de vous deplacer.",
-        "Stops and opening hours are published on the schedule page. That is the page to check before coming."
-      ),
-    },
-    {
-      question: tr("Les pizzas sont-elles a emporter ?", "Are the pizzas takeaway only?"),
-      answer: tr(
-        "Oui. Le service est pense pour l emporter uniquement, afin de garder un rythme plus propre et une pizza remise au bon moment.",
-        "Yes. The service is designed for takeaway only, so the pace stays smooth and the pizza is handed over at the right moment."
-      ),
-    },
-    {
-      question: tr("Faut-il commander a l avance ?", "Should you order in advance?"),
-      answer: tr(
-        "C est recommande, surtout sur les creneaux charges. Cela permet de limiter l attente et de mieux caler la cuisson.",
-        "Yes, especially during busy slots. It helps reduce waiting time and makes baking easier to plan."
-      ),
-    },
-    {
-      question: tr("Combien de temps dure l attente ?", "How long is the wait?"),
-      answer: tr(
-        "Le systeme de creneaux sert justement a reduire l attente. La commande anticipee reste la solution la plus fluide.",
-        "The timeslot system is designed to reduce waiting time. Ordering in advance is still the smoothest option."
-      ),
-    },
-    {
-      question: tr("Quels moyens de paiement acceptez-vous ?", "Which payment methods do you accept?"),
-      answer: tr(
-        "Les moyens de paiement disponibles sont indiques sur le site et peuvent inclure carte bancaire, especes et autres solutions selon l organisation du service.",
-        "Available payment methods are shown on the site and may include card, cash and other options depending on the service setup."
-      ),
-    },
-  ];
   const aboutJsonLd = [
     buildBaseFoodEstablishmentJsonLd({
       pagePath: "/a-propos",
@@ -81,7 +44,6 @@ export default function APropos() {
         hasMenu: menuUrl,
       },
     }),
-    buildFaqJsonLd(faqItems),
   ].filter(Boolean);
 
   return (
@@ -268,9 +230,13 @@ export default function APropos() {
         </ul>
       </section>
 
-      <FaqSection
+      <PageFaqSection
+        pathname="/a-propos"
         title={tr("Questions frequentes", "Frequently asked questions")}
-        items={faqItems}
+        intro={tr(
+          "Ajoute ici les questions qui aident a comprendre la marque, le fonctionnement du camion et la commande.",
+          "Add here the questions that help explain the brand, the truck flow and ordering."
+        )}
       />
     </div>
   );

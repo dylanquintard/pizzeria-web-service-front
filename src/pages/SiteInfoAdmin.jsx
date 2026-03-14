@@ -22,15 +22,58 @@ function createFormFromSettings(settings) {
   };
 }
 
-function SectionCard({ eyebrow, title, description, children }) {
+function AccordionSection({
+  eyebrow,
+  title,
+  description,
+  isOpen,
+  onToggle,
+  onSave,
+  saving,
+  saveLabel,
+  children,
+}) {
   return (
-    <section className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 sm:p-6">
-      <div className="mb-5">
-        <p className="text-xs uppercase tracking-[0.25em] text-saffron">{eyebrow}</p>
-        <h3 className="mt-2 text-2xl font-bold text-white">{title}</h3>
-        {description ? <p className="mt-2 max-w-3xl text-sm text-stone-300">{description}</p> : null}
-      </div>
-      {children}
+    <section
+      className={`rounded-[1.75rem] border p-5 transition sm:p-6 ${
+        isOpen
+          ? "border-saffron/40 bg-white/8 shadow-[0_18px_60px_rgba(0,0,0,0.18)]"
+          : "border-white/10 bg-white/5"
+      }`}
+    >
+      <button type="button" onClick={onToggle} className="flex w-full items-start justify-between gap-4 text-left">
+        <div className="min-w-0">
+          <p className="text-xs uppercase tracking-[0.25em] text-saffron">{eyebrow}</p>
+          <h3 className="mt-2 text-2xl font-bold text-white">{title}</h3>
+          {description ? <p className="mt-2 max-w-3xl text-sm text-stone-300">{description}</p> : null}
+        </div>
+        <span
+          className={`mt-1 inline-flex h-11 w-11 flex-none items-center justify-center rounded-full border text-lg font-bold transition ${
+            isOpen
+              ? "border-saffron/40 bg-saffron text-charcoal"
+              : "border-white/15 bg-black/20 text-white"
+          }`}
+          aria-hidden="true"
+        >
+          {isOpen ? "^" : "v"}
+        </span>
+      </button>
+
+      {isOpen ? (
+        <div className="mt-5 border-t border-white/10 pt-5">
+          {children}
+          <div className="mt-5 flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={onSave}
+              disabled={saving}
+              className="rounded-full bg-saffron px-5 py-3 text-xs font-bold uppercase tracking-wide text-charcoal transition hover:bg-yellow-300 disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              {saving ? `${saveLabel}...` : saveLabel}
+            </button>
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }
@@ -86,10 +129,11 @@ export default function SiteInfoAdmin() {
 
   const [form, setForm] = useState(() => createFormFromSettings(publicSettings));
   const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const [savingSectionId, setSavingSectionId] = useState(null);
   const [translating, setTranslating] = useState(false);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("info");
+  const [openSectionId, setOpenSectionId] = useState("identity");
 
   useEffect(() => {
     if (authLoading || !token || user?.role !== "ADMIN") return;
@@ -132,6 +176,8 @@ export default function SiteInfoAdmin() {
     }
     return "border-white/10 bg-white/5 text-stone-100";
   }, [messageType]);
+
+  const saveButtonLabel = tr("Sauvegarder", "Save");
 
   const updateRootField = (field, value) => {
     setForm((prev) => ({
@@ -186,53 +232,85 @@ export default function SiteInfoAdmin() {
     }));
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
+  const toggleSection = (sectionId) => {
+    setOpenSectionId((current) => (current === sectionId ? null : sectionId));
+  };
+
+  const saveSection = async (sectionId) => {
     if (!token) return;
 
     try {
-      setSaving(true);
+      setSavingSectionId(sectionId);
       setMessage("");
 
-      let defaultOgImageUrl = String(form.seo.defaultOgImageUrl || "").trim();
-      if (form.seo.defaultOgImageFile) {
-        const uploaded = await uploadGalleryImage(token, form.seo.defaultOgImageFile);
-        defaultOgImageUrl = uploaded.imageUrl;
-      }
+      let payload = null;
 
-      const payload = {
-        siteName: form.siteName.trim(),
-        siteTagline: form.siteTagline,
-        siteDescription: form.siteDescription,
-        contact: form.contact,
-        social: form.social,
-        seo: {
-          defaultMetaTitle: form.seo.defaultMetaTitle,
-          defaultMetaDescription: form.seo.defaultMetaDescription,
-          defaultOgImageUrl,
-          canonicalSiteUrl: form.seo.canonicalSiteUrl,
-        },
-        home: form.home,
-        blog: form.blog,
-        contactPage: form.contactPage,
-        order: form.order,
-        footer: form.footer,
-        announcement: form.announcement,
-      };
+      switch (sectionId) {
+        case "identity":
+          payload = {
+            siteName: form.siteName.trim(),
+            siteTagline: form.siteTagline,
+            siteDescription: form.siteDescription,
+          };
+          break;
+        case "contact":
+          payload = { contact: form.contact };
+          break;
+        case "social":
+          payload = { social: form.social };
+          break;
+        case "seo": {
+          let defaultOgImageUrl = String(form.seo.defaultOgImageUrl || "").trim();
+          if (form.seo.defaultOgImageFile) {
+            const uploaded = await uploadGalleryImage(token, form.seo.defaultOgImageFile);
+            defaultOgImageUrl = uploaded.imageUrl;
+          }
+
+          payload = {
+            seo: {
+              defaultMetaTitle: form.seo.defaultMetaTitle,
+              defaultMetaDescription: form.seo.defaultMetaDescription,
+              defaultOgImageUrl,
+              canonicalSiteUrl: form.seo.canonicalSiteUrl,
+            },
+          };
+          break;
+        }
+        case "home":
+          payload = { home: form.home };
+          break;
+        case "announcement":
+          payload = { announcement: form.announcement };
+          break;
+        case "blog":
+          payload = { blog: form.blog };
+          break;
+        case "contactPage":
+          payload = { contactPage: form.contactPage };
+          break;
+        case "order":
+          payload = { order: form.order };
+          break;
+        case "footer":
+          payload = { footer: form.footer };
+          break;
+        default:
+          throw new Error("Unknown section");
+      }
 
       const saved = await updateSiteSettings(token, payload);
       applySettings(saved);
       setForm(createFormFromSettings(saved));
-      setMessage(tr("Informations du site enregistrees.", "Site information saved."));
+      setMessage(tr("Section enregistree.", "Section saved."));
       setMessageType("success");
     } catch (err) {
       setMessage(
         err?.response?.data?.error ||
-          tr("Impossible d'enregistrer les informations du site.", "Unable to save site information.")
+          tr("Impossible d'enregistrer cette section.", "Unable to save this section.")
       );
       setMessageType("error");
     } finally {
-      setSaving(false);
+      setSavingSectionId(null);
     }
   };
 
@@ -275,8 +353,8 @@ export default function SiteInfoAdmin() {
       }));
       setMessage(
         tr(
-          "Traduction anglaise generee. Vous pouvez relire puis enregistrer.",
-          "English translation generated. You can review it and save."
+          "Traduction anglaise generee. Vous pouvez relire puis sauvegarder section par section.",
+          "English translation generated. You can review it and save section by section."
         )
       );
       setMessageType("success");
@@ -313,15 +391,15 @@ export default function SiteInfoAdmin() {
         </h2>
         <p className="mt-3 max-w-3xl text-sm leading-7 text-stone-300">
           {tr(
-            "Modifiez ici les informations visibles sur le site, les textes principaux, les coordonnees, le SEO global et le bandeau d'annonce.",
-            "Edit the site-facing information here: main copy, contact details, global SEO and the announcement banner."
+            "Chaque bloc s'ouvre au clic, se referme au reclique, et se sauvegarde separement pour garder une administration claire.",
+            "Each block opens on click, closes when clicked again, and saves independently for a cleaner admin experience."
           )}
         </p>
         <div className="mt-5 flex flex-wrap gap-3">
           <button
             type="button"
             onClick={handleTranslateToEnglish}
-            disabled={translating || saving}
+            disabled={translating || Boolean(savingSectionId)}
             className="rounded-full border border-white/20 px-5 py-3 text-xs font-semibold uppercase tracking-wide text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {translating
@@ -335,14 +413,19 @@ export default function SiteInfoAdmin() {
         <div className={`rounded-2xl border px-4 py-3 text-sm ${feedbackClassName}`}>{message}</div>
       ) : null}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <SectionCard
+      <div className="space-y-6">
+        <AccordionSection
           eyebrow={tr("Identite", "Identity")}
           title={tr("Nom, baseline et description", "Name, tagline and description")}
           description={tr(
-            "Ces informations servent de base sur le site et dans certaines zones SEO.",
-            "These details are used across the site and in some SEO areas."
+            "Base du site et de plusieurs zones SEO.",
+            "Base content used across the site and several SEO areas."
           )}
+          isOpen={openSectionId === "identity"}
+          onToggle={() => toggleSection("identity")}
+          onSave={() => saveSection("identity")}
+          saving={savingSectionId === "identity"}
+          saveLabel={saveButtonLabel}
         >
           <div className="grid gap-4">
             <label className="grid gap-1 text-xs text-stone-300">
@@ -367,15 +450,20 @@ export default function SiteInfoAdmin() {
               onChange={(locale, value) => updateRootLocalized("siteDescription", locale, value)}
             />
           </div>
-        </SectionCard>
+        </AccordionSection>
 
-        <SectionCard
+        <AccordionSection
           eyebrow={tr("Coordonnees", "Contact details")}
           title={tr("Infos de contact", "Contact information")}
           description={tr(
-            "Ces informations alimentent la page contact et les blocs de contact du site.",
-            "These details power the contact page and contact blocks across the site."
+            "Coordonnees visibles sur le site et dans la page contact.",
+            "Contact details shown across the site and on the contact page."
           )}
+          isOpen={openSectionId === "contact"}
+          onToggle={() => toggleSection("contact")}
+          onSave={() => saveSection("contact")}
+          saving={savingSectionId === "contact"}
+          saveLabel={saveButtonLabel}
         >
           <div className="grid gap-4 lg:grid-cols-2">
             <label className="grid gap-1 text-xs text-stone-300">
@@ -433,15 +521,20 @@ export default function SiteInfoAdmin() {
               }
             />
           </div>
-        </SectionCard>
+        </AccordionSection>
 
-        <SectionCard
+        <AccordionSection
           eyebrow={tr("Reseaux", "Social media")}
           title={tr("Liens publics", "Public links")}
           description={tr(
-            "Ces liens peuvent etre affiches dans la page contact ou d'autres blocs du site.",
-            "These links can be displayed on the contact page or in other site sections."
+            "Liens utilises dans la page contact et les zones de confiance.",
+            "Links used in the contact page and trust areas."
           )}
+          isOpen={openSectionId === "social"}
+          onToggle={() => toggleSection("social")}
+          onSave={() => saveSection("social")}
+          saving={savingSectionId === "social"}
+          saveLabel={saveButtonLabel}
         >
           <div className="grid gap-4 lg:grid-cols-3">
             <label className="grid gap-1 text-xs text-stone-300">
@@ -472,15 +565,20 @@ export default function SiteInfoAdmin() {
               />
             </label>
           </div>
-        </SectionCard>
+        </AccordionSection>
 
-        <SectionCard
+        <AccordionSection
           eyebrow={tr("SEO global", "Global SEO")}
           title={tr("Meta par defaut", "Default metadata")}
           description={tr(
-            "Utilise pour les metas globales, l'image de partage et l'URL canonique principale.",
-            "Used for global metadata, the default sharing image and the main canonical URL."
+            "Meta title, meta description, image de partage et URL canonique.",
+            "Meta title, meta description, sharing image and canonical URL."
           )}
+          isOpen={openSectionId === "seo"}
+          onToggle={() => toggleSection("seo")}
+          onSave={() => saveSection("seo")}
+          saving={savingSectionId === "seo"}
+          saveLabel={saveButtonLabel}
         >
           <div className="grid gap-4">
             <LocalizedField
@@ -537,22 +635,30 @@ export default function SiteInfoAdmin() {
                   <span>{tr("URL image actuelle", "Current image URL")}</span>
                   <input
                     value={form.seo.defaultOgImageUrl}
-                    onChange={(event) => updateNestedField("seo", "defaultOgImageUrl", event.target.value)}
+                    onChange={(event) => {
+                      updateNestedField("seo", "defaultOgImageUrl", event.target.value);
+                      updateNestedField("seo", "defaultOgImagePreviewUrl", event.target.value);
+                    }}
                     className="rounded-2xl border border-white/15 bg-charcoal/70 px-4 py-3 text-sm text-white"
                   />
                 </label>
               </div>
             </div>
           </div>
-        </SectionCard>
+        </AccordionSection>
 
-        <SectionCard
+        <AccordionSection
           eyebrow={tr("Accueil", "Home")}
           title={tr("Hero et reassurance", "Hero and reassurance")}
           description={tr(
-            "Ces textes pilotent la zone hero de la page d'accueil.",
-            "These copy blocks control the home page hero section."
+            "Textes principaux de la page d'accueil.",
+            "Main copy for the home page."
           )}
+          isOpen={openSectionId === "home"}
+          onToggle={() => toggleSection("home")}
+          onSave={() => saveSection("home")}
+          saving={savingSectionId === "home"}
+          saveLabel={saveButtonLabel}
         >
           <div className="grid gap-4">
             <LocalizedField
@@ -588,15 +694,20 @@ export default function SiteInfoAdmin() {
               }
             />
           </div>
-        </SectionCard>
+        </AccordionSection>
 
-        <SectionCard
+        <AccordionSection
           eyebrow={tr("Annonce", "Announcement")}
           title={tr("Bandeau public", "Public banner")}
           description={tr(
-            "Affiche un message en haut du site pour une information ponctuelle ou importante.",
-            "Display a message at the top of the site for temporary or important updates."
+            "Message ponctuel affiche en haut du site.",
+            "Temporary message displayed at the top of the site."
           )}
+          isOpen={openSectionId === "announcement"}
+          onToggle={() => toggleSection("announcement")}
+          onSave={() => saveSection("announcement")}
+          saving={savingSectionId === "announcement"}
+          saveLabel={saveButtonLabel}
         >
           <div className="grid gap-4">
             <label className="inline-flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-stone-100">
@@ -640,15 +751,20 @@ export default function SiteInfoAdmin() {
               }
             />
           </div>
-        </SectionCard>
+        </AccordionSection>
 
-        <SectionCard
+        <AccordionSection
           eyebrow={tr("Blog", "Blog")}
           title={tr("Introduction du blog", "Blog introduction")}
           description={tr(
-            "Ces textes pilotent le hero de la page blog.",
-            "These texts control the blog page hero."
+            "Textes d'introduction visibles sur la page blog.",
+            "Introductory texts displayed on the blog page."
           )}
+          isOpen={openSectionId === "blog"}
+          onToggle={() => toggleSection("blog")}
+          onSave={() => saveSection("blog")}
+          saving={savingSectionId === "blog"}
+          saveLabel={saveButtonLabel}
         >
           <div className="grid gap-4">
             <LocalizedField
@@ -663,44 +779,60 @@ export default function SiteInfoAdmin() {
               onChange={(locale, value) => updateNestedLocalized("blog", "introText", locale, value)}
             />
           </div>
-        </SectionCard>
+        </AccordionSection>
 
-        <SectionCard
+        <AccordionSection
           eyebrow={tr("Contact", "Contact")}
           title={tr("Page contact", "Contact page")}
           description={tr(
-            "Textes d'introduction visibles sur la page contact.",
-            "Introductory texts shown on the contact page."
+            "Textes d'introduction de la page contact.",
+            "Introductory text for the contact page."
           )}
+          isOpen={openSectionId === "contactPage"}
+          onToggle={() => toggleSection("contactPage")}
+          onSave={() => saveSection("contactPage")}
+          saving={savingSectionId === "contactPage"}
+          saveLabel={saveButtonLabel}
         >
           <div className="grid gap-4">
             <LocalizedField
               label={tr("Titre de page", "Page title")}
               value={form.contactPage.pageTitle}
-              onChange={(locale, value) => updateNestedLocalized("contactPage", "pageTitle", locale, value)}
+              onChange={(locale, value) =>
+                updateNestedLocalized("contactPage", "pageTitle", locale, value)
+              }
             />
             <LocalizedField
               label={tr("Texte principal", "Main text")}
               value={form.contactPage.introText}
               multiline
-              onChange={(locale, value) => updateNestedLocalized("contactPage", "introText", locale, value)}
+              onChange={(locale, value) =>
+                updateNestedLocalized("contactPage", "introText", locale, value)
+              }
             />
             <LocalizedField
               label={tr("Texte secondaire", "Secondary text")}
               value={form.contactPage.helperText}
               multiline
-              onChange={(locale, value) => updateNestedLocalized("contactPage", "helperText", locale, value)}
+              onChange={(locale, value) =>
+                updateNestedLocalized("contactPage", "helperText", locale, value)
+              }
             />
           </div>
-        </SectionCard>
+        </AccordionSection>
 
-        <SectionCard
+        <AccordionSection
           eyebrow={tr("Commande", "Ordering")}
           title={tr("Messages du parcours commande", "Order flow messages")}
           description={tr(
-            "Petits textes visibles pendant la selection du retrait et la confirmation finale.",
-            "Short texts shown during pickup selection and final confirmation."
+            "Petits textes de guidage dans la commande.",
+            "Short guidance texts inside the order flow."
           )}
+          isOpen={openSectionId === "order"}
+          onToggle={() => toggleSection("order")}
+          onSave={() => saveSection("order")}
+          saving={savingSectionId === "order"}
+          saveLabel={saveButtonLabel}
         >
           <div className="grid gap-4">
             <LocalizedField
@@ -718,15 +850,20 @@ export default function SiteInfoAdmin() {
               }
             />
           </div>
-        </SectionCard>
+        </AccordionSection>
 
-        <SectionCard
+        <AccordionSection
           eyebrow={tr("Footer", "Footer")}
           title={tr("Pied de page", "Footer")}
           description={tr(
-            "Textes globaux affiches en bas du site.",
-            "Global texts shown at the bottom of the site."
+            "Textes visibles en bas du site.",
+            "Texts displayed at the bottom of the site."
           )}
+          isOpen={openSectionId === "footer"}
+          onToggle={() => toggleSection("footer")}
+          onSave={() => saveSection("footer")}
+          saving={savingSectionId === "footer"}
+          saveLabel={saveButtonLabel}
         >
           <div className="grid gap-4">
             <LocalizedField
@@ -747,18 +884,8 @@ export default function SiteInfoAdmin() {
               onChange={(locale, value) => updateNestedLocalized("footer", "copyright", locale, value)}
             />
           </div>
-        </SectionCard>
-
-        <div className="flex flex-wrap gap-3">
-          <button
-            type="submit"
-            disabled={saving || translating}
-            className="rounded-full bg-saffron px-5 py-3 text-xs font-bold uppercase tracking-wide text-charcoal transition hover:bg-yellow-300 disabled:cursor-not-allowed disabled:opacity-70"
-          >
-            {saving ? tr("Enregistrement...", "Saving...") : tr("Enregistrer", "Save")}
-          </button>
-        </div>
-      </form>
+        </AccordionSection>
+      </div>
     </div>
   );
 }

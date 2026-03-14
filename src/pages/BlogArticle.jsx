@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getPublishedBlogArticleBySlug } from "../api/blog.api";
+import PageFaqSection from "../components/common/PageFaqSection";
 import SeoHead from "../components/seo/SeoHead";
 import { SITE_URL } from "../config/env";
 import { useSiteSettings } from "../context/SiteSettingsContext";
@@ -316,6 +317,12 @@ export default function BlogArticle({ forcedSlug = "" }) {
           </div>
         </aside>
       </div>
+
+      <PageFaqSection
+        pathname={pathname}
+        title="Questions frequentes sur cet article"
+        intro="Ajoute ici les questions frequentes les plus utiles en lien direct avec le sujet de l'article."
+      />
     </div>
   );
 }

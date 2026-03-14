@@ -4,7 +4,7 @@ import { getCategories } from "../api/category.api";
 import { getPublicGallery } from "../api/gallery.api";
 import { getPublicWeeklySettings } from "../api/timeslot.api";
 import { getAllProductsClient } from "../api/user.api";
-import FaqSection from "../components/common/FaqSection";
+import PageFaqSection from "../components/common/PageFaqSection";
 import ContactPanel from "../components/contact/ContactPanel";
 import PublicReviewsSection from "../components/reviews/PublicReviewsSection";
 import SeoHead from "../components/seo/SeoHead";
@@ -12,7 +12,7 @@ import TrustHighlightsSection from "../components/trust/TrustHighlightsSection";
 import { useLanguage } from "../context/LanguageContext";
 import { useSiteSettings } from "../context/SiteSettingsContext";
 import { useTheme } from "../context/ThemeContext";
-import { buildBaseFoodEstablishmentJsonLd, buildFaqJsonLd } from "../seo/jsonLd";
+import { buildBaseFoodEstablishmentJsonLd } from "../seo/jsonLd";
 import { DEFAULT_TOUR_CITIES } from "../seo/localLandingContent";
 import { getLocalizedSiteText } from "../site/siteSettings";
 
@@ -397,52 +397,6 @@ const truckTourSchedule = useMemo(
     [tr]
   );
 
-  const homeFaqItems = useMemo(
-    () => [
-      {
-        question: tr(
-          "Comment commander une pizza ?",
-          "How do I order a pizza?"
-        ),
-        answer: tr(
-          "Choisissez votre pizza, selectionnez un creneau puis recuperez la commande directement au camion sur le point de retrait actif.",
-          "Choose your pizza, select a timeslot, then pick up your order directly at the truck at the active pickup point."
-        ),
-      },
-      {
-        question: tr(
-          "Le camion pizza est-il au meme endroit chaque jour ?",
-          "Is the pizza truck in the same place every day?"
-        ),
-        answer: tr(
-          "Non. Les emplacements suivent la tournee hebdomadaire. La page horaires indique les jours, lieux et horaires ouverts.",
-          "No. Locations follow the weekly route. The schedule page shows active days, places and opening hours."
-        ),
-      },
-      {
-        question: tr(
-          "Faut-il commander a l'avance ?",
-          "Should I order in advance?"
-        ),
-        answer: tr(
-          "C'est recommande, surtout sur les creneaux charges. Cela permet de reduire l'attente et de mieux caler la cuisson.",
-          "Yes, especially on busy slots. It helps reduce waiting time and keeps baking well paced."
-        ),
-      },
-      {
-        question: tr(
-          "Quels moyens de paiement sont acceptes ?",
-          "Which payment methods are accepted?"
-        ),
-        answer: tr(
-          "Le site indique les moyens de paiement acceptes pour le service, avec notamment carte bancaire et especes selon l'organisation.",
-          "The website shows the accepted payment methods for the service, including card and cash depending on the setup."
-        ),
-      },
-    ],
-    [tr]
-  );
-
   const homeJsonLd = useMemo(() => {
     const base = buildBaseFoodEstablishmentJsonLd({
       pagePath: "/",
@@ -463,13 +417,11 @@ const truckTourSchedule = useMemo(
       areaServed: truckTourCities,
     };
 
-    const faqSchema = buildFaqJsonLd(homeFaqItems);
-    return faqSchema ? [payload, faqSchema] : payload;
+    return payload;
   }, [
     canonicalSiteUrl,
     defaultOgImageUrl,
     heroTitle,
-    homeFaqItems,
     siteMetaDescription,
     siteName,
     siteSettings.contact?.address,
@@ -863,17 +815,16 @@ const truckTourSchedule = useMemo(
 
       <ContactPanel sectionId="contact" sectionClassName="section-shell" />
 
-      <section className="section-shell">
-        <FaqSection
-          eyebrow={tr("Questions frequentes", "Frequently asked questions")}
-          title={tr("Ce qu'il faut savoir avant de commander", "What to know before ordering")}
-          intro={tr(
-            "Voici les reponses les plus utiles pour commander rapidement et recuperer votre pizza sans surprise.",
-            "Here are the most useful answers to order quickly and pick up your pizza without surprises."
-          )}
-          items={homeFaqItems}
-        />
-      </section>
+      <PageFaqSection
+        pathname="/"
+        className="section-shell"
+        eyebrow={tr("Questions frequentes", "Frequently asked questions")}
+        title={tr("Ce qu'il faut savoir avant de commander", "What to know before ordering")}
+        intro={tr(
+          "Voici les reponses les plus utiles pour commander rapidement et recuperer votre pizza sans surprise.",
+          "Here are the most useful answers to order quickly and pick up your pizza without surprises."
+        )}
+      />
     </div>
   );
 }
