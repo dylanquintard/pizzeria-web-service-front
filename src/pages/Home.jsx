@@ -316,6 +316,20 @@ const truckTourSchedule = useMemo(
       "Online ordering, quick pickup, baked to order"
     )
   );
+  const highlightedIngredientsText = getLocalizedSiteText(
+    siteSettings.home?.highlightedIngredients,
+    language,
+    DEFAULT_SITE_SETTINGS.home.highlightedIngredients[language] ||
+      DEFAULT_SITE_SETTINGS.home.highlightedIngredients.fr
+  );
+  const highlightedIngredients = useMemo(
+    () =>
+      String(highlightedIngredientsText || "")
+        .split(/\r?\n/)
+        .map((entry) => entry.trim())
+        .filter(Boolean),
+    [highlightedIngredientsText]
+  );
 
   const trustHighlights = useMemo(
     () => [
@@ -679,12 +693,14 @@ const truckTourSchedule = useMemo(
               )}
             </p>
             <ul className="mt-4 grid gap-2 text-sm text-stone-200 sm:grid-cols-2">
-              <li className="rounded-lg border border-white/20 bg-stone-200/20 px-3 py-2">{tr("farine Nuvola Super", "Nuvola Super flour")}</li>
-              <li className="rounded-lg border border-white/20 bg-stone-200/20 px-3 py-2">{tr("tomates San Marzano", "San Marzano tomatoes")}</li>
-              <li className="rounded-lg border border-white/20 bg-stone-200/20 px-3 py-2">{tr("mozzarella fior di latte", "fior di latte mozzarella")}</li>
-              <li className="rounded-lg border border-white/20 bg-stone-200/20 px-3 py-2">{tr("parmigiano reggiano", "Parmigiano Reggiano")}</li>
-              <li className="rounded-lg border border-white/20 bg-stone-200/20 px-3 py-2">{tr("jambon de Parme", "Parma ham")}</li>
-              <li className="rounded-lg border border-white/20 bg-stone-200/20 px-3 py-2">{tr("prosciutto italien", "Italian prosciutto")}</li>
+              {highlightedIngredients.map((ingredient) => (
+                <li
+                  key={ingredient}
+                  className="rounded-lg border border-white/20 bg-stone-200/20 px-3 py-2"
+                >
+                  {ingredient}
+                </li>
+              ))}
             </ul>
             <p className="mt-4 text-xs uppercase tracking-[0.22em] text-saffron">
               {tr(

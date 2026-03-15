@@ -57,6 +57,24 @@ export const DEFAULT_SITE_SETTINGS = Object.freeze({
       fr: "Commande en ligne, retrait rapide, cuisson minute",
       en: "Online ordering, quick pickup, baked to order",
     },
+    highlightedIngredients: {
+      fr: [
+        "farine Nuvola Super",
+        "tomates San Marzano",
+        "mozzarella fior di latte",
+        "parmigiano reggiano",
+        "jambon de Parme",
+        "prosciutto italien",
+      ].join("\n"),
+      en: [
+        "Nuvola Super flour",
+        "San Marzano tomatoes",
+        "fior di latte mozzarella",
+        "Parmigiano Reggiano",
+        "Parma ham",
+        "Italian prosciutto",
+      ].join("\n"),
+    },
   },
   blog: {
     introTitle: {
@@ -228,6 +246,10 @@ export function mergeSiteSettings(nextValue) {
       reassuranceText: mergeLocalizedValue(
         defaults.home.reassuranceText,
         source.home?.reassuranceText
+      ),
+      highlightedIngredients: mergeLocalizedValue(
+        defaults.home.highlightedIngredients,
+        source.home?.highlightedIngredients
       ),
     },
     blog: {

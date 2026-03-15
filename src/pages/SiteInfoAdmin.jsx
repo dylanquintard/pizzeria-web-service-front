@@ -880,6 +880,17 @@ export default function SiteInfoAdmin() {
                 updateNestedLocalized("home", "reassuranceText", locale, value)
               }
             />
+            <LocalizedField
+              label={tr(
+                "Ingredients mis en avant Accueil",
+                "Highlighted home ingredients"
+              )}
+              value={form.home.highlightedIngredients}
+              multiline
+              onChange={(locale, value) =>
+                updateNestedLocalized("home", "highlightedIngredients", locale, value)
+              }
+            />
           </div>
         </AccordionSection>
 
