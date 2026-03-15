@@ -79,6 +79,18 @@ const EXACT_SPA_ROUTES = new Set([
   "/userorders",
 ]);
 
+const NOINDEX_EXACT_ROUTES = new Set([
+  "/login",
+  "/forgot-password",
+  "/reset-password",
+  "/register",
+  "/verify-email",
+  "/order",
+  "/order/confirmation",
+  "/profile",
+  "/userorders",
+]);
+
 const PREFIX_SPA_ROUTES = ["/admin"];
 
 const seoCache = {
@@ -600,6 +612,19 @@ function buildSeoMeta(pathname, cache) {
     return {
       title: `Backoffice | ${siteName}`,
       description: `Interface d'administration ${siteName}.`,
+      robots: "noindex,nofollow",
+      ogType: "website",
+      pathname,
+      siteName,
+      image: defaultImage,
+      canonicalBaseUrl,
+    };
+  }
+
+  if (NOINDEX_EXACT_ROUTES.has(pathname)) {
+    return {
+      title: `${siteName}`,
+      description: defaultDescription,
       robots: "noindex,nofollow",
       ogType: "website",
       pathname,

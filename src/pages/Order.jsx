@@ -283,10 +283,7 @@ function ProductCustomizerModal({
 
   const applyBaseChangesAndContinue = () => {
     syncBaseChanges();
-
-    setOpenCustomizationSectionKey((prev) =>
-      prev || customizationSections[0]?.key || ""
-    );
+    setOpenCustomizationSectionKey("");
     setStep("customize");
   };
 
@@ -344,7 +341,7 @@ function ProductCustomizerModal({
                     setStep("base");
                     return;
                   }
-                  setOpenCustomizationSectionKey(customizationSections[0]?.key || "");
+                  setOpenCustomizationSectionKey("");
                   setStep("customize");
                 }}
                 className="inline-flex items-center justify-center rounded-full border border-stone-300 bg-white px-5 py-3 text-sm font-bold uppercase tracking-wide text-stone-800 transition hover:bg-stone-100"
@@ -396,7 +393,7 @@ function ProductCustomizerModal({
             </p>
 
             <div className="mt-4 grid gap-5 lg:grid-cols-2 lg:items-start">
-              <div className="space-y-3">
+              <div className="space-y-3 rounded-2xl border border-stone-200 bg-stone-50/70 p-3 sm:p-4">
                 {!currentBaseIngredient && availableBaseIngredients.length === 0 ? (
                   <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-3 text-sm text-stone-500">
                     {tr(
@@ -444,15 +441,15 @@ function ProductCustomizerModal({
                               key={ingredient.id}
                               type="button"
                               onClick={() => setSelectedBaseIngredientId(String(ingredient.id))}
-                              className="flex w-full items-center justify-between rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-left text-rose-900 transition hover:bg-rose-100"
-                            >
-                              <div>
-                                <p className="text-sm font-semibold">{ingredient.name}</p>
-                                <p className="mt-1 text-xs font-medium uppercase tracking-[0.16em] text-rose-700">
+                            className="flex min-h-[72px] w-full items-center justify-between rounded-2xl border border-rose-200 bg-rose-50 px-3 py-2.5 text-left text-rose-900 transition hover:bg-rose-100"
+                          >
+                            <div>
+                                <p className="text-[13px] font-semibold">{ingredient.name}</p>
+                                <p className="mt-1 text-[10px] font-medium uppercase tracking-[0.12em] text-rose-700">
                                   {tr("Cliquer pour remplacer la base", "Click to replace the base")}
                                 </p>
                               </div>
-                              <span className="rounded-full bg-rose-600 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-white">
+                              <span className="rounded-full bg-rose-600 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-white">
                                 {tr("Disponible", "Available")}
                               </span>
                             </button>
@@ -471,7 +468,7 @@ function ProductCustomizerModal({
                 )}
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-3 rounded-2xl border border-stone-200 bg-stone-50/70 p-3 sm:p-4">
                 <div>
                   <p className="text-base font-semibold text-stone-900">
                     {tr(
@@ -496,16 +493,16 @@ function ProductCustomizerModal({
                           key={ingredient.id}
                           type="button"
                           onClick={() => onRemovedChange(ingredient, !isRemoved)}
-                          className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left transition ${
+                          className={`flex min-h-[72px] w-full items-center justify-between rounded-2xl border px-3 py-2.5 text-left transition ${
                             isRemoved
                               ? "border-rose-200 bg-rose-50 text-rose-900 hover:bg-rose-100"
                               : "border-emerald-200 bg-emerald-50 text-emerald-950 hover:bg-emerald-100"
                           }`}
                         >
                           <div>
-                            <p className="text-sm font-semibold">{ingredient.name}</p>
+                            <p className="text-[13px] font-semibold">{ingredient.name}</p>
                             <p
-                              className={`mt-1 text-xs font-medium uppercase tracking-[0.16em] ${
+                              className={`mt-1 text-[10px] font-medium uppercase tracking-[0.12em] ${
                                 isRemoved ? "text-rose-700" : "text-emerald-700"
                               }`}
                             >
@@ -515,7 +512,7 @@ function ProductCustomizerModal({
                             </p>
                           </div>
                           <span
-                            className={`rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-white ${
+                            className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-white ${
                               isRemoved ? "bg-rose-600" : "bg-emerald-600"
                             }`}
                           >
@@ -555,13 +552,22 @@ function ProductCustomizerModal({
           </div>
         ) : step === "customize" ? (
           <div className="mt-5 space-y-5">
-            <div>
-              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-ember">
-                {tr("Etape 3", "Step 3")}
-              </p>
-              <p className="mt-2 text-base font-semibold text-stone-900">
-                {tr("Ajouter des ingredients et verifier le recap", "Add ingredients and review the summary")}
-              </p>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-ember">
+                  {tr("Etape 2", "Step 2")}
+                </p>
+                <p className="mt-2 text-base font-semibold text-stone-900">
+                  {tr("Ajouter des ingredients et verifier le recap", "Add ingredients and review the summary")}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setStep("base")}
+                className="rounded-full border border-stone-300 px-4 py-2 text-sm font-semibold text-stone-600 transition hover:bg-stone-100"
+              >
+                {tr("Retour etape 1", "Back to step 1")}
+              </button>
             </div>
 
             <div className="grid gap-4 md:grid-cols-[minmax(0,7fr)_minmax(260px,3fr)]">

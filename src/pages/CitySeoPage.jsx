@@ -192,55 +192,40 @@ export default function CitySeoPage({ forcedCitySlug = "" }) {
   useEffect(() => {
     let cancelled = false;
 
-    getLocations({ active: true })
-      .then((data) => {
-        if (!cancelled) {
-          setLocations(Array.isArray(data) ? data : []);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setLocations([]);
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-
     const loadCatalog = async () => {
-      try {
-        const data = await getSeoLocations();
-        if (cancelled) return;
-        const normalized = normalizeSeoCatalogEntries(data?.locations);
-        if (normalized.length > 0) {
-          setSeoCatalog(normalized);
-          setAllowedLoaded(true);
-          return;
-        }
-      } catch (_error) {
-        // Backward compatibility while backend SEO route is deploying.
+      const [locationsResult, seoResult] = await Promise.allSettled([
+        getLocations({ active: true }),
+        getSeoLocations(),
+      ]);
+
+      if (cancelled) return;
+
+      const activeLocations =
+        locationsResult.status === "fulfilled" && Array.isArray(locationsResult.value)
+          ? locationsResult.value
+          : [];
+      setLocations(activeLocations);
+
+      const normalizedSeoCatalog =
+        seoResult.status === "fulfilled"
+          ? normalizeSeoCatalogEntries(seoResult.value?.locations)
+          : [];
+
+      if (normalizedSeoCatalog.length > 0) {
+        setSeoCatalog(normalizedSeoCatalog);
+      } else {
+        setSeoCatalog(buildCatalogFromLocations(activeLocations));
       }
 
-      try {
-        const fallbackLocations = await getLocations({ active: true });
-        if (cancelled) return;
-        setSeoCatalog(buildCatalogFromLocations(fallbackLocations));
-      } catch (_error) {
-        if (cancelled) return;
-        setSeoCatalog([]);
-      } finally {
-        if (!cancelled) {
-          setAllowedLoaded(true);
-        }
-      }
+      setAllowedLoaded(true);
     };
 
-    loadCatalog();
+    loadCatalog().catch(() => {
+      if (cancelled) return;
+      setLocations([]);
+      setSeoCatalog([]);
+      setAllowedLoaded(true);
+    });
 
     return () => {
       cancelled = true;
