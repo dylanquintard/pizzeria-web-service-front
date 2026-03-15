@@ -173,7 +173,6 @@ function CategoryTable({ title, categories, token, tr, onRefresh, onError, kind 
                           })
                         }
                       />
-                      <span>{category.customerCanCustomize ? tr("Oui", "Yes") : tr("Non", "No")}</span>
                     </label>
                   </td>
                 ) : null}
@@ -767,7 +766,7 @@ export default function Products() {
                             String(prev) === String(category.id) ? "" : String(category.id)
                           )
                         }
-                        className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition hover:bg-white/5"
+                        className="flex w-full items-center justify-between gap-3 bg-charcoal/35 px-4 py-3 text-left transition hover:bg-charcoal/50"
                       >
                         <div className="min-w-0">
                           <p className="text-sm font-bold uppercase tracking-wide text-saffron">{category.name}</p>
@@ -865,7 +864,7 @@ export default function Products() {
                             String(prev) === String(category.id) ? "" : String(category.id)
                           )
                         }
-                        className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition hover:bg-white/5"
+                        className="flex w-full items-center justify-between gap-3 bg-charcoal/35 px-4 py-3 text-left transition hover:bg-charcoal/50"
                       >
                         <div className="min-w-0">
                           <p className="text-sm font-bold uppercase tracking-wide text-saffron">{category.name}</p>
