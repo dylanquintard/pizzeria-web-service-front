@@ -160,19 +160,19 @@ export default function Menu() {
 
       <div className="space-y-8">
         {groupedByCategory.map((group) => (
-          <section key={group.key} className="rounded-3xl border border-white/10 bg-charcoal/35 p-5 sm:p-7">
+          <section key={group.key} className="rounded-3xl border border-white/10 bg-charcoal/35 p-4 sm:p-7">
             <div className="mb-4 border-b border-white/10 pb-3">
-              <h3 className="font-display text-3xl uppercase tracking-[0.08em] text-crust sm:text-4xl">{group.title}</h3>
+              <h3 className="font-display text-2xl uppercase tracking-[0.08em] text-crust sm:text-4xl">{group.title}</h3>
               {group.description && <p className="mt-1 text-sm text-stone-400">{group.description}</p>}
             </div>
 
             <div>
               {group.items.map((product) => (
-                <article key={product.id} className="border-b border-white/10 py-4 last:border-b-0">
-                  <div className="flex items-start gap-3">
-                    <h4 className="text-base font-semibold uppercase tracking-wide text-white sm:text-lg">{product.name}</h4>
+                <article key={product.id} className="border-b border-white/10 py-3 last:border-b-0 sm:py-4">
+                  <div className="flex flex-wrap items-start gap-2 sm:gap-3">
+                    <h4 className="min-w-0 flex-1 text-sm font-semibold uppercase tracking-wide text-white sm:text-lg">{product.name}</h4>
                     <div className="mt-3 hidden h-px flex-1 border-t border-dashed border-stone-500/70 sm:block" />
-                    <span className="whitespace-nowrap text-sm font-extrabold uppercase tracking-wide text-saffron sm:text-base">
+                    <span className="whitespace-nowrap text-xs font-extrabold uppercase tracking-wide text-saffron sm:text-base">
                       {formatPrice(product.basePrice)} EUR
                     </span>
                   </div>
@@ -180,7 +180,7 @@ export default function Menu() {
                   {product.description && <p className="mt-1 text-sm text-stone-300">{product.description}</p>}
 
                   {product.ingredients?.length > 0 && (
-                    <p className="mt-2 text-xs uppercase tracking-[0.14em] text-stone-400">
+                    <p className="mt-2 text-[10px] uppercase tracking-[0.1em] text-stone-400 sm:text-xs sm:tracking-[0.14em]">
                       {product.ingredients.map((pi) => pi.ingredient.name).join(" - ")}
                     </p>
                   )}
