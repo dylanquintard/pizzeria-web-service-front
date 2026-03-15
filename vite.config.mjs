@@ -1,6 +1,29 @@
 import { defineConfig, transformWithEsbuild } from "vite";
 import react from "@vitejs/plugin-react";
 
+function asyncCssLinkPlugin() {
+  return {
+    name: "async-css-link",
+    enforce: "post",
+    transformIndexHtml(html) {
+      return html.replace(
+        /<link rel="stylesheet"([^>]*?)href="([^"]+)"([^>]*)>/g,
+        (_match, beforeHref = "", href = "", afterHref = "") => {
+          const trailingAttributes = `${beforeHref}${afterHref}`.replace(
+            /\s+onload="[^"]*"/g,
+            ""
+          );
+
+          return [
+            `<link rel="preload" as="style" href="${href}"${trailingAttributes} onload="this.onload=null;this.rel='stylesheet'">`,
+            `<noscript><link rel="stylesheet" href="${href}"${trailingAttributes}></noscript>`,
+          ].join("");
+        }
+      );
+    },
+  };
+}
+
 export default defineConfig({
   plugins: [
     {
@@ -14,6 +37,7 @@ export default defineConfig({
         });
       },
     },
+    asyncCssLinkPlugin(),
     react(),
   ],
   optimizeDeps: {
