@@ -45,10 +45,10 @@ export default function SiteAnnouncement() {
   const styles = VARIANT_STYLES[variant] || VARIANT_STYLES.info;
   const badgeLabel =
     variant === "alert"
-      ? tr("Alerte", "Alert")
+      ? tr("Information importante", "Important info")
       : variant === "success"
-        ? tr("Bon plan", "Good news")
-        : tr("Info du moment", "Current update");
+        ? tr("Offres du moment", "Current offers")
+        : tr("Nouveaute", "What's new");
 
   const content = (
     <>

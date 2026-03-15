@@ -969,9 +969,9 @@ export default function SiteInfoAdmin() {
                   onChange={(event) => updateNestedField("announcement", "variant", event.target.value)}
                   className="rounded-2xl border border-white/15 bg-charcoal/70 px-4 py-3 text-sm text-white"
                 >
-                  <option value="info">{tr("Info", "Info")}</option>
-                  <option value="alert">{tr("Alerte", "Alert")}</option>
-                  <option value="success">{tr("Succes", "Success")}</option>
+                  <option value="info">{tr("Nouveau", "New")}</option>
+                  <option value="alert">{tr("Important", "Important")}</option>
+                  <option value="success">{tr("Offres", "Offers")}</option>
                 </select>
               </label>
               <label className="grid gap-1 text-xs text-stone-300">
