@@ -173,25 +173,35 @@ function ProductCustomizerModal({
     return acc;
   }, {});
 
-  const currentBaseIngredient = useMemo(() => {
-    const productBaseEntry = Array.isArray(product.ingredients)
-      ? product.ingredients.find(
-          (entry) =>
-            entry?.ingredient &&
-            (entry.isBase || entry.ingredient?.isBaseIngredient)
-        )
-      : null;
-    return productBaseEntry?.ingredient || null;
+  const productBaseEntry = useMemo(() => {
+    const linkedEntries = Array.isArray(product.ingredients)
+      ? product.ingredients.filter((entry) => entry?.ingredient)
+      : [];
+
+    const explicitlyMarkedBase = linkedEntries.find((entry) => Boolean(entry?.isBase));
+    if (explicitlyMarkedBase) return explicitlyMarkedBase;
+
+    return (
+      linkedEntries.find((entry) => Boolean(entry?.ingredient?.isBaseIngredient)) ||
+      null
+    );
   }, [product]);
+
+  const currentBaseIngredient = productBaseEntry?.ingredient || null;
+  const currentBaseIngredientId = useMemo(() => {
+    const idFromLink = productBaseEntry?.ingredientId;
+    const idFromIngredient = productBaseEntry?.ingredient?.id;
+    return String(idFromLink ?? idFromIngredient ?? "");
+  }, [productBaseEntry]);
 
   const availableBaseIngredients = useMemo(() => {
     return (Array.isArray(ingredients) ? ingredients : []).filter(
       (ingredient) =>
         ingredient &&
         ingredient.isBaseIngredient &&
-        (!currentBaseIngredient || ingredient.id !== currentBaseIngredient.id)
+        (!currentBaseIngredientId || String(ingredient.id) !== currentBaseIngredientId)
     );
-  }, [ingredients, currentBaseIngredient]);
+  }, [ingredients, currentBaseIngredientId]);
 
   const [selectedBaseIngredientId, setSelectedBaseIngredientId] = useState("");
   const [openCustomizationSectionKey, setOpenCustomizationSectionKey] = useState("");
@@ -208,13 +218,13 @@ function ProductCustomizerModal({
     setSelectedBaseIngredientId(
       existingReplacement?.id
         ? String(existingReplacement.id)
-        : currentBaseIngredient?.id
-          ? String(currentBaseIngredient.id)
+        : currentBaseIngredientId
+          ? currentBaseIngredientId
           : ""
     );
     setOpenCustomizationSectionKey("");
     setStep("intro");
-  }, [product?.id, currentBaseIngredient?.id]);
+  }, [product?.id, currentBaseIngredientId]);
 
   const displayedBaseIngredients = useMemo(() => {
     const allChoices = [
@@ -233,21 +243,34 @@ function ProductCustomizerModal({
   );
 
   const hasBaseReplacement =
-    currentBaseIngredient &&
-    selectedBaseIngredient &&
-    String(selectedBaseIngredient.id) !== String(currentBaseIngredient.id);
+    Boolean(currentBaseIngredientId) &&
+    Boolean(selectedBaseIngredient?.id) &&
+    String(selectedBaseIngredient.id) !== currentBaseIngredientId;
 
   useEffect(() => {
-    if (!hasBaseReplacement || !currentBaseIngredient) return;
+    if (!hasBaseReplacement || !currentBaseIngredientId) return;
 
     const isCurrentBaseInRemovedList = (Array.isArray(removedIngredients) ? removedIngredients : []).some(
-      (entry) => String(entry?.id) === String(currentBaseIngredient.id)
+      (entry) => String(entry?.id) === currentBaseIngredientId
     );
+    const currentBaseForCleanup =
+      currentBaseIngredient ||
+      removableIngredients.find(
+        (ingredient) => String(ingredient?.id) === currentBaseIngredientId
+      ) ||
+      null;
 
-    if (isCurrentBaseInRemovedList) {
-      onRemovedChange(currentBaseIngredient, false);
+    if (isCurrentBaseInRemovedList && currentBaseForCleanup) {
+      onRemovedChange(currentBaseForCleanup, false);
     }
-  }, [hasBaseReplacement, currentBaseIngredient, removedIngredients, onRemovedChange]);
+  }, [
+    hasBaseReplacement,
+    currentBaseIngredientId,
+    currentBaseIngredient,
+    removableIngredients,
+    removedIngredients,
+    onRemovedChange,
+  ]);
 
   const alternativeBaseIngredients = useMemo(
     () =>
@@ -280,10 +303,17 @@ function ProductCustomizerModal({
   }, [product?.basePrice, selectedExtras]);
 
   const syncBaseChanges = () => {
+    const currentBaseForRemoval =
+      currentBaseIngredient ||
+      removableIngredients.find(
+        (ingredient) => String(ingredient?.id) === currentBaseIngredientId
+      ) ||
+      null;
+
     if (hasBaseReplacement) {
       onBaseChangesChange({
         added: dedupeIngredients([selectedBaseIngredient]),
-        removed: dedupeIngredients([currentBaseIngredient]),
+        removed: dedupeIngredients([currentBaseForRemoval]),
       });
     } else {
       onBaseChangesChange({
@@ -481,8 +511,8 @@ function ProductCustomizerModal({
                       const isRemoved = removedIngredients.some((entry) => entry.id === ingredient.id);
                       const isLockedOriginalBase =
                         Boolean(hasBaseReplacement) &&
-                        Boolean(currentBaseIngredient) &&
-                        String(ingredient.id) === String(currentBaseIngredient.id);
+                        Boolean(currentBaseIngredientId) &&
+                        String(ingredient.id) === currentBaseIngredientId;
                       const isDisplayedAsRemoved = isRemoved || isLockedOriginalBase;
                       return (
                         <button
