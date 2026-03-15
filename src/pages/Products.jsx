@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   activateIngredient,
@@ -48,6 +48,18 @@ function sortByName(list) {
   return [...(Array.isArray(list) ? list : [])].sort((a, b) =>
     String(a.name || "").localeCompare(String(b.name || ""))
   );
+}
+
+function moveOpenedCategoryToTop(list, openedId) {
+  if (!openedId) return list;
+
+  const openedEntry = list.find((entry) => String(entry.id) === String(openedId));
+  if (!openedEntry) return list;
+
+  return [
+    openedEntry,
+    ...list.filter((entry) => String(entry.id) !== String(openedId)),
+  ];
 }
 
 function parseSortOrder(value) {
@@ -229,8 +241,6 @@ export default function Products() {
   const [selectedIngredientCategoryId, setSelectedIngredientCategoryId] = useState("");
   const [openMenuListingCategoryId, setOpenMenuListingCategoryId] = useState("");
   const [openIngredientListingCategoryId, setOpenIngredientListingCategoryId] = useState("");
-  const menuListingRefs = useRef({});
-  const ingredientListingRefs = useRef({});
 
   const [newMenuCategoryName, setNewMenuCategoryName] = useState("");
   const [newIngredientCategoryName, setNewIngredientCategoryName] = useState("");
@@ -511,36 +521,39 @@ export default function Products() {
         ? hasSelectedIngredientCategory
         : false;
 
-  const menuCategoryListForUi = [...menuCategories, { id: "uncategorized", name: tr("Sans categorie", "Uncategorized") }];
-  const ingredientCategoryListForUi = [
-    ...ingredientCategories,
-    { id: "uncategorized", name: tr("Sans categorie", "Uncategorized") },
-  ];
+  const menuCategoryListForUi = useMemo(
+    () => [...menuCategories, { id: "uncategorized", name: tr("Sans categorie", "Uncategorized") }],
+    [menuCategories, tr]
+  );
+
+  const ingredientCategoryListForUi = useMemo(
+    () => [
+      ...ingredientCategories,
+      { id: "uncategorized", name: tr("Sans categorie", "Uncategorized") },
+    ],
+    [ingredientCategories, tr]
+  );
+
+  const orderedMenuCategoryListForUi = useMemo(
+    () => moveOpenedCategoryToTop(menuCategoryListForUi, openMenuListingCategoryId),
+    [menuCategoryListForUi, openMenuListingCategoryId]
+  );
+
+  const orderedIngredientCategoryListForUi = useMemo(
+    () => moveOpenedCategoryToTop(ingredientCategoryListForUi, openIngredientListingCategoryId),
+    [ingredientCategoryListForUi, openIngredientListingCategoryId]
+  );
 
   useEffect(() => {
     if (activePanel !== KIND.MENU || !selectedMenuCategoryId) return;
 
     setOpenMenuListingCategoryId(String(selectedMenuCategoryId));
-
-    const node = menuListingRefs.current[String(selectedMenuCategoryId)];
-    if (node && typeof node.scrollIntoView === "function") {
-      window.requestAnimationFrame(() => {
-        node.scrollIntoView({ behavior: "smooth", block: "start" });
-      });
-    }
   }, [activePanel, selectedMenuCategoryId]);
 
   useEffect(() => {
     if (activePanel !== KIND.INGREDIENT || !selectedIngredientCategoryId) return;
 
     setOpenIngredientListingCategoryId(String(selectedIngredientCategoryId));
-
-    const node = ingredientListingRefs.current[String(selectedIngredientCategoryId)];
-    if (node && typeof node.scrollIntoView === "function") {
-      window.requestAnimationFrame(() => {
-        node.scrollIntoView({ behavior: "smooth", block: "start" });
-      });
-    }
   }, [activePanel, selectedIngredientCategoryId]);
 
   if (authLoading || loading) return <p>{tr("Chargement...", "Loading...")}</p>;
@@ -782,16 +795,13 @@ export default function Products() {
 
               <div className="space-y-4">
                 <p className="text-sm font-semibold text-white">{tr("Listing complet du menu", "Full menu listing")}</p>
-                {menuCategoryListForUi.map((category) => {
+                {orderedMenuCategoryListForUi.map((category) => {
                   const rows = productsByCategory[String(category.id)] || [];
                   const isOpen = String(openMenuListingCategoryId) === String(category.id);
                   return (
                     <div
                       key={category.id}
-                      ref={(node) => {
-                        menuListingRefs.current[String(category.id)] = node;
-                      }}
-                      className="scroll-mt-24 overflow-hidden rounded-2xl border border-white/10 bg-charcoal/35"
+                      className="overflow-hidden rounded-2xl border border-white/10 bg-charcoal/35"
                     >
                       <button
                         type="button"
@@ -886,16 +896,13 @@ export default function Products() {
 
               <div className="space-y-4">
                 <p className="text-sm font-semibold text-white">{tr("Listing complet ingredients", "Full ingredients listing")}</p>
-                {ingredientCategoryListForUi.map((category) => {
+                {orderedIngredientCategoryListForUi.map((category) => {
                   const rows = ingredientsByCategory[String(category.id)] || [];
                   const isOpen = String(openIngredientListingCategoryId) === String(category.id);
                   return (
                     <div
                       key={category.id}
-                      ref={(node) => {
-                        ingredientListingRefs.current[String(category.id)] = node;
-                      }}
-                      className="scroll-mt-24 overflow-hidden rounded-2xl border border-white/10 bg-charcoal/35"
+                      className="overflow-hidden rounded-2xl border border-white/10 bg-charcoal/35"
                     >
                       <button
                         type="button"
