@@ -8,11 +8,15 @@ export default function ResetPassword() {
   const navigate = useNavigate();
   const { tr } = useLanguage();
 
-  const initialEmail = useMemo(() => String(searchParams.get("email") || "").trim().toLowerCase(), [searchParams]);
-  const initialToken = useMemo(() => String(searchParams.get("token") || "").trim(), [searchParams]);
+  const resetEmail = useMemo(
+    () => String(searchParams.get("email") || "").trim().toLowerCase(),
+    [searchParams]
+  );
+  const resetToken = useMemo(
+    () => String(searchParams.get("token") || "").trim(),
+    [searchParams]
+  );
 
-  const [email, setEmail] = useState(initialEmail);
-  const [token, setToken] = useState(initialToken);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -24,11 +28,11 @@ export default function ResetPassword() {
     setError("");
     setInfo("");
 
-    const normalizedEmail = email.trim().toLowerCase();
-    const normalizedToken = token.trim();
+    const normalizedEmail = resetEmail;
+    const normalizedToken = resetToken;
 
     if (!normalizedEmail) {
-      setError(tr("Email requis", "Email is required"));
+      setError(tr("Lien invalide: email manquant", "Invalid link: missing email"));
       return;
     }
 
@@ -75,6 +79,17 @@ export default function ResetPassword() {
         <h1 className="mt-2 font-display text-4xl uppercase tracking-wide text-white">
           {tr("Nouveau mot de passe", "Set a new password")}
         </h1>
+        <p className="mt-3 text-sm text-stone-300">
+          {resetEmail
+            ? tr(
+                `Reinitialisation pour ${resetEmail}`,
+                `Resetting password for ${resetEmail}`
+              )
+            : tr(
+                "Le lien de reinitialisation est incomplet.",
+                "This password reset link is incomplete."
+              )}
+        </p>
 
         {error && (
           <p className="mt-4 rounded-lg border border-red-400/50 bg-red-500/10 px-3 py-2 text-sm text-red-200">
@@ -89,29 +104,20 @@ export default function ResetPassword() {
         )}
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-          <label className="block text-sm text-stone-200" htmlFor="reset-email">
-            {tr("Email", "Email")}
-          </label>
-          <input
-            id="reset-email"
-            type="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            className="w-full rounded-xl border border-white/20 bg-charcoal/70 px-4 py-3 text-white placeholder:text-stone-400"
-            required
-          />
-
-          <label className="block text-sm text-stone-200" htmlFor="reset-token">
-            {tr("Token de reinitialisation", "Reset token")}
-          </label>
-          <input
-            id="reset-token"
-            type="text"
-            value={token}
-            onChange={(event) => setToken(event.target.value)}
-            className="w-full rounded-xl border border-white/20 bg-charcoal/70 px-4 py-3 text-white placeholder:text-stone-400"
-            required
-          />
+          <div className="rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-stone-200">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">
+              {tr("Email associe", "Linked email")}
+            </p>
+            <p className="mt-1 break-all text-white">
+              {resetEmail || tr("Non disponible", "Unavailable")}
+            </p>
+            <p className="mt-2 text-xs text-stone-400">
+              {tr(
+                "L'adresse email et le token de reinitialisation sont verrouilles depuis le lien recu.",
+                "The email address and reset token are locked from the link you received."
+              )}
+            </p>
+          </div>
 
           <label className="block text-sm text-stone-200" htmlFor="reset-password">
             {tr("Nouveau mot de passe", "New password")}

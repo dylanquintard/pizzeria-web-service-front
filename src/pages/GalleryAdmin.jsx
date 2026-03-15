@@ -9,7 +9,8 @@ import {
   uploadGalleryImage,
   updateGalleryImage,
 } from "../api/gallery.api";
-import { ActionIconButton, EditIcon, StatusToggle } from "../components/ui/AdminActions";
+import GalleryAdminEditor from "../components/gallery/GalleryAdminEditor";
+import { StatusToggle } from "../components/ui/AdminActions";
 
 const HERO_IMAGE_LIMIT = 5;
 const MIN_HOME_GALLERY_IMAGE_WIDTH = 1920;
@@ -408,431 +409,242 @@ export default function GalleryAdmin() {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-4">
-        <h2 className="text-2xl font-bold text-white">
-          {tr("Gestion de la galerie Home", "Home gallery management")}
-        </h2>
-        <p className="text-sm text-stone-300">
-          {tr(
-            "Les images actives alimentent le Hero defilant et la page Gallery. Le Hero est limite a 5 images.",
-            "Active images feed the rotating hero and the Gallery page. The hero is limited to 5 images."
-          )}
-        </p>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-            <p className="text-[11px] uppercase tracking-[0.2em] text-stone-400">
-              {tr("Images Hero", "Hero images")}
-            </p>
-            <p className="mt-2 text-2xl font-bold text-white">
-              {heroImagesCount} / {HERO_IMAGE_LIMIT}
-            </p>
-          </div>
-          <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-            <p className="text-[11px] uppercase tracking-[0.2em] text-stone-400">
-              {tr("Images total", "Total images")}
-            </p>
-            <p className="mt-2 text-2xl font-bold text-white">{sortedImages.length}</p>
-          </div>
-        </div>
-      </div>
-
       {message && (
         <p className="rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-stone-200">
           {message}
         </p>
       )}
 
-      <form
-        onSubmit={handleCreate}
-        className="space-y-5 rounded-[28px] border border-white/10 bg-black/20 p-4 shadow-[0_18px_50px_rgba(0,0,0,0.18)] sm:p-6"
-      >
-        <div className="space-y-2 text-center">
-          <h3 className="text-lg font-semibold text-white">
-            {tr("Ajouter une image", "Add image")}
-          </h3>
-          <p className="text-xs text-stone-400">
-            {tr(
-              `Utilisez des images d'au minimum ${getMinimumGallerySizeLabel()} pour un rendu propre sur le Hero.`,
-              `Use images at least ${getMinimumGallerySizeLabel()} for a clean hero rendering.`
-            )}
-          </p>
-        </div>
-
-        <div className="flex flex-wrap justify-center gap-3">
-          <button
-            type="button"
-            className="rounded-full border border-white/20 bg-white/5 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
-            onClick={() => newImageLibraryInputRef.current?.click()}
-          >
-            {tr("Choisir une photo", "Choose photo")}
-          </button>
-          <button
-            type="button"
-            className="rounded-full border border-sky-500/40 bg-sky-500/10 px-5 py-2 text-sm font-semibold text-sky-100 transition hover:bg-sky-500/20"
-            onClick={() => newImageCameraInputRef.current?.click()}
-          >
-            {tr("Prendre une photo", "Take photo")}
-          </button>
-        </div>
-
-        <input
-          ref={newImageLibraryInputRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={(event) => handleImagePick(setNewImageFile, event)}
-        />
-        <input
-          ref={newImageCameraInputRef}
-          type="file"
-          accept="image/*"
-          capture="environment"
-          className="hidden"
-          onChange={(event) => handleImagePick(setNewImageFile, event)}
-        />
-
-        <NewImagePreview
-          previewUrl={newImagePreviewUrl}
-          file={newImageFile}
-          onClear={() => setNewImageFile(null)}
+      {editingId ? (
+        <GalleryAdminEditor
           tr={tr}
+          editingId={editingId}
+          editImage={editImage}
+          editImagePreviewUrl={editImagePreviewUrl}
+          isEditMode={isEditMode}
+          setIsEditMode={setIsEditMode}
+          handleDelete={handleDelete}
+          onClose={closeEditModal}
+          editImageLibraryInputRef={editImageLibraryInputRef}
+          editImageCameraInputRef={editImageCameraInputRef}
+          handleImagePick={handleImagePick}
+          setEditImageFile={setEditImageFile}
+          setEditImage={setEditImage}
+          backgroundSettingId={backgroundSettingId}
+          heroImagesCount={heroImagesCount}
+          heroImageLimit={HERO_IMAGE_LIMIT}
+          canEnableHeroOnEdit={canEnableHeroOnEdit}
+          setMessage={setMessage}
+          handleUpdate={handleUpdate}
+          loading={loading}
+          hasEditChanges={hasEditChanges}
         />
+      ) : (
+        <>
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold text-white">
+              {tr("Gestion de la galerie Home", "Home gallery management")}
+            </h2>
+            <p className="text-sm text-stone-300">
+              {tr(
+                "Les images actives alimentent le Hero defilant et la page Gallery. Le Hero est limite a 5 images.",
+                "Active images feed the rotating hero and the Gallery page. The hero is limited to 5 images."
+              )}
+            </p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                <p className="text-[11px] uppercase tracking-[0.2em] text-stone-400">
+                  {tr("Images Hero", "Hero images")}
+                </p>
+                <p className="mt-2 text-2xl font-bold text-white">
+                  {heroImagesCount} / {HERO_IMAGE_LIMIT}
+                </p>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                <p className="text-[11px] uppercase tracking-[0.2em] text-stone-400">
+                  {tr("Images total", "Total images")}
+                </p>
+                <p className="mt-2 text-2xl font-bold text-white">{sortedImages.length}</p>
+              </div>
+            </div>
+          </div>
 
-        <div className="grid gap-4 lg:grid-cols-2">
-          <label className="grid gap-1 text-sm text-stone-300">
-            <span>{tr("Titre", "Title")}</span>
+          <form
+            onSubmit={handleCreate}
+            className="space-y-5 rounded-[28px] border border-white/10 bg-black/20 p-4 shadow-[0_18px_50px_rgba(0,0,0,0.18)] sm:p-6"
+          >
+            <div className="space-y-2 text-center">
+              <h3 className="text-lg font-semibold text-white">
+                {tr("Ajouter une image", "Add image")}
+              </h3>
+              <p className="text-xs text-stone-400">
+                {tr(
+                  `Utilisez des images d'au minimum ${getMinimumGallerySizeLabel()} pour un rendu propre sur le Hero.`,
+                  `Use images at least ${getMinimumGallerySizeLabel()} for a clean hero rendering.`
+                )}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap justify-center gap-3">
+              <button
+                type="button"
+                className="rounded-full border border-white/20 bg-white/5 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
+                onClick={() => newImageLibraryInputRef.current?.click()}
+              >
+                {tr("Choisir une photo", "Choose photo")}
+              </button>
+              <button
+                type="button"
+                className="rounded-full border border-sky-500/40 bg-sky-500/10 px-5 py-2 text-sm font-semibold text-sky-100 transition hover:bg-sky-500/20"
+                onClick={() => newImageCameraInputRef.current?.click()}
+              >
+                {tr("Prendre une photo", "Take photo")}
+              </button>
+            </div>
+
             <input
-              id="gallery-new-title"
-              required
-              placeholder={tr("Titre obligatoire", "Required title")}
-              value={newImage.title}
-              onChange={(event) =>
-                setNewImage((prev) => ({ ...prev, title: event.target.value }))
-              }
+              ref={newImageLibraryInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(event) => handleImagePick(setNewImageFile, event)}
             />
-          </label>
-
-          <label className="grid gap-1 text-sm text-stone-300">
-            <span>{tr("Description", "Description")}</span>
-            <textarea
-              id="gallery-new-description"
-              rows="3"
-              placeholder={tr("Description optionnelle", "Optional description")}
-              value={newImage.description}
-              onChange={(event) =>
-                setNewImage((prev) => ({ ...prev, description: event.target.value }))
-              }
+            <input
+              ref={newImageCameraInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              onChange={(event) => handleImagePick(setNewImageFile, event)}
             />
-          </label>
-        </div>
 
-        <div className="grid gap-3 lg:grid-cols-2">
-          <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-stone-200">
-            <p className="font-semibold text-white">
-              {tr("Texte alternatif", "Alt text")}
-            </p>
-            <p className="mt-1 text-stone-300">
-              {String(newImage.title || "").trim() ||
-                tr("Le titre sera copie ici automatiquement.", "The title will be copied here automatically.")}
-            </p>
-          </div>
+            <NewImagePreview
+              previewUrl={newImagePreviewUrl}
+              file={newImageFile}
+              onClear={() => setNewImageFile(null)}
+              tr={tr}
+            />
 
-          <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-stone-200">
-            <p className="font-semibold text-white">
-              {tr("Ordre par defaut", "Default order")}
-            </p>
-            <p className="mt-1 text-stone-300">
-              {tr(
-                `Cette image sera ajoutee en position ${nextSortOrder + 1}.`,
-                `This image will be added in position ${nextSortOrder + 1}.`
-              )}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3">
-          <div>
-            <p className="text-sm font-semibold text-white">
-              {tr("Afficher dans Hero", "Show in hero")}
-            </p>
-            <p className="text-xs text-stone-400">
-              {tr(
-                `${heroImagesCount}/${HERO_IMAGE_LIMIT} images actuellement selectionnees.`,
-                `${heroImagesCount}/${HERO_IMAGE_LIMIT} images currently selected.`
-              )}
-            </p>
-          </div>
-          <StatusToggle
-            checked={newImage.active}
-            onChange={() => {
-              if (!newImage.active && !canEnableHeroOnCreate) {
-                setMessage(
-                  tr(
-                    `Le Hero est limite a ${HERO_IMAGE_LIMIT} images.`,
-                    `The hero is limited to ${HERO_IMAGE_LIMIT} images.`
-                  )
-                );
-                return;
-              }
-
-              setNewImage((prev) => ({ ...prev, active: !prev.active }));
-            }}
-            labelOn={tr("Retirer du Hero", "Remove from hero")}
-            labelOff={tr("Ajouter au Hero", "Add to hero")}
-          />
-        </div>
-
-        <button type="submit" disabled={loading} className="w-full">
-          {tr("Ajouter", "Add")}
-        </button>
-      </form>
-
-      <section className="space-y-4">
-        <div className="space-y-1">
-          <h3 className="text-lg font-semibold text-white">
-            {tr("Images enregistrees", "Saved images")}
-          </h3>
-          <p className="text-sm text-stone-400">
-            {tr(
-              "Cliquez sur une image pour la modifier.",
-              "Click an image to edit it."
-            )}
-          </p>
-        </div>
-
-        {sortedImages.length === 0 ? (
-          <div className="rounded-2xl border border-white/10 bg-black/20 p-6 text-sm text-stone-300">
-            {tr("Aucune image enregistree.", "No saved image.")}
-          </div>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {sortedImages.map((image) => (
-              <GalleryImageCard
-                key={image.id}
-                image={image}
-                onClick={() => openEditModal(image)}
-                tr={tr}
-              />
-            ))}
-          </div>
-        )}
-      </section>
-
-      {editingId && (
-        <div className="fixed inset-0 z-[130] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
-          <div className="max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-[30px] border border-white/15 bg-charcoal p-5 shadow-[0_30px_90px_rgba(0,0,0,0.45)] sm:p-6">
-            <div className="flex flex-wrap items-start justify-between gap-4 border-b border-white/10 pb-5">
-              <div className="min-w-0">
-                <p className="text-xs uppercase tracking-[0.25em] text-stone-400">
-                  {tr("Image", "Image")}
-                </p>
-                <h3 className="mt-1 truncate text-2xl font-bold text-white">
-                  {editImage.title || tr("Image sans titre", "Untitled image")}
-                </h3>
-                <p className="mt-2 text-sm text-stone-400">
-                  {isEditMode
-                    ? tr(
-                        "Les champs sont modifiables. Mettez a jour pour enregistrer.",
-                        "Fields are editable. Update to save."
-                      )
-                    : tr(
-                        "Cliquez sur le crayon pour activer la modification.",
-                        "Click the pencil to enable editing."
-                      )}
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <ActionIconButton
-                  onClick={() => setIsEditMode((prev) => !prev)}
-                  label={isEditMode ? tr("Verrouiller", "Lock") : tr("Modifier", "Edit")}
-                  className="h-10 w-10 rounded-full border border-white/15 bg-white/5"
-                >
-                  <EditIcon className="h-4 w-4" />
-                </ActionIconButton>
-                <button
-                  type="button"
-                  onClick={() => handleDelete(editingId)}
-                  className="rounded-full border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm font-semibold text-red-200 transition hover:bg-red-500/20"
-                >
-                  {tr("Supprimer", "Delete")}
-                </button>
-                <button
-                  type="button"
-                  onClick={closeEditModal}
-                  className="rounded-full border border-white/15 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
-                >
-                  {tr("Fermer", "Close")}
-                </button>
-              </div>
-            </div>
-
-            <div className="mt-6 flex justify-center">
-              <div className="w-full max-w-md overflow-hidden rounded-[26px] border border-white/10 bg-black/25 shadow-[0_18px_50px_rgba(0,0,0,0.2)]">
-                <img
-                  src={editImagePreviewUrl || editImage.imageUrl}
-                  alt={editImage.title || tr("Image galerie", "Gallery image")}
-                  className="mx-auto h-72 w-full object-cover"
-                />
-              </div>
-            </div>
-
-            {isEditMode && (
-              <div className="mt-4 flex flex-wrap justify-center gap-3">
-                <button
-                  type="button"
-                  className="rounded-full border border-white/20 bg-white/5 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
-                  onClick={() => editImageLibraryInputRef.current?.click()}
-                >
-                  {tr("Choisir une photo", "Choose photo")}
-                </button>
-                <button
-                  type="button"
-                  className="rounded-full border border-sky-500/40 bg-sky-500/10 px-5 py-2 text-sm font-semibold text-sky-100 transition hover:bg-sky-500/20"
-                  onClick={() => editImageCameraInputRef.current?.click()}
-                >
-                  {tr("Prendre une photo", "Take photo")}
-                </button>
-                <input
-                  ref={editImageLibraryInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(event) => handleImagePick(setEditImageFile, event)}
-                />
-                <input
-                  ref={editImageCameraInputRef}
-                  type="file"
-                  accept="image/*"
-                  capture="environment"
-                  className="hidden"
-                  onChange={(event) => handleImagePick(setEditImageFile, event)}
-                />
-              </div>
-            )}
-
-            <div className="mt-6 grid gap-4 rounded-[26px] border border-white/10 bg-white/5 p-4 lg:grid-cols-2">
+            <div className="grid gap-4 lg:grid-cols-2">
               <label className="grid gap-1 text-sm text-stone-300">
-                <span>{tr("Titre image", "Image title")}</span>
+                <span>{tr("Titre", "Title")}</span>
                 <input
-                  value={editImage.title}
-                  disabled={!isEditMode}
+                  id="gallery-new-title"
+                  required
+                  placeholder={tr("Titre obligatoire", "Required title")}
+                  value={newImage.title}
                   onChange={(event) =>
-                    setEditImage((prev) => ({ ...prev, title: event.target.value }))
+                    setNewImage((prev) => ({ ...prev, title: event.target.value }))
                   }
                 />
               </label>
 
+              <label className="grid gap-1 text-sm text-stone-300">
+                <span>{tr("Description", "Description")}</span>
+                <textarea
+                  id="gallery-new-description"
+                  rows="3"
+                  placeholder={tr("Description optionnelle", "Optional description")}
+                  value={newImage.description}
+                  onChange={(event) =>
+                    setNewImage((prev) => ({ ...prev, description: event.target.value }))
+                  }
+                />
+              </label>
+            </div>
+
+            <div className="grid gap-3 lg:grid-cols-2">
               <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-stone-200">
                 <p className="font-semibold text-white">
                   {tr("Texte alternatif", "Alt text")}
                 </p>
                 <p className="mt-1 text-stone-300">
-                  {String(editImage.title || "").trim() ||
-                    tr("Le titre sera copie automatiquement.", "The title will be copied automatically.")}
+                  {String(newImage.title || "").trim() ||
+                    tr("Le titre sera copie ici automatiquement.", "The title will be copied here automatically.")}
                 </p>
               </div>
 
-              <label className="grid gap-1 text-sm text-stone-300 lg:col-span-2">
-                <span>{tr("Description", "Description")}</span>
-                <textarea
-                  rows="4"
-                  value={editImage.description}
-                  disabled={!isEditMode}
-                  onChange={(event) =>
-                    setEditImage((prev) => ({ ...prev, description: event.target.value }))
-                  }
-                />
-              </label>
-            </div>
-
-            <div className="mt-6 space-y-3">
-              <div className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3">
-                <div>
-                  <p className="text-sm font-semibold text-white">
-                    {tr(
-                      "Definir comme image d'arriere-plan accueil",
-                      "Set as home background image"
-                    )}
-                  </p>
-                  <p className="text-xs text-stone-400">
-                    {editImage.isHomeBackground
-                      ? tr(
-                          "Cette image est deja la premiere du Hero. Pour en changer, activez ce choix sur une autre image.",
-                          "This image is already the first hero image. To change it, enable this option on another image."
-                        )
-                      : tr(
-                          "Cette image apparaitra en premiere position dans le Hero.",
-                          "This image will appear first in the hero."
-                        )}
-                  </p>
-                </div>
-                <StatusToggle
-                  checked={editImage.isHomeBackground}
-                  disabled={!isEditMode || editImage.isHomeBackground || backgroundSettingId === editingId}
-                  onChange={() =>
-                    setEditImage((prev) => ({
-                      ...prev,
-                      isHomeBackground: true,
-                      active: true,
-                    }))
-                  }
-                  labelOn={tr("Image d'accueil active", "Home image active")}
-                  labelOff={tr("Definir pour l'accueil", "Set for home")}
-                />
-              </div>
-
-              <div className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3">
-                <div>
-                  <p className="text-sm font-semibold text-white">
-                    {tr("Actif / Inactif", "Active / Inactive")}
-                  </p>
-                  <p className="text-xs text-stone-400">
-                    {tr(
-                      `${heroImagesCount}/${HERO_IMAGE_LIMIT} images actives dans le Hero.`,
-                      `${heroImagesCount}/${HERO_IMAGE_LIMIT} active hero images.`
-                    )}
-                  </p>
-                </div>
-                <StatusToggle
-                  checked={editImage.active}
-                  disabled={!isEditMode || editImage.isHomeBackground}
-                  onChange={() => {
-                    if (!editImage.active && !canEnableHeroOnEdit) {
-                      setMessage(
-                        tr(
-                          `Le Hero est limite a ${HERO_IMAGE_LIMIT} images.`,
-                          `The hero is limited to ${HERO_IMAGE_LIMIT} images.`
-                        )
-                      );
-                      return;
-                    }
-
-                    setEditImage((prev) => ({
-                      ...prev,
-                      active: !prev.active,
-                    }));
-                  }}
-                  labelOn={tr("Desactiver", "Disable")}
-                  labelOff={tr("Activer", "Enable")}
-                />
+              <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-stone-200">
+                <p className="font-semibold text-white">
+                  {tr("Ordre par defaut", "Default order")}
+                </p>
+                <p className="mt-1 text-stone-300">
+                  {tr(
+                    `Cette image sera ajoutee en position ${nextSortOrder + 1}.`,
+                    `This image will be added in position ${nextSortOrder + 1}.`
+                  )}
+                </p>
               </div>
             </div>
 
-            <div className="mt-6 flex justify-end gap-2 border-t border-white/10 pt-5">
-              {isEditMode && (
-                <button
-                  type="button"
-                  onClick={handleUpdate}
-                  disabled={loading || !hasEditChanges}
-                  className="rounded-full bg-saffron px-5 py-2 text-sm font-bold uppercase tracking-wide text-charcoal transition hover:bg-yellow-300 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {tr("Mettre a jour", "Update")}
-                </button>
-              )}
+            <div className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+              <div>
+                <p className="text-sm font-semibold text-white">
+                  {tr("Afficher dans Hero", "Show in hero")}
+                </p>
+                <p className="text-xs text-stone-400">
+                  {tr(
+                    `${heroImagesCount}/${HERO_IMAGE_LIMIT} images actuellement selectionnees.`,
+                    `${heroImagesCount}/${HERO_IMAGE_LIMIT} images currently selected.`
+                  )}
+                </p>
+              </div>
+              <StatusToggle
+                checked={newImage.active}
+                onChange={() => {
+                  if (!newImage.active && !canEnableHeroOnCreate) {
+                    setMessage(
+                      tr(
+                        `Le Hero est limite a ${HERO_IMAGE_LIMIT} images.`,
+                        `The hero is limited to ${HERO_IMAGE_LIMIT} images.`
+                      )
+                    );
+                    return;
+                  }
+
+                  setNewImage((prev) => ({ ...prev, active: !prev.active }));
+                }}
+                labelOn={tr("Retirer du Hero", "Remove from hero")}
+                labelOff={tr("Ajouter au Hero", "Add to hero")}
+              />
             </div>
-          </div>
-        </div>
+
+            <button type="submit" disabled={loading} className="w-full">
+              {tr("Ajouter", "Add")}
+            </button>
+          </form>
+
+          <section className="space-y-4">
+            <div className="space-y-1">
+              <h3 className="text-lg font-semibold text-white">
+                {tr("Images enregistrees", "Saved images")}
+              </h3>
+              <p className="text-sm text-stone-400">
+                {tr(
+                  "Cliquez sur une image pour la modifier.",
+                  "Click an image to edit it."
+                )}
+              </p>
+            </div>
+
+            {sortedImages.length === 0 ? (
+              <div className="rounded-2xl border border-white/10 bg-black/20 p-6 text-sm text-stone-300">
+                {tr("Aucune image enregistree.", "No saved image.")}
+              </div>
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                {sortedImages.map((image) => (
+                  <GalleryImageCard
+                    key={image.id}
+                    image={image}
+                    onClick={() => openEditModal(image)}
+                    tr={tr}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
+        </>
       )}
     </div>
   );

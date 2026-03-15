@@ -98,7 +98,6 @@ export default function OrderList() {
   const [usersByName, setUsersByName] = useState({});
   const [usersLookupReady, setUsersLookupReady] = useState(false);
   const [newOrdersCount, setNewOrdersCount] = useState(0);
-  const [notificationPermission, setNotificationPermission] = useState("default");
   const [realtimeConnected, setRealtimeConnected] = useState(false);
   const seenOrderIdsRef = useRef(new Set());
   const snapshotInitializedRef = useRef(false);
@@ -134,21 +133,6 @@ export default function OrderList() {
         const newOrders = nextOrders.filter((entry) => !seenOrderIdsRef.current.has(String(entry.id)));
         if (newOrders.length > 0) {
           setNewOrdersCount((prev) => prev + newOrders.length);
-
-          if (typeof window !== "undefined" && "Notification" in window && window.Notification.permission === "granted") {
-            const notificationText =
-              newOrders.length > 1
-                ? tr(`${newOrders.length} nouvelles commandes`, `${newOrders.length} new orders`)
-                : tr("Nouvelle commande recue", "New order received");
-
-            const browserNotification = new Notification(tr("Pizzeria - Admin", "Pizzeria - Admin"), {
-              body: notificationText,
-              tag: "new-order",
-            });
-            browserNotification.onclick = () => {
-              window.focus();
-            };
-          }
         }
         seenOrderIdsRef.current = nextIds;
       }
@@ -160,14 +144,6 @@ export default function OrderList() {
       setLoading(false);
     }
   }, [token, user, selectedDate, selectedStatus, tr]);
-
-  useEffect(() => {
-    if (typeof window === "undefined" || !("Notification" in window)) {
-      setNotificationPermission("unsupported");
-      return;
-    }
-    setNotificationPermission(window.Notification.permission);
-  }, []);
 
   useEffect(() => {
     snapshotInitializedRef.current = false;
@@ -320,17 +296,6 @@ export default function OrderList() {
   };
 
   const isErrorMessage = /erreur|impossible|acces refus|inconnu|error|unable|denied|unknown|failed/i.test(String(message).toLowerCase());
-  const isNotificationSupported = notificationPermission !== "unsupported";
-
-  const requestNotifications = async () => {
-    if (typeof window === "undefined" || !("Notification" in window)) return;
-    try {
-      const permission = await window.Notification.requestPermission();
-      setNotificationPermission(permission);
-    } catch (_err) {
-      setNotificationPermission("denied");
-    }
-  };
 
   const groupedOrders = orders.reduce((acc, order) => {
     const slotKey = order.timeSlot ? formatTime(order.timeSlot.startTime) : "-";
@@ -356,32 +321,12 @@ export default function OrderList() {
       </div>
 
       <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-stone-300">
-        {isNotificationSupported ? (
-          <div className="flex flex-wrap items-center gap-2">
-            <span>
-              {tr("Flux temps reel", "Realtime stream")}:{" "}
-              <strong className={realtimeConnected ? "text-emerald-300" : "text-amber-300"}>
-                {realtimeConnected ? tr("connecte", "connected") : tr("reconnexion...", "reconnecting...")}
-              </strong>
-            </span>
-            <span>
-              {tr("Notifications navigateur", "Browser notifications")}:{" "}
-              <strong className="text-stone-100">{notificationPermission}</strong>
-            </span>
-            {notificationPermission !== "granted" && (
-              <button type="button" onClick={requestNotifications}>
-                {tr("Activer", "Enable")}
-              </button>
-            )}
-          </div>
-        ) : (
-          <p>
-            {tr(
-              "Notifications non supportees ici. Sur iPhone: installez l'app web sur l'ecran d'accueil pour les notifications web.",
-              "Notifications not supported here. On iPhone, install the web app to Home Screen for web notifications."
-            )}
-          </p>
-        )}
+        <span>
+          {tr("Flux temps reel", "Realtime stream")}:{" "}
+          <strong className={realtimeConnected ? "text-emerald-300" : "text-amber-300"}>
+            {realtimeConnected ? tr("connecte", "connected") : tr("reconnexion...", "reconnecting...")}
+          </strong>
+        </span>
       </div>
 
       {message && (
