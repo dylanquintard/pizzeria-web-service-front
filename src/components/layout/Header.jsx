@@ -1,5 +1,6 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import SiteAnnouncement from "./SiteAnnouncement";
 import { AuthContext } from "../../context/AuthContext";
 import { CartContext } from "../../context/CartContext";
 import { useLanguage } from "../../context/LanguageContext";
@@ -100,6 +101,7 @@ export default function Header() {
   const [cartOpen, setCartOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [hasLogoError, setHasLogoError] = useState(false);
+  const headerRef = useRef(null);
   const cartRef = useRef(null);
   const profileRef = useRef(null);
   const totalItems = Number(itemCount || 0);
@@ -157,8 +159,38 @@ export default function Header() {
     setHasLogoError(false);
   }, [headerLogoUrl]);
 
+  useEffect(() => {
+    const node = headerRef.current;
+    if (!node || typeof document === "undefined") {
+      return undefined;
+    }
+
+    const root = document.documentElement;
+    const updateHeaderOffset = () => {
+      root.style.setProperty("--app-header-offset", `${Math.ceil(node.getBoundingClientRect().height)}px`);
+    };
+
+    updateHeaderOffset();
+
+    let resizeObserver;
+    if (typeof ResizeObserver !== "undefined") {
+      resizeObserver = new ResizeObserver(() => {
+        updateHeaderOffset();
+      });
+      resizeObserver.observe(node);
+    }
+
+    window.addEventListener("resize", updateHeaderOffset);
+
+    return () => {
+      resizeObserver?.disconnect();
+      window.removeEventListener("resize", updateHeaderOffset);
+      root.style.removeProperty("--app-header-offset");
+    };
+  }, []);
+
   return (
-    <header className="app-header fixed inset-x-0 top-0 z-50 border-b border-saffron/20 bg-charcoal/90 backdrop-blur-xl">
+    <header ref={headerRef} className="app-header fixed inset-x-0 top-0 z-50 border-b border-saffron/20 bg-charcoal/90 backdrop-blur-xl">
       <div className="section-shell">
         <div className="flex min-h-[84px] min-w-0 items-center justify-between gap-1.5 py-2 sm:gap-2">
           <Link to="/" className="inline-flex min-w-0 flex-1 items-center bg-transparent p-0 sm:flex-none sm:shrink-0">
@@ -484,6 +516,7 @@ export default function Header() {
           </div>
         )}
       </div>
+      {!isAdminRoute ? <SiteAnnouncement /> : null}
     </header>
   );
 }

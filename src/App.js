@@ -2,7 +2,6 @@ import { Suspense, lazy, useContext } from "react";
 import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation, useParams } from "react-router-dom";
 import Header from "./components/layout/Header";
 import MobileStickyCta from "./components/layout/MobileStickyCta";
-import SiteAnnouncement from "./components/layout/SiteAnnouncement";
 import SiteFooter from "./components/layout/SiteFooter";
 import MainContent from "./components/layout/MainContent";
 import { AuthContext, AuthProvider } from "./context/AuthContext";
@@ -76,7 +75,6 @@ const AppLayout = () => {
     <>
       <Header />
       <MainContent>
-        {!isAdminRoute ? <SiteAnnouncement /> : null}
         <Outlet />
       </MainContent>
       {!isAdminRoute ? <SiteFooter /> : null}
