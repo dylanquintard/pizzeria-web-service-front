@@ -617,14 +617,14 @@ const truckTourSchedule = useMemo(
                 {tr("Moyens de paiement acceptes", "Accepted payment methods")}
               </p>
               <h2 className="mt-2 font-display text-2xl uppercase tracking-wide text-white sm:text-3xl">
-                {tr("Paiement simple", "Simple payment")}
+                {tr("Paiement sur place", "On-site payment")}
               </h2>
               <div className="mt-4 rounded-2xl border border-white/10 bg-black/20 px-3 py-3">
-                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 xl:grid-cols-2">
+                <div className="flex flex-wrap items-center gap-3 sm:gap-4">
                 {paymentLogos.map((logo) => (
                   <div
                     key={logo.alt}
-                    className="flex min-h-[72px] items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] px-2 py-2"
+                    className="flex items-center justify-center"
                   >
                     <picture>
                       <source srcSet={logo.src} type="image/webp" />
