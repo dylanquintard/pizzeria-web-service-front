@@ -15,6 +15,7 @@ import { useLanguage } from "../context/LanguageContext";
 import { useSiteSettings } from "../context/SiteSettingsContext";
 import { useRealtimeEvents } from "../hooks/useRealtimeEvents";
 import { getLocalizedSiteText } from "../site/siteSettings";
+import { getLocationDisplayName } from "../utils/location";
 
 const FOCUSABLE_SELECTOR =
   "button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])";
@@ -660,15 +661,6 @@ function ProductCustomizerModal({
               <div className="space-y-3">
                 <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
                   <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-stone-500">
-                    {tr("Prix actuel", "Current price")}
-                  </p>
-                  <p className="mt-2 text-sm font-semibold text-stone-900">
-                    {formatPrice(currentPizzaPrice)}
-                  </p>
-                </div>
-
-                <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
-                  <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-stone-500">
                     {tr("Base du plat", "Dish base")}
                   </p>
                   <div className="mt-2 space-y-1 text-sm text-stone-700">
@@ -751,6 +743,23 @@ function ProductCustomizerModal({
                     </button>
                   </div>
                 </div>
+
+                <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-stone-500">
+                    {tr("Prix actuel", "Current price")}
+                  </p>
+                  <p className="mt-2 text-sm font-semibold text-stone-900">
+                    {formatPrice(currentPizzaPrice)}
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleConfirmFromCurrentStep}
+                  className="w-full rounded-full bg-ember px-5 py-3 text-sm font-semibold text-white transition hover:bg-tomato"
+                >
+                  {tr("Valider le panier", "Validate cart")}
+                </button>
               </div>
             </div>
           </div>
@@ -774,7 +783,7 @@ function ProductCustomizerModal({
                 ? tr("La base peut etre remplacee sans surcout.", "The base can be replaced with no extra charge.")
                 : tr("Version standard de la pizza.", "Standard pizza version.")}
           </div>
-          {step !== "base" && step !== "remove" ? (
+          {step === "intro" ? (
             <button
               type="button"
               onClick={handleConfirmFromCurrentStep}
@@ -1190,7 +1199,7 @@ export default function Order() {
     }
 
     const locationForSummary = selectedLocation;
-    const pickupLocationName = locationForSummary?.name || tr("Emplacement", "Location");
+    const pickupLocationName = getLocationDisplayName(locationForSummary, tr("Emplacement", "Location"));
     const pickupAddress = formatPickupAddress(locationForSummary, tr);
     const pickupTime = `${selectedDate}T${selectedPickupTime}:00`;
     const trimmedOrderNote = orderNote.trim();
@@ -1373,9 +1382,9 @@ export default function Order() {
               </div>
 
               {visibleMenuGroup && (
-                <article className="rounded-3xl border border-white/10 bg-charcoal/35 p-5 sm:p-7">
+                <article className="rounded-3xl border border-white/10 bg-charcoal/35 p-4 sm:p-7">
                   <div className="mb-4 border-b border-white/10 pb-3">
-                    <h3 className="font-display text-3xl uppercase tracking-[0.08em] text-crust sm:text-4xl">
+                    <h3 className="font-display text-2xl uppercase tracking-[0.08em] text-crust sm:text-4xl">
                       {visibleMenuGroup.title}
                     </h3>
                     {visibleMenuGroup.description && <p className="mt-1 text-sm text-stone-400">{visibleMenuGroup.description}</p>}
@@ -1383,13 +1392,13 @@ export default function Order() {
 
                   <div>
                     {visibleMenuGroup.items.map((product) => (
-                      <div key={product.id} className="border-b border-white/10 py-4 last:border-b-0">
-                        <div className="flex items-start gap-3">
-                          <h4 className="text-base font-semibold uppercase tracking-wide text-white sm:text-lg">
+                      <div key={product.id} className="border-b border-white/10 py-3 last:border-b-0 sm:py-4">
+                        <div className="flex flex-wrap items-start gap-2 sm:gap-3">
+                          <h4 className="min-w-0 flex-1 text-sm font-semibold uppercase tracking-wide text-white sm:text-lg">
                             {product.name}
                           </h4>
                           <div className="mt-3 hidden h-px flex-1 border-t border-dashed border-stone-500/70 sm:block" />
-                          <span className="whitespace-nowrap text-sm font-extrabold uppercase tracking-wide text-saffron sm:text-base">
+                          <span className="whitespace-nowrap text-xs font-extrabold uppercase tracking-wide text-saffron sm:text-base">
                             {formatPrice(product.basePrice)} EUR
                           </span>
                           <button
@@ -1417,7 +1426,7 @@ export default function Order() {
                         {product.description && <p className="mt-1 text-sm text-stone-300">{product.description}</p>}
 
                         {product.ingredients?.length > 0 && (
-                          <p className="mt-2 text-xs uppercase tracking-[0.14em] text-stone-400">
+                          <p className="mt-2 text-[10px] uppercase tracking-[0.1em] text-stone-400 sm:text-xs sm:tracking-[0.14em]">
                             {product.ingredients.map((entry) => entry.ingredient.name).join(" - ")}
                           </p>
                         )}
@@ -1431,8 +1440,8 @@ export default function Order() {
         </section>
 
         <section className="space-y-4">
-          <div className="order-cart-shell rounded-2xl p-5">
-            <div className="mb-4 flex items-center justify-between gap-3">
+          <div className="order-cart-shell rounded-2xl p-4 sm:p-5">
+            <div className="mb-4 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
               <h2 className="text-xl font-bold text-white">{tr("Mon panier", "My cart")}</h2>
               {isCartValidated && (
                 <span className="rounded-full bg-emerald-500/20 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-emerald-300">
@@ -1454,7 +1463,7 @@ export default function Order() {
                 const itemTotal = itemUnitPrice * Number(item.quantity || 0);
                 return (
                   <div key={item.id} className="order-cart-item rounded-xl p-3">
-                    <div className="flex items-start justify-between gap-2">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                       <div className="min-w-0">
                           <p className="truncate text-sm font-semibold text-white">{getCartItemName(item)}</p>
                           <p className="text-xs text-stone-300">{tr("Quantite", "Quantity")}: {item.quantity}</p>
@@ -1470,7 +1479,7 @@ export default function Order() {
                         )}
                       </div>
 
-                      <div className="shrink-0 text-right">
+                      <div className="flex items-center justify-between gap-3 sm:block sm:text-right">
                         <p className="text-xs font-bold text-saffron">{formatPrice(itemTotal)} EUR</p>
                         <button
                           type="button"
@@ -1490,7 +1499,7 @@ export default function Order() {
               <p className="text-sm text-stone-200">
                 {tr("Total panier", "Cart total")}: <strong>{Number(cartTotal).toFixed(2)} EUR</strong>
               </p>
-              <div className="mt-3 flex gap-2">
+              <div className="mt-3 flex flex-col gap-2 sm:flex-row">
                 <button
                   type="button"
                   onClick={handleValidateCart}
@@ -1511,7 +1520,7 @@ export default function Order() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-5">
             <h2 className="mb-1 text-xl font-bold text-white">{tr("Retrait de la commande", "Pickup details")}</h2>
             <p className="mb-4 text-sm text-stone-300">
               {pickupIntroText}
@@ -1543,7 +1552,7 @@ export default function Order() {
                       setSelectedDate((prev) => shiftIsoDate(prev, -1));
                     }}
                     disabled={!canGoPreviousDate}
-                    className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/25 bg-white/5 text-stone-100 transition hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-40"
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-white/25 bg-white/5 text-stone-100 transition hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-40 sm:h-9 sm:w-9"
                     aria-label={tr("Jour precedent", "Previous day")}
                   >
                     <svg viewBox="0 0 24 24" className="h-[17px] w-[17px]" fill="none" stroke="currentColor" strokeWidth="2.4">
@@ -1551,14 +1560,14 @@ export default function Order() {
                     </svg>
                   </button>
 
-                  <span className="min-w-0 flex-1 rounded-xl border border-white/20 bg-white/5 px-3 py-2 text-center text-sm font-semibold text-stone-100">
+                  <span className="min-w-0 flex-1 rounded-xl border border-white/20 bg-white/5 px-2.5 py-2 text-center text-xs font-semibold text-stone-100 sm:px-3 sm:text-sm">
                     {formatNavigatorDate(selectedDate, locale)}
                   </span>
 
                   <button
                     type="button"
                     onClick={() => setSelectedDate((prev) => shiftIsoDate(prev, 1))}
-                    className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/25 bg-white/5 text-stone-100 transition hover:bg-white/15"
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-white/25 bg-white/5 text-stone-100 transition hover:bg-white/15 sm:h-9 sm:w-9"
                     aria-label={tr("Jour suivant", "Next day")}
                   >
                     <svg viewBox="0 0 24 24" className="h-[17px] w-[17px]" fill="none" stroke="currentColor" strokeWidth="2.4">
@@ -1586,7 +1595,7 @@ export default function Order() {
                             setSelectedPickupTime(option.pickupTime);
                             setSelectedLocationId("");
                           }}
-                          className={`rounded-full border px-3 py-2 text-xs font-semibold transition ${
+                          className={`rounded-full border px-2.5 py-2 text-[11px] font-semibold transition sm:px-3 sm:text-xs ${
                             isSelected
                               ? "border-saffron bg-saffron/15 text-saffron"
                               : "border-white/20 bg-black/20 text-stone-100 hover:bg-white/10"
@@ -1626,8 +1635,8 @@ export default function Order() {
                               : "border-white/20 bg-black/20 text-stone-100 hover:bg-white/10"
                           }`}
                         >
-                          <p className="text-sm font-semibold">{location?.name || "-"}</p>
-                          <p className="text-xs text-stone-300">{formatPickupAddress(location, tr)}</p>
+                          <p className="text-sm font-semibold break-words">{getLocationDisplayName(location, "-")}</p>
+                          <p className="text-[11px] text-stone-300 break-words sm:text-xs">{formatPickupAddress(location, tr)}</p>
                           <p className="mt-1 text-[11px] text-emerald-300">
                             {slot.remainingCapacity} {tr("places restantes", "spots left")}
                           </p>
@@ -1640,7 +1649,7 @@ export default function Order() {
 
               {selectedLocation && (
                 <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-xs text-stone-300">
-                  <strong className="text-stone-100">{selectedLocation.name}</strong>
+                  <strong className="text-stone-100">{getLocationDisplayName(selectedLocation, tr("Emplacement", "Location"))}</strong>
                   {" - "}
                   {formatPickupAddress(selectedLocation, tr)}
                 </div>
@@ -1675,7 +1684,7 @@ export default function Order() {
                   !selectedSlot
                 }
                 onClick={handleFinalize}
-                className="mt-2 w-full rounded-full bg-saffron px-4 py-3 text-sm font-bold uppercase tracking-wide text-charcoal transition hover:bg-yellow-300 disabled:cursor-not-allowed disabled:opacity-50"
+                className="mt-2 w-full rounded-full bg-saffron px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-charcoal transition hover:bg-yellow-300 disabled:cursor-not-allowed disabled:opacity-50 sm:py-3 sm:text-sm"
               >
                 {loading ? tr("Traitement...", "Processing...") : tr("Finaliser la commande", "Place order")}
               </button>
@@ -1705,7 +1714,7 @@ export default function Order() {
               <div>
                 <p className="text-[11px] uppercase tracking-wide text-stone-400">{tr("Emplacement", "Location")}</p>
                 <p className="font-semibold text-white">
-                  {selectedLocation?.name || tr("Emplacement", "Location")}
+                  {getLocationDisplayName(selectedLocation, tr("Emplacement", "Location"))}
                 </p>
               </div>
               <div>

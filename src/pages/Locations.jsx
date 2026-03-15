@@ -9,6 +9,7 @@ import {
   updateLocation,
 } from "../api/location.api";
 import { ActionIconButton, DeleteIcon, EditIcon, StatusToggle } from "../components/ui/AdminActions";
+import { getLocationDisplayName } from "../utils/location";
 
 const COUNTRY_OPTIONS = ["France", "Belgique", "Luxembourg", "Allemagne"];
 
@@ -273,7 +274,7 @@ export default function Locations() {
               )}
               {locations.map((location) => (
                 <tr key={location.id} className="border-t border-white/10">
-                  <td className="py-2 text-stone-100">{location.name}</td>
+                  <td className="py-2 text-stone-100">{getLocationDisplayName(location, tr("Emplacement", "Location"))}</td>
                   <td className="py-2 text-stone-300">{formatLocation(location)}</td>
                   <td className="py-2 text-stone-100">{location.active ? tr("Oui", "Yes") : tr("Non", "No")}</td>
                   <td className="py-2">

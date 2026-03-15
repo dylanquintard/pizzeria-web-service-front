@@ -15,6 +15,7 @@ import { useTheme } from "../context/ThemeContext";
 import { buildBaseFoodEstablishmentJsonLd } from "../seo/jsonLd";
 import { DEFAULT_TOUR_CITIES } from "../seo/localLandingContent";
 import { DEFAULT_SITE_SETTINGS, getLocalizedSiteText } from "../site/siteSettings";
+import { getLocationDisplayName } from "../utils/location";
 
 const paymentLogos = [
   {
@@ -167,7 +168,7 @@ const truckTourSchedule = useMemo(
         return services
           .filter((service) => service?.location && entry?.dayOfWeek)
           .map((service, serviceIndex) => {
-            const locationName = service.location?.name || tr("Emplacement", "Location");
+            const locationName = getLocationDisplayName(service.location, tr("Emplacement", "Location"));
             const address = formatLocationAddress(service.location, tr);
             const locationKey =
               service.locationId ||

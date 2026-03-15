@@ -14,6 +14,7 @@ import {
 } from "../api/admin.api";
 import { getLocations } from "../api/location.api";
 import { ActionIconButton, DeleteIcon, EditIcon } from "../components/ui/AdminActions";
+import { getLocationDisplayName } from "../utils/location";
 
 const AUTO_REFRESH_MS = 10_000;
 
@@ -85,7 +86,10 @@ function getLinkedLocationInfo(printers, tr) {
 
   for (const printer of printers || []) {
     if (printer?.location?.id) {
-      locationMap.set(String(printer.location.id), printer.location.name || String(printer.location.id));
+      locationMap.set(
+        String(printer.location.id),
+        getLocationDisplayName(printer.location, String(printer.location.id))
+      );
     }
   }
 
@@ -525,7 +529,7 @@ export default function PrintAdmin() {
                 <option value="">{tr("Global", "Global")}</option>
                 {locationOptions.map((location) => (
                   <option key={location.id} value={location.id}>
-                    {location.name}
+                    {getLocationDisplayName(location, String(location.id))}
                   </option>
                 ))}
               </select>
@@ -602,7 +606,7 @@ export default function PrintAdmin() {
                         <option value="">{tr("Global", "Global")}</option>
                         {locationOptions.map((location) => (
                           <option key={location.id} value={location.id}>
-                            {location.name}
+                            {getLocationDisplayName(location, String(location.id))}
                           </option>
                         ))}
                       </select>

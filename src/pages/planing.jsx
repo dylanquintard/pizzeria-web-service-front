@@ -6,6 +6,7 @@ import PageFaqSection from "../components/common/PageFaqSection";
 import { useLanguage } from "../context/LanguageContext";
 import { buildBaseFoodEstablishmentJsonLd } from "../seo/jsonLd";
 import { getCityPath } from "../seo/localLandingContent";
+import { getLocationDisplayName } from "../utils/location";
 import { Link } from "react-router-dom";
 
 const DAY_LABELS = {
@@ -111,7 +112,7 @@ export default function TourneeCamion() {
         const location = service?.location;
         if (!location) continue;
 
-        const locationName = String(location.name || tr("Emplacement", "Location")).trim();
+        const locationName = getLocationDisplayName(location, tr("Emplacement", "Location"));
         const address = formatAddress(location);
         const locationKey = normalizeText(locationName) || String(service.locationId || "");
 
