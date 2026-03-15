@@ -118,7 +118,10 @@ function normalizeBaseUrl(value) {
 
 function getCanonicalBaseUrl(req) {
   const configured = normalizeBaseUrl(
-    process.env.CANONICAL_SITE_URL || process.env.REACT_APP_SITE_URL || ""
+    process.env.CANONICAL_SITE_URL ||
+      process.env.VITE_SITE_URL ||
+      process.env.REACT_APP_SITE_URL ||
+      ""
   );
   if (configured) return configured;
 
@@ -130,7 +133,10 @@ function getCanonicalBaseUrl(req) {
 
 function buildBackendApiBaseUrl() {
   const configured = normalizeBaseUrl(
-    process.env.SEO_BACKEND_API_URL || process.env.REACT_APP_API_BASE_URL || ""
+    process.env.SEO_BACKEND_API_URL ||
+      process.env.VITE_API_BASE_URL ||
+      process.env.REACT_APP_API_BASE_URL ||
+      ""
   );
   if (!configured) return "";
   if (/\/api$/i.test(configured)) return configured;
