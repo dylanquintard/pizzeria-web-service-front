@@ -379,21 +379,11 @@ function ProductCustomizerModal({
             <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-ember">
               {tr("Etape 1", "Step 1")}
             </p>
-            <p className="text-base font-semibold text-stone-900">
-              {tr(
-                "Voulez-vous changer la base de votre plat ?",
-                "Would you like to change the base of your dish?"
-              )}
-            </p>
-            <p className="mt-2 text-sm text-stone-500">
-              {tr(
-                "Si vous remplacez un element de base, il sera retire puis remplace sans surcout.",
-                "If you replace a base element, it will be removed and replaced with no extra charge."
-              )}
-            </p>
-
-            <div className="mt-4 grid gap-5 lg:grid-cols-2 lg:items-start">
-              <div className="space-y-3 rounded-2xl border border-stone-200 bg-stone-50/70 p-3 sm:p-4">
+            <div className="mt-4 grid gap-4 lg:grid-cols-2 lg:items-start">
+              <div className="space-y-3 rounded-2xl border border-stone-200 bg-stone-50 p-3 sm:p-4">
+                <p className="text-sm font-bold uppercase tracking-[0.14em] text-stone-800">
+                  {tr("Modifier la base pizza :", "Edit pizza base:")}
+                </p>
                 {!currentBaseIngredient && availableBaseIngredients.length === 0 ? (
                   <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-3 text-sm text-stone-500">
                     {tr(
@@ -402,20 +392,20 @@ function ProductCustomizerModal({
                     )}
                   </div>
                 ) : (
-                  <div className="space-y-3">
-                    <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-4 text-emerald-950">
+                  <div className="space-y-2.5">
+                    <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-3 py-3 text-emerald-950">
                       <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-emerald-700">
                         {tr("Ingredient de base", "Base ingredient")}
                       </p>
                       {selectedBaseIngredient ? (
                         <div className="mt-3 flex items-center justify-between gap-3">
                           <div>
-                            <p className="text-base font-semibold">{selectedBaseIngredient.name}</p>
-                            <p className="mt-1 text-xs font-medium uppercase tracking-[0.16em] text-emerald-700">
+                            <p className="text-[13px] font-semibold">{selectedBaseIngredient.name}</p>
+                            <p className="mt-1 text-[10px] font-medium uppercase tracking-[0.12em] text-emerald-700">
                               {tr("Element actuellement selectionne", "Currently selected element")}
                             </p>
                           </div>
-                          <span className="rounded-full bg-emerald-600 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-white">
+                          <span className="rounded-full bg-emerald-600 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-white">
                             {tr("Actif", "Active")}
                           </span>
                         </div>
@@ -426,63 +416,50 @@ function ProductCustomizerModal({
                       )}
                     </div>
 
-                    <div className="border-t border-dashed border-stone-300 pt-3">
-                      <p className="text-sm text-stone-600">
-                        {tr(
-                          "Si vous remplacez un element de base, il sera retire puis remplace sans surcout.",
-                          "If you replace a base element, it will be removed and replaced with no extra charge."
-                        )}
-                      </p>
+                    <p className="text-xs text-stone-500">
+                      {tr(
+                        "Le remplacement de base ne change pas le prix.",
+                        "Base replacement does not change the price."
+                      )}
+                    </p>
 
-                      <div className="mt-3 space-y-2">
-                        {alternativeBaseIngredients.length > 0 ? (
-                          alternativeBaseIngredients.map((ingredient) => (
-                            <button
-                              key={ingredient.id}
-                              type="button"
-                              onClick={() => setSelectedBaseIngredientId(String(ingredient.id))}
-                            className="flex min-h-[72px] w-full items-center justify-between rounded-2xl border border-rose-200 bg-rose-50 px-3 py-2.5 text-left text-rose-900 transition hover:bg-rose-100"
+                    <div className="space-y-2">
+                      {alternativeBaseIngredients.length > 0 ? (
+                        alternativeBaseIngredients.map((ingredient) => (
+                          <button
+                            key={ingredient.id}
+                            type="button"
+                            onClick={() => setSelectedBaseIngredientId(String(ingredient.id))}
+                            className="flex min-h-[60px] w-full items-center justify-between rounded-2xl border border-rose-200 bg-rose-50 px-3 py-2 text-left text-rose-900 transition hover:bg-rose-100"
                           >
                             <div>
-                                <p className="text-[13px] font-semibold">{ingredient.name}</p>
-                                <p className="mt-1 text-[10px] font-medium uppercase tracking-[0.12em] text-rose-700">
-                                  {tr("Cliquer pour remplacer la base", "Click to replace the base")}
-                                </p>
-                              </div>
-                              <span className="rounded-full bg-rose-600 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-white">
-                                {tr("Disponible", "Available")}
-                              </span>
-                            </button>
-                          ))
-                        ) : (
-                          <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-3 text-sm text-stone-500">
-                            {tr(
-                              "Aucune autre base disponible pour cette pizza.",
-                              "No other base is available for this pizza."
-                            )}
-                          </div>
-                        )}
-                      </div>
+                              <p className="text-[13px] font-semibold">{ingredient.name}</p>
+                              <p className="mt-1 text-[10px] font-medium uppercase tracking-[0.12em] text-rose-700">
+                                {tr("Cliquer pour remplacer", "Click to replace")}
+                              </p>
+                            </div>
+                            <span className="rounded-full bg-rose-600 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-white">
+                              {tr("Disponible", "Available")}
+                            </span>
+                          </button>
+                        ))
+                      ) : (
+                        <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-3 text-sm text-stone-500">
+                          {tr(
+                            "Aucune autre base disponible pour cette pizza.",
+                            "No other base is available for this pizza."
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
               </div>
 
-              <div className="space-y-3 rounded-2xl border border-stone-200 bg-stone-50/70 p-3 sm:p-4">
-                <div>
-                  <p className="text-base font-semibold text-stone-900">
-                    {tr(
-                      "Retirer des ingredients de votre pizza",
-                      "Remove ingredients from your pizza"
-                    )}
-                  </p>
-                  <p className="mt-2 text-sm text-stone-500">
-                    {tr(
-                      "Les ingredients lies a la pizza sont actifs en vert. Touchez un ingredient pour le retirer : il passera en rouge.",
-                      "Ingredients linked to the pizza are active in green. Tap an ingredient to remove it: it will turn red."
-                    )}
-                  </p>
-                </div>
+              <div className="space-y-3 rounded-2xl border border-stone-200 bg-stone-50 p-3 sm:p-4">
+                <p className="text-sm font-bold uppercase tracking-[0.14em] text-stone-800">
+                  {tr("Retirer un ingredient :", "Remove an ingredient:")}
+                </p>
 
                 <div className="space-y-2">
                   {removableIngredients.length > 0 ? (
@@ -493,7 +470,7 @@ function ProductCustomizerModal({
                           key={ingredient.id}
                           type="button"
                           onClick={() => onRemovedChange(ingredient, !isRemoved)}
-                          className={`flex min-h-[72px] w-full items-center justify-between rounded-2xl border px-3 py-2.5 text-left transition ${
+                          className={`flex min-h-[60px] w-full items-center justify-between rounded-2xl border px-3 py-2 text-left transition ${
                             isRemoved
                               ? "border-rose-200 bg-rose-50 text-rose-900 hover:bg-rose-100"
                               : "border-emerald-200 bg-emerald-50 text-emerald-950 hover:bg-emerald-100"
