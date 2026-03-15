@@ -204,9 +204,16 @@ function ProductCustomizerModal({
 
   const [selectedBaseIngredientId, setSelectedBaseIngredientId] = useState("");
   const [openCustomizationSectionKey, setOpenCustomizationSectionKey] = useState("");
+  const initialBaseReplacementRef = useRef(null);
 
   useEffect(() => {
-    const existingReplacement = Array.isArray(baseAddedIngredients) ? baseAddedIngredients[0] : null;
+    initialBaseReplacementRef.current = Array.isArray(baseAddedIngredients)
+      ? baseAddedIngredients[0] || null
+      : null;
+  }, [baseAddedIngredients]);
+
+  useEffect(() => {
+    const existingReplacement = initialBaseReplacementRef.current;
     setSelectedBaseIngredientId(
       existingReplacement?.id
         ? String(existingReplacement.id)
@@ -216,7 +223,7 @@ function ProductCustomizerModal({
     );
     setOpenCustomizationSectionKey("");
     setStep("intro");
-  }, [baseAddedIngredients, currentBaseIngredient, product]);
+  }, [product?.id, currentBaseIngredient?.id]);
 
   const displayedBaseIngredients = useMemo(() => {
     const allChoices = [
