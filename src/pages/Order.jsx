@@ -9,12 +9,14 @@ import {
   getAllIngredients,
   getAllProductsClient,
 } from "../api/user.api";
+import SeoHead from "../components/seo/SeoHead";
 import { AuthContext } from "../context/AuthContext";
 import { CartContext } from "../context/CartContext";
 import { useLanguage } from "../context/LanguageContext";
 import { useSiteSettings } from "../context/SiteSettingsContext";
 import { useRealtimeEvents } from "../hooks/useRealtimeEvents";
-import { getLocalizedSiteText } from "../site/siteSettings";
+import { buildBaseFoodEstablishmentJsonLd } from "../seo/jsonLd";
+import { DEFAULT_SITE_SETTINGS, getLocalizedSiteText } from "../site/siteSettings";
 import { getLocationDisplayName } from "../utils/location";
 
 const FOCUSABLE_SELECTOR =
@@ -864,6 +866,15 @@ export default function Order() {
       "Please verify this address before finalizing your order."
     )
   );
+  const siteName = settings.siteName || DEFAULT_SITE_SETTINGS.siteName;
+  const orderPageTitle = tr(
+    `Commander une pizza | ${siteName}`,
+    `Order pizza online | ${siteName}`
+  );
+  const orderPageDescription = tr(
+    `Commandez votre pizza en ligne chez ${siteName}. Choisissez votre date, votre horaire et votre adresse de retrait en quelques clics.`,
+    `Order your pizza online from ${siteName}. Choose your date, pickup slot and collection point in just a few clicks.`
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -1335,6 +1346,17 @@ export default function Order() {
 
   return (
     <div className="order-page section-shell pb-16">
+      <SeoHead
+        title={orderPageTitle}
+        description={orderPageDescription}
+        pathname="/order"
+        jsonLd={buildBaseFoodEstablishmentJsonLd({
+          pagePath: "/order",
+          pageName: orderPageTitle,
+          description: orderPageDescription,
+          siteName,
+        })}
+      />
       <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="text-sm uppercase tracking-[0.25em] text-saffron">{tr("Commande en ligne", "Online ordering")}</p>
