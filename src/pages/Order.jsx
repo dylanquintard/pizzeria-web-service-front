@@ -184,7 +184,11 @@ function ProductCustomizerModal({
   }, {});
   const currentBaseIngredient = useMemo(() => {
     const productBaseEntry = Array.isArray(product.ingredients)
-      ? product.ingredients.find((entry) => entry?.ingredient && entry.isBase)
+      ? product.ingredients.find(
+          (entry) =>
+            entry?.ingredient &&
+            (entry.isBase || entry.ingredient?.isBaseIngredient)
+        )
       : null;
     return productBaseEntry?.ingredient || null;
   }, [product]);
@@ -283,8 +287,8 @@ function ProductCustomizerModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 p-4">
-      <div className="w-full max-w-2xl rounded-[28px] border border-white/50 bg-white p-6 text-stone-900 shadow-2xl sm:p-7">
+    <div className="fixed inset-0 z-[80] flex items-start justify-center overflow-y-auto bg-black/70 p-3 sm:items-center sm:p-4">
+      <div className="my-4 max-h-[calc(100vh-1.5rem)] w-full max-w-2xl overflow-y-auto rounded-[28px] border border-white/50 bg-white p-4 text-stone-900 shadow-2xl sm:my-0 sm:max-h-[min(92vh,960px)] sm:p-7">
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
             <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-ember">
