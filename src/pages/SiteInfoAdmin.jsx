@@ -183,6 +183,13 @@ function serializeHighlightedIngredientList(items) {
     .join("\n");
 }
 
+function normalizeLocalizedValue(value) {
+  return {
+    fr: String(value?.fr || ""),
+    en: String(value?.en || ""),
+  };
+}
+
 function HighlightedIngredientsManager({
   items,
   pendingValue,
@@ -260,7 +267,7 @@ function HighlightedIngredientsManager({
                   aria-label={tr("Supprimer l'ingredient", "Remove ingredient")}
                   title={tr("Supprimer", "Remove")}
                 >
-                  ×
+                  x
                 </button>
               </div>
             ))}
@@ -349,6 +356,10 @@ export default function SiteInfoAdmin() {
   const highlightedIngredients = useMemo(
     () => parseHighlightedIngredientList(form.home?.highlightedIngredients?.fr),
     [form.home?.highlightedIngredients?.fr]
+  );
+  const highlightedIngredientsEn = useMemo(
+    () => parseHighlightedIngredientList(form.home?.highlightedIngredients?.en),
+    [form.home?.highlightedIngredients?.en]
   );
 
   const updateRootField = (field, value) => {
@@ -502,7 +513,21 @@ export default function SiteInfoAdmin() {
           },
         };
       case "home":
-        return { home: form.home };
+        return {
+          home: {
+            heroTitle: normalizeLocalizedValue(form.home.heroTitle),
+            heroSubtitle: normalizeLocalizedValue(form.home.heroSubtitle),
+            primaryCtaLabel: normalizeLocalizedValue(form.home.primaryCtaLabel),
+            secondaryCtaLabel: normalizeLocalizedValue(form.home.secondaryCtaLabel),
+            reassuranceText: normalizeLocalizedValue(form.home.reassuranceText),
+            highlightedIngredients: {
+              fr: serializeHighlightedIngredientList(highlightedIngredients),
+              en: serializeHighlightedIngredientList(
+                highlightedIngredientsEn.length > 0 ? highlightedIngredientsEn : highlightedIngredients
+              ),
+            },
+          },
+        };
       case "announcement":
         return { announcement: form.announcement };
       case "blog":
@@ -568,10 +593,19 @@ export default function SiteInfoAdmin() {
           break;
         }
         case "home":
-          payload = { home: form.home };
+          payload = getSectionPayload("home");
           break;
         case "announcement":
-          payload = { announcement: form.announcement };
+          payload = {
+            announcement: {
+              enabled: Boolean(form.announcement.enabled),
+              variant: form.announcement.variant,
+              linkUrl: form.announcement.enabled ? form.announcement.linkUrl : "",
+              text: form.announcement.enabled
+                ? form.announcement.text
+                : { fr: "", en: "" },
+            },
+          };
           break;
         case "blog":
           payload = { blog: form.blog };
@@ -590,9 +624,10 @@ export default function SiteInfoAdmin() {
       }
 
       const saved = await updateSiteSettings(token, payload);
-      applySettings(saved);
+      const persistedSettings = await getAdminSiteSettings(token);
+      applySettings(persistedSettings);
       await refresh();
-      setForm(createFormFromSettings(saved));
+      setForm(createFormFromSettings(persistedSettings));
       setMessage(tr("Section enregistree.", "Section saved."));
       setMessageType("success");
     } catch (err) {
@@ -1133,37 +1168,48 @@ export default function SiteInfoAdmin() {
               <span>{tr("Activer le bandeau", "Enable banner")}</span>
             </label>
 
-            <div className="grid gap-4 lg:grid-cols-[220px_1fr]">
-              <label className="grid gap-1 text-xs text-stone-300">
-                <span>{tr("Type", "Type")}</span>
-                <select
-                  value={form.announcement.variant}
-                  onChange={(event) => updateNestedField("announcement", "variant", event.target.value)}
-                  className="rounded-2xl border border-white/15 bg-charcoal/70 px-4 py-3 text-sm text-white"
-                >
-                  <option value="info">{tr("Nouveau", "New")}</option>
-                  <option value="alert">{tr("Important", "Important")}</option>
-                  <option value="success">{tr("Offres", "Offers")}</option>
-                </select>
-              </label>
-              <label className="grid gap-1 text-xs text-stone-300">
-                <span>{tr("Lien du bandeau", "Banner link")}</span>
-                <input
-                  value={form.announcement.linkUrl}
-                  onChange={(event) => updateNestedField("announcement", "linkUrl", event.target.value)}
-                  className="rounded-2xl border border-white/15 bg-charcoal/70 px-4 py-3 text-sm text-white"
-                />
-              </label>
-            </div>
+            {form.announcement.enabled ? (
+              <>
+                <div className="grid gap-4 lg:grid-cols-[220px_1fr]">
+                  <label className="grid gap-1 text-xs text-stone-300">
+                    <span>{tr("Type", "Type")}</span>
+                    <select
+                      value={form.announcement.variant}
+                      onChange={(event) => updateNestedField("announcement", "variant", event.target.value)}
+                      className="rounded-2xl border border-white/15 bg-charcoal/70 px-4 py-3 text-sm text-white"
+                    >
+                      <option value="info">{tr("Nouveau", "New")}</option>
+                      <option value="alert">{tr("Important", "Important")}</option>
+                      <option value="success">{tr("Offres", "Offers")}</option>
+                    </select>
+                  </label>
+                  <label className="grid gap-1 text-xs text-stone-300">
+                    <span>{tr("Lien du bandeau", "Banner link")}</span>
+                    <input
+                      value={form.announcement.linkUrl}
+                      onChange={(event) => updateNestedField("announcement", "linkUrl", event.target.value)}
+                      className="rounded-2xl border border-white/15 bg-charcoal/70 px-4 py-3 text-sm text-white"
+                    />
+                  </label>
+                </div>
 
-            <LocalizedField
-              label={tr("Texte du bandeau", "Banner text")}
-              value={form.announcement.text}
-              multiline
-              onChange={(locale, value) =>
-                updateNestedLocalized("announcement", "text", locale, value)
-              }
-            />
+                <LocalizedField
+                  label={tr("Texte du bandeau", "Banner text")}
+                  value={form.announcement.text}
+                  multiline
+                  onChange={(locale, value) =>
+                    updateNestedLocalized("announcement", "text", locale, value)
+                  }
+                />
+              </>
+            ) : (
+              <div className="rounded-2xl border border-dashed border-white/15 bg-black/10 px-4 py-4 text-sm text-stone-400">
+                {tr(
+                  "Bandeau desactive. Activez-le pour definir son type, son lien et son texte.",
+                  "Banner disabled. Enable it to define its type, link and message."
+                )}
+              </div>
+            )}
           </div>
         </AccordionSection>
 
