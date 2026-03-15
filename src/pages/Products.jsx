@@ -66,7 +66,7 @@ function normalizeIngredient(ingredient) {
   };
 }
 
-function CategoryTable({ title, categories, token, tr, onRefresh, onError }) {
+function CategoryTable({ title, categories, token, tr, onRefresh, onError, kind }) {
   const [busyId, setBusyId] = useState(null);
 
   const patchLocal = (id, patch) => {
@@ -83,6 +83,8 @@ function CategoryTable({ title, categories, token, tr, onRefresh, onError }) {
         description: category.description || null,
         sortOrder: parseSortOrder(category.sortOrder),
         active: Boolean(category.active),
+        customerCanCustomize:
+          kind === KIND.MENU ? Boolean(category.customerCanCustomize) : false,
         kind: category.kind,
       });
       await onRefresh();
@@ -127,6 +129,9 @@ function CategoryTable({ title, categories, token, tr, onRefresh, onError }) {
           <tr>
             <th>{tr("Nom", "Name")}</th>
             <th>{tr("Ordre", "Order")}</th>
+            {kind === KIND.MENU ? (
+              <th>{tr("Modifiable client", "Customer customizable")}</th>
+            ) : null}
             <th>{tr("Actif / Inactif", "Active / Inactive")}</th>
             <th>{tr("Actions", "Actions")}</th>
           </tr>
@@ -134,7 +139,7 @@ function CategoryTable({ title, categories, token, tr, onRefresh, onError }) {
         <tbody>
           {categories.length === 0 ? (
             <tr>
-              <td colSpan={4}>{tr("Aucune categorie", "No category")}</td>
+              <td colSpan={kind === KIND.MENU ? 5 : 4}>{tr("Aucune categorie", "No category")}</td>
             </tr>
           ) : (
             categories.map((category) => (
@@ -154,6 +159,22 @@ function CategoryTable({ title, categories, token, tr, onRefresh, onError }) {
                     className="w-24"
                   />
                 </td>
+                {kind === KIND.MENU ? (
+                  <td>
+                    <label className="flex items-center gap-2 text-xs text-stone-200">
+                      <input
+                        type="checkbox"
+                        checked={Boolean(category.customerCanCustomize)}
+                        onChange={(event) =>
+                          patchLocal(category.id, {
+                            customerCanCustomize: event.target.checked,
+                          })
+                        }
+                      />
+                      <span>{category.customerCanCustomize ? tr("Oui", "Yes") : tr("Non", "No")}</span>
+                    </label>
+                  </td>
+                ) : null}
                 <td>
                   <StatusToggle
                     checked={Boolean(category.active)}
@@ -601,6 +622,7 @@ export default function Products() {
               <CategoryTable
                 title={tr("Liste categorie menu", "Menu category list")}
                 categories={menuCategories}
+                kind={KIND.MENU}
                 token={token}
                 tr={tr}
                 onRefresh={async (updater) => {
@@ -644,6 +666,7 @@ export default function Products() {
               <CategoryTable
                 title={tr("Liste categorie ingredients", "Ingredients category list")}
                 categories={ingredientCategories}
+                kind={KIND.INGREDIENT}
                 token={token}
                 tr={tr}
                 onRefresh={async (updater) => {

@@ -103,6 +103,7 @@ function ProductCustomizerModal({
   onConfirm,
   tr,
 }) {
+  const [showCustomizationOptions, setShowCustomizationOptions] = useState(false);
   const baseIngredients = Array.isArray(product.ingredients)
     ? product.ingredients.map((entry) => entry?.ingredient).filter(Boolean)
     : [];
@@ -135,90 +136,165 @@ function ProductCustomizerModal({
 
   return (
     <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 p-4">
-      <div className="w-full max-w-2xl rounded-2xl bg-white p-6 text-stone-900 shadow-2xl">
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-xl font-bold">{tr("Personnaliser", "Customize")}: {product.name}</h3>
-          <button type="button" onClick={onClose} className="rounded-md border border-stone-300 px-3 py-1 text-sm">
+      <div className="w-full max-w-2xl rounded-[28px] border border-white/50 bg-white p-6 text-stone-900 shadow-2xl sm:p-7">
+        <div className="mb-5 flex items-start justify-between gap-4">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-ember">
+              {tr("Personnalisation pizza", "Pizza customization")}
+            </p>
+            <h3 className="mt-2 text-2xl font-bold text-stone-900">{product.name}</h3>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full border border-stone-300 px-3 py-1.5 text-sm font-semibold text-stone-600 transition hover:bg-stone-100"
+          >
             {tr("Fermer", "Close")}
           </button>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
-          <div>
-            <p className="mb-2 text-sm font-semibold uppercase tracking-wide text-stone-500">{tr("Supplements", "Extras")}</p>
-            <div className="space-y-3">
-              {ingredients.length === 0 && (
-                <p className="text-xs text-stone-500">{tr("Aucun supplement disponible.", "No extra available.")}</p>
-              )}
-              {Object.values(groupedExtras).map((group) => (
-                <div key={group.key} className="space-y-2">
-                  <p className="text-[11px] font-bold uppercase tracking-wide text-stone-500">{group.label}</p>
-                  {group.items.map((ingredient) => (
-                    <label
-                      key={ingredient.id}
-                      className="flex items-center gap-2 rounded-md px-2 py-1 text-sm transition hover:bg-stone-100"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selectedExtras.some((entry) => entry.id === ingredient.id)}
-                        onChange={(event) => onExtrasChange(ingredient, event.target.checked)}
-                        className="h-4 w-4 cursor-pointer accent-saffron"
-                      />
-                      <span>
-                        {ingredient.name} (+{formatPrice(ingredient.price)} EUR)
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              ))}
-            </div>
-          </div>
+        <div className="rounded-3xl border border-stone-200 bg-stone-50/80 p-5">
+          <p className="text-base font-semibold text-stone-900">
+            {tr(
+              "Souhaitez-vous apporter des modifications a votre pizza ou modifier la quantite commandee ?",
+              "Would you like to customize your pizza or change the quantity?"
+            )}
+          </p>
+          <p className="mt-2 text-sm text-stone-500">
+            {tr(
+              "Commencez simplement, puis ouvrez les modifications uniquement si vous souhaitez ajuster les ingredients.",
+              "Start simple, then open customization only if you want to adjust ingredients."
+            )}
+          </p>
 
-          <div>
-            <p className="mb-2 text-sm font-semibold uppercase tracking-wide text-stone-500">{tr("Retirer ingredients", "Remove ingredients")}</p>
-            <div className="space-y-3">
-              {baseIngredients.length === 0 && (
-                <p className="text-xs text-stone-500">{tr("Aucun ingredient a retirer pour ce produit.", "No ingredient can be removed for this product.")}</p>
-              )}
-              {Object.values(groupedBaseIngredients).map((group) => (
-                <div key={group.key} className="space-y-2">
-                  <p className="text-[11px] font-bold uppercase tracking-wide text-stone-500">{group.label}</p>
-                  {group.items.map((ingredient) => (
-                    <label
-                      key={ingredient.id}
-                      className="flex items-center gap-2 rounded-md px-2 py-1 text-sm transition hover:bg-stone-100"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={removedIngredients.some((entry) => entry.id === ingredient.id)}
-                        onChange={(event) => onRemovedChange(ingredient, event.target.checked)}
-                        className="h-4 w-4 cursor-pointer accent-saffron"
-                      />
-                      <span>{ingredient.name}</span>
-                    </label>
-                  ))}
-                </div>
-              ))}
+          <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <button
+              type="button"
+              onClick={() => setShowCustomizationOptions((current) => !current)}
+              className={`inline-flex items-center justify-center rounded-full border px-5 py-3 text-sm font-bold uppercase tracking-wide transition ${
+                showCustomizationOptions
+                  ? "border-ember bg-ember text-white hover:bg-tomato"
+                  : "border-stone-300 bg-white text-stone-800 hover:bg-stone-100"
+              }`}
+            >
+              {showCustomizationOptions
+                ? tr("Masquer les modifications", "Hide customizations")
+                : tr("Apporter des modifications", "Customize this pizza")}
+            </button>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center rounded-full border border-stone-300 bg-white p-1 shadow-sm">
+                <button
+                  type="button"
+                  onClick={() => onQuantityChange(Math.max(1, Number(quantity || 1) - 1))}
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full text-lg font-bold text-stone-700 transition hover:bg-stone-100"
+                  aria-label={tr("Retirer un article", "Decrease quantity")}
+                >
+                  -
+                </button>
+                <span className="min-w-[56px] text-center text-base font-bold text-stone-900">
+                  {Math.max(1, Number(quantity || 1))}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => onQuantityChange(Math.max(1, Number(quantity || 1) + 1))}
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full text-lg font-bold text-stone-700 transition hover:bg-stone-100"
+                  aria-label={tr("Ajouter un article", "Increase quantity")}
+                >
+                  +
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={onConfirm}
+                className="rounded-full bg-ember px-5 py-3 text-sm font-semibold text-white transition hover:bg-tomato"
+              >
+                {tr("Ajouter au panier", "Add to cart")}
+              </button>
             </div>
           </div>
         </div>
 
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-stone-200 pt-4">
-          <label className="text-sm">
-            {tr("Quantite", "Quantity")}
-            <input
-              type="number"
-              min={1}
-              step={1}
-              value={quantity}
-              onChange={(event) => onQuantityChange(Number(event.target.value || 1))}
-              className="ml-2 w-20 rounded-md border border-stone-300 bg-white px-2 py-1 text-stone-900"
-            />
-          </label>
+        {showCustomizationOptions ? (
+          <div className="mt-5 grid gap-6 md:grid-cols-2">
+            <div className="rounded-3xl border border-stone-200 bg-white p-5">
+              <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-500">{tr("Supplements", "Extras")}</p>
+              <div className="space-y-3">
+                {ingredients.length === 0 && (
+                  <p className="text-xs text-stone-500">{tr("Aucun supplement disponible.", "No extra available.")}</p>
+                )}
+                {Object.values(groupedExtras).map((group) => (
+                  <div key={group.key} className="space-y-2">
+                    <p className="text-[11px] font-bold uppercase tracking-wide text-stone-500">{group.label}</p>
+                    {group.items.map((ingredient) => (
+                      <label
+                        key={ingredient.id}
+                        className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm transition hover:bg-stone-100"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedExtras.some((entry) => entry.id === ingredient.id)}
+                          onChange={(event) => onExtrasChange(ingredient, event.target.checked)}
+                          className="h-4 w-4 cursor-pointer accent-saffron"
+                        />
+                        <span>
+                          {ingredient.name} (+{formatPrice(ingredient.price)} EUR)
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-3xl border border-stone-200 bg-white p-5">
+              <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-500">{tr("Retirer ingredients", "Remove ingredients")}</p>
+              <div className="space-y-3">
+                {baseIngredients.length === 0 && (
+                  <p className="text-xs text-stone-500">{tr("Aucun ingredient a retirer pour ce produit.", "No ingredient can be removed for this product.")}</p>
+                )}
+                {Object.values(groupedBaseIngredients).map((group) => (
+                  <div key={group.key} className="space-y-2">
+                    <p className="text-[11px] font-bold uppercase tracking-wide text-stone-500">{group.label}</p>
+                    {group.items.map((ingredient) => (
+                      <label
+                        key={ingredient.id}
+                        className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm transition hover:bg-stone-100"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={removedIngredients.some((entry) => entry.id === ingredient.id)}
+                          onChange={(event) => onRemovedChange(ingredient, event.target.checked)}
+                          className="h-4 w-4 cursor-pointer accent-saffron"
+                        />
+                        <span>{ingredient.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="mt-4 rounded-2xl border border-dashed border-stone-300 bg-white/70 px-4 py-3 text-sm text-stone-500">
+            {tr(
+              "Aucune modification appliquee pour le moment. Vous pouvez ajouter la pizza telle quelle ou ouvrir les options de personnalisation.",
+              "No customization applied yet. You can add the pizza as it is or open the customization options."
+            )}
+          </div>
+        )}
+
+        <div className="mt-5 flex items-center justify-between gap-3 border-t border-stone-200 pt-4">
+          <div className="text-sm text-stone-500">
+            {showCustomizationOptions
+              ? tr("Les modifications seront ajoutees a cette pizza.", "Customizations will be added to this pizza.")
+              : tr("Version standard de la pizza.", "Standard pizza version.")}
+          </div>
           <button
             type="button"
             onClick={onConfirm}
-            className="rounded-full bg-ember px-5 py-2 text-sm font-semibold text-white hover:bg-tomato"
+            className="rounded-full bg-ember px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-tomato"
           >
             {tr("Ajouter au panier", "Add to cart")}
           </button>
@@ -501,7 +577,10 @@ export default function Order() {
         isPizzaCategory: isPizzaCategoryLabel(entry.title),
         items: entry.items.map((product) => ({
           ...product,
-          isCustomizable: isCustomizableProduct(product, entry.title),
+          isCustomizable:
+            typeof entry.customerCanCustomize === "boolean"
+              ? entry.customerCanCustomize
+              : isCustomizableProduct(product, entry.title),
         })),
       }));
   }, [categories, products, tr]);

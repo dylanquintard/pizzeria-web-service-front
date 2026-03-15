@@ -20,6 +20,7 @@ const emptyCategoryForm = {
   description: "",
   sortOrder: 0,
   active: true,
+  customerCanCustomize: false,
 };
 
 function normalizeCategoryPayload(form, kind) {
@@ -31,6 +32,8 @@ function normalizeCategoryPayload(form, kind) {
     description: description || null,
     sortOrder: Number(form?.sortOrder || 0),
     active: Boolean(form?.active),
+    customerCanCustomize:
+      kind === "PRODUCT" ? Boolean(form?.customerCanCustomize) : false,
     kind: form?.kind || kind,
   };
 }
@@ -176,6 +179,26 @@ export default function Categories() {
             }
           />
         </div>
+        {activeKind === "PRODUCT" ? (
+          <label className="flex items-center gap-2 text-sm text-stone-200">
+            <input
+              type="checkbox"
+              checked={Boolean(newCategory.customerCanCustomize)}
+              onChange={(event) =>
+                setNewCategory((prev) => ({
+                  ...prev,
+                  customerCanCustomize: event.target.checked,
+                }))
+              }
+            />
+            <span>
+              {tr(
+                "Le client peut modifier cette categorie dans la modale de commande",
+                "Customers can customize this category in the order modal"
+              )}
+            </span>
+          </label>
+        ) : null}
         <button type="submit" disabled={loading} className="mt-2 w-full">
           {tr("Creer", "Create")}
         </button>
@@ -194,6 +217,9 @@ export default function Categories() {
                 <th>{tr("Nom", "Name")}</th>
                 <th>{tr("Description", "Description")}</th>
                 <th>{tr("Ordre", "Order")}</th>
+                {activeKind === "PRODUCT" ? (
+                  <th>{tr("Modifiable client", "Customer customizable")}</th>
+                ) : null}
                 <th>{tr("Actif", "Active")}</th>
                 <th>{tr("Actions", "Actions")}</th>
               </tr>
@@ -201,7 +227,7 @@ export default function Categories() {
             <tbody>
               {categories.length === 0 && (
                 <tr>
-                  <td colSpan="6">{tr("Aucune categorie", "No category")}</td>
+                  <td colSpan={activeKind === "PRODUCT" ? 7 : 6}>{tr("Aucune categorie", "No category")}</td>
                 </tr>
               )}
               {categories.map((category) => (
@@ -251,6 +277,29 @@ export default function Categories() {
                       }
                     />
                   </td>
+                  {activeKind === "PRODUCT" ? (
+                    <td>
+                      <label className="flex items-center gap-2 text-xs text-stone-200">
+                        <input
+                          type="checkbox"
+                          checked={Boolean(category.customerCanCustomize)}
+                          onChange={(event) =>
+                            setCategories((prev) =>
+                              prev.map((entry) =>
+                                entry.id === category.id
+                                  ? {
+                                      ...entry,
+                                      customerCanCustomize: event.target.checked,
+                                    }
+                                  : entry
+                              )
+                            )
+                          }
+                        />
+                        <span>{category.customerCanCustomize ? tr("Oui", "Yes") : tr("Non", "No")}</span>
+                      </label>
+                    </td>
+                  ) : null}
                   <td>{category.active ? tr("Oui", "Yes") : tr("Non", "No")}</td>
                   <td>
                     <div className="flex items-center gap-2">
