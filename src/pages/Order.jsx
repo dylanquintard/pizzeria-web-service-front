@@ -760,7 +760,7 @@ function ProductCustomizerModal({
                   onClick={handleConfirmFromCurrentStep}
                   className="w-full rounded-full bg-ember px-5 py-3 text-sm font-semibold text-white transition hover:bg-tomato"
                 >
-                  {tr("Valider le panier", "Validate cart")}
+                  {tr("Valider modifications", "Validate changes")}
                 </button>
               </div>
             </div>
@@ -1357,12 +1357,12 @@ export default function Order() {
           siteName,
         })}
       />
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <p className="text-sm uppercase tracking-[0.25em] text-saffron">{tr("Commande en ligne", "Online ordering")}</p>
-          <h1 className="font-display text-4xl uppercase tracking-wide text-white">{tr("Composez votre commande", "Build your order")}</h1>
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
+        <div className="min-w-0">
+          <p className="text-xs uppercase tracking-[0.2em] text-saffron sm:text-sm sm:tracking-[0.25em]">{tr("Commande en ligne", "Online ordering")}</p>
+          <h1 className="font-display text-3xl uppercase tracking-wide text-white sm:text-4xl">{tr("Composez votre commande", "Build your order")}</h1>
         </div>
-        <div className="rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-stone-200">
+        <div className="w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-stone-200 sm:w-auto">
           <p>{tr("Articles dans le panier", "Items in cart")}: <strong>{itemCount}</strong></p>
           <p>{tr("Total", "Total")}: <strong>{Number(cartTotal).toFixed(2)} EUR</strong></p>
         </div>
@@ -1374,7 +1374,7 @@ export default function Order() {
         </div>
       )}
 
-      <div className="grid gap-8 xl:grid-cols-[1.65fr_1fr]">
+      <div className="grid gap-6 xl:grid-cols-[1.65fr_1fr] xl:gap-8">
         <section className="space-y-4">
           <h2 className="text-xl font-bold text-white">{tr("Nos produits", "Our products")}</h2>
           {menuByCategory.length === 0 ? (
@@ -1383,7 +1383,7 @@ export default function Order() {
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="flex gap-2 overflow-x-auto pb-1">
+              <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {menuByCategory.map((group) => {
                   const isActive = group.key === visibleMenuGroup?.key;
                   return (
@@ -1404,7 +1404,7 @@ export default function Order() {
               </div>
 
               {visibleMenuGroup && (
-                <article className="rounded-3xl border border-white/10 bg-charcoal/35 p-4 sm:p-7">
+                <article className="overflow-hidden rounded-3xl border border-white/10 bg-charcoal/35 p-3 sm:p-7">
                   <div className="mb-4 border-b border-white/10 pb-3">
                     <h3 className="font-display text-2xl uppercase tracking-[0.08em] text-crust sm:text-4xl">
                       {visibleMenuGroup.title}
@@ -1415,40 +1415,42 @@ export default function Order() {
                   <div>
                     {visibleMenuGroup.items.map((product) => (
                       <div key={product.id} className="border-b border-white/10 py-3 last:border-b-0 sm:py-4">
-                        <div className="flex flex-wrap items-start gap-2 sm:gap-3">
-                          <h4 className="min-w-0 flex-1 text-sm font-semibold uppercase tracking-wide text-white sm:text-lg">
+                        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2 sm:flex sm:flex-wrap sm:items-start sm:gap-3">
+                          <h4 className="min-w-0 break-words text-sm font-semibold uppercase tracking-wide text-white sm:flex-1 sm:text-lg">
                             {product.name}
                           </h4>
                           <div className="mt-3 hidden h-px flex-1 border-t border-dashed border-stone-500/70 sm:block" />
-                          <span className="whitespace-nowrap text-xs font-extrabold uppercase tracking-wide text-saffron sm:text-base">
-                            {formatPrice(product.basePrice)} EUR
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              product.isCustomizable ? openProductModal(product) : handleQuickAdd(product)
-                            }
-                            disabled={loading}
-                            title={
-                              product.isCustomizable
-                                ? tr("Configurer et ajouter", "Customize and add")
-                                : tr("Ajouter au panier", "Add to cart")
-                            }
-                            aria-label={
-                              product.isCustomizable
-                                ? `${tr("Configurer", "Customize")} ${product.name}`
-                                : `${tr("Ajouter", "Add")} ${product.name}`
-                            }
-                            className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-saffron/70 text-sm font-bold text-saffron transition hover:bg-saffron/15 disabled:cursor-not-allowed disabled:opacity-50"
-                          >
-                            +
-                          </button>
+                          <div className="flex shrink-0 items-center justify-end gap-2 sm:contents">
+                            <span className="whitespace-nowrap text-[11px] font-extrabold uppercase tracking-wide text-saffron sm:text-base">
+                              {formatPrice(product.basePrice)} EUR
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                product.isCustomizable ? openProductModal(product) : handleQuickAdd(product)
+                              }
+                              disabled={loading}
+                              title={
+                                product.isCustomizable
+                                  ? tr("Configurer et ajouter", "Customize and add")
+                                  : tr("Ajouter au panier", "Add to cart")
+                              }
+                              aria-label={
+                                product.isCustomizable
+                                  ? `${tr("Configurer", "Customize")} ${product.name}`
+                                  : `${tr("Ajouter", "Add")} ${product.name}`
+                              }
+                              className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-saffron/70 text-sm font-bold text-saffron transition hover:bg-saffron/15 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                              +
+                            </button>
+                          </div>
                         </div>
 
                         {product.description && <p className="mt-1 text-sm text-stone-300">{product.description}</p>}
 
                         {product.ingredients?.length > 0 && (
-                          <p className="mt-2 text-[10px] uppercase tracking-[0.1em] text-stone-400 sm:text-xs sm:tracking-[0.14em]">
+                          <p className="mt-2 break-words text-[9px] uppercase leading-relaxed tracking-[0.08em] text-stone-400 sm:text-xs sm:tracking-[0.14em]">
                             {product.ingredients.map((entry) => entry.ingredient.name).join(" - ")}
                           </p>
                         )}
@@ -1462,7 +1464,7 @@ export default function Order() {
         </section>
 
         <section className="space-y-4">
-          <div className="order-cart-shell rounded-2xl p-4 sm:p-5">
+          <div className="order-cart-shell overflow-hidden rounded-2xl p-4 sm:p-5">
             <div className="mb-4 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
               <h2 className="text-xl font-bold text-white">{tr("Mon panier", "My cart")}</h2>
               {isCartValidated && (
@@ -1487,15 +1489,15 @@ export default function Order() {
                   <div key={item.id} className="order-cart-item rounded-xl p-3">
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                       <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold text-white">{getCartItemName(item)}</p>
+                          <p className="break-words text-sm font-semibold text-white">{getCartItemName(item)}</p>
                           <p className="text-xs text-stone-300">{tr("Quantite", "Quantity")}: {item.quantity}</p>
                         {item.addedIngredients?.length > 0 && (
-                          <p className="text-[11px] text-emerald-300">
+                          <p className="break-words text-[11px] text-emerald-300">
                             + {item.addedIngredients.map((entry) => getCartIngredientName(entry)).filter(Boolean).join(", ")}
                           </p>
                         )}
                         {item.removedIngredients?.length > 0 && (
-                          <p className="text-[11px] text-red-300">
+                          <p className="break-words text-[11px] text-red-300">
                             - {item.removedIngredients.map((entry) => getCartIngredientName(entry)).filter(Boolean).join(", ")}
                           </p>
                         )}
@@ -1506,7 +1508,7 @@ export default function Order() {
                         <button
                           type="button"
                           onClick={() => handleRemoveCartItem(item.id)}
-                          className="mt-1 rounded-md border border-white/20 px-2 py-1 text-[11px] font-semibold text-stone-100 transition hover:bg-white/10"
+                          className="shrink-0 rounded-md border border-white/20 px-2 py-1 text-[11px] font-semibold text-stone-100 transition hover:bg-white/10 sm:mt-1"
                         >
                           {tr("Retirer", "Remove")}
                         </button>
@@ -1542,7 +1544,7 @@ export default function Order() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-5">
+          <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-5">
             <h2 className="mb-1 text-xl font-bold text-white">{tr("Retrait de la commande", "Pickup details")}</h2>
             <p className="mb-4 text-sm text-stone-300">
               {pickupIntroText}
@@ -1582,7 +1584,7 @@ export default function Order() {
                     </svg>
                   </button>
 
-                  <span className="min-w-0 flex-1 rounded-xl border border-white/20 bg-white/5 px-2.5 py-2 text-center text-xs font-semibold text-stone-100 sm:px-3 sm:text-sm">
+                  <span className="min-w-0 flex-1 break-words rounded-xl border border-white/20 bg-white/5 px-2 py-2 text-center text-[11px] font-semibold text-stone-100 sm:px-3 sm:text-sm">
                     {formatNavigatorDate(selectedDate, locale)}
                   </span>
 
@@ -1617,7 +1619,7 @@ export default function Order() {
                             setSelectedPickupTime(option.pickupTime);
                             setSelectedLocationId("");
                           }}
-                          className={`rounded-full border px-2.5 py-2 text-[11px] font-semibold transition sm:px-3 sm:text-xs ${
+                          className={`max-w-full rounded-full border px-2 py-2 text-[10px] font-semibold transition sm:px-3 sm:text-xs ${
                             isSelected
                               ? "border-saffron bg-saffron/15 text-saffron"
                               : "border-white/20 bg-black/20 text-stone-100 hover:bg-white/10"
@@ -1651,7 +1653,7 @@ export default function Order() {
                           key={`${slot.locationId}-${slot.pickupTime}`}
                           type="button"
                           onClick={() => setSelectedLocationId(String(slot.locationId))}
-                          className={`rounded-xl border px-3 py-2 text-left transition ${
+                          className={`min-w-0 rounded-xl border px-3 py-2 text-left transition ${
                             isSelected
                               ? "border-saffron bg-saffron/15 text-saffron"
                               : "border-white/20 bg-black/20 text-stone-100 hover:bg-white/10"
@@ -1672,8 +1674,7 @@ export default function Order() {
               {selectedLocation && (
                 <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-xs text-stone-300">
                   <strong className="text-stone-100">{getLocationDisplayName(selectedLocation, tr("Emplacement", "Location"))}</strong>
-                  {" - "}
-                  {formatPickupAddress(selectedLocation, tr)}
+                  <span className="break-words">{" - "}{formatPickupAddress(selectedLocation, tr)}</span>
                 </div>
               )}
 
@@ -1716,14 +1717,14 @@ export default function Order() {
       </div>
 
       {isFinalizeConfirmOpen && (
-        <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/75 p-4">
+        <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/75 p-3 sm:p-4">
           <div
             ref={finalizeModalRef}
             role="dialog"
             aria-modal="true"
             aria-labelledby="finalize-order-title"
             tabIndex={-1}
-            className="w-full max-w-lg rounded-2xl border border-saffron/45 bg-charcoal/95 p-5 shadow-2xl"
+            className="max-h-[calc(100vh-1.5rem)] w-full max-w-lg overflow-y-auto rounded-2xl border border-saffron/45 bg-charcoal/95 p-4 shadow-2xl sm:max-h-[min(92vh,720px)] sm:p-5"
           >
             <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-saffron">
               {tr("Verification retrait", "Pickup confirmation")}
@@ -1765,7 +1766,7 @@ export default function Order() {
               {pickupConfirmationText}
             </p>
 
-            <div className="mt-5 flex gap-2">
+            <div className="mt-5 flex flex-col gap-2 sm:flex-row">
               <button
                 type="button"
                 onClick={() => setIsFinalizeConfirmOpen(false)}

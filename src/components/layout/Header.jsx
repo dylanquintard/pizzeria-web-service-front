@@ -160,13 +160,13 @@ export default function Header() {
   return (
     <header className="app-header fixed inset-x-0 top-0 z-50 border-b border-saffron/20 bg-charcoal/90 backdrop-blur-xl">
       <div className="section-shell">
-        <div className="flex min-h-[84px] items-center justify-between gap-3 py-2">
+        <div className="flex min-h-[84px] items-center justify-between gap-2 py-2">
           <Link to="/" className="inline-flex shrink-0 items-center bg-transparent p-0">
             {headerLogoUrl && !hasLogoError ? (
               <img
                 src={headerLogoUrl}
                 alt={siteSettings.siteName || DEFAULT_SITE_SETTINGS.siteName}
-                className="block h-9 w-auto max-w-[140px] object-contain sm:h-10 sm:max-w-[168px]"
+                className="block h-12 w-auto max-w-[180px] object-contain sm:h-14 sm:max-w-[240px]"
                 loading="eager"
                 decoding="async"
                 onError={() => setHasLogoError(true)}
