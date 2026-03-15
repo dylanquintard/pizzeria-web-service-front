@@ -38,35 +38,42 @@ function AccordionSection({
   saveLabel,
   children,
 }) {
+  const chevronClassName = `h-4 w-4 transition-transform duration-200 ${
+    isOpen ? "rotate-180" : "rotate-0"
+  }`;
+
   return (
     <section
       ref={sectionRef}
-      className={`scroll-mt-24 rounded-[1.75rem] border p-5 transition sm:p-6 ${
-        isOpen
-          ? "border-white/15 bg-black/20 shadow-[0_18px_60px_rgba(0,0,0,0.18)]"
-          : "border-white/10 bg-white/5"
-      }`}
+      className="scroll-mt-24 overflow-hidden rounded-2xl border border-white/10 bg-charcoal/35"
     >
-      <button type="button" onClick={onToggle} className="flex w-full items-start justify-between gap-4 text-left">
+      <button
+        type="button"
+        onClick={onToggle}
+        className="flex w-full items-center justify-between gap-3 bg-charcoal/35 px-4 py-3 text-left transition hover:bg-charcoal/50"
+      >
         <div className="min-w-0">
-          <p className="text-xs uppercase tracking-[0.25em] text-saffron">{eyebrow}</p>
-          <h3 className="mt-2 text-2xl font-bold text-white">{title}</h3>
-          {description ? <p className="mt-2 max-w-3xl text-sm text-stone-300">{description}</p> : null}
+          <p className="text-sm font-bold uppercase tracking-wide text-saffron">{eyebrow}</p>
+          <p className="mt-1 text-xs text-stone-400">
+            {description || title}
+          </p>
         </div>
-        <span
-          className={`mt-1 inline-flex h-11 w-11 flex-none items-center justify-center rounded-full border text-lg font-bold transition ${
-            isOpen
-              ? "border-white/20 bg-white/10 text-white"
-              : "border-white/15 bg-black/20 text-white"
-          }`}
-          aria-hidden="true"
-        >
-          {isOpen ? "\u2191" : "\u2193"}
+        <span className="shrink-0 text-stone-300" aria-hidden="true">
+          <svg
+            viewBox="0 0 20 20"
+            className={chevronClassName}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+          >
+            <path d="m5 7 5 6 5-6" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
         </span>
       </button>
 
       {isOpen ? (
-        <div className="mt-5 border-t border-white/10 pt-5">
+        <div className="border-t border-white/10 bg-black/10 p-4">
+          <h3 className="mb-4 text-lg font-semibold text-white">{title}</h3>
           {children}
           <div className="mt-5 flex flex-wrap gap-3">
             {onTranslate ? (
@@ -151,7 +158,7 @@ export default function SiteInfoAdmin() {
   const [translatingSectionId, setTranslatingSectionId] = useState(null);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("info");
-  const [openSectionId, setOpenSectionId] = useState("identity");
+  const [openSectionId, setOpenSectionId] = useState(null);
   const sectionRefs = useRef({});
 
   useEffect(() => {

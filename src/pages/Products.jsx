@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   activateIngredient,
@@ -229,6 +229,8 @@ export default function Products() {
   const [selectedIngredientCategoryId, setSelectedIngredientCategoryId] = useState("");
   const [openMenuListingCategoryId, setOpenMenuListingCategoryId] = useState("");
   const [openIngredientListingCategoryId, setOpenIngredientListingCategoryId] = useState("");
+  const menuListingRefs = useRef({});
+  const ingredientListingRefs = useRef({});
 
   const [newMenuCategoryName, setNewMenuCategoryName] = useState("");
   const [newIngredientCategoryName, setNewIngredientCategoryName] = useState("");
@@ -515,6 +517,32 @@ export default function Products() {
     { id: "uncategorized", name: tr("Sans categorie", "Uncategorized") },
   ];
 
+  useEffect(() => {
+    if (activePanel !== KIND.MENU || !selectedMenuCategoryId) return;
+
+    setOpenMenuListingCategoryId(String(selectedMenuCategoryId));
+
+    const node = menuListingRefs.current[String(selectedMenuCategoryId)];
+    if (node && typeof node.scrollIntoView === "function") {
+      window.requestAnimationFrame(() => {
+        node.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    }
+  }, [activePanel, selectedMenuCategoryId]);
+
+  useEffect(() => {
+    if (activePanel !== KIND.INGREDIENT || !selectedIngredientCategoryId) return;
+
+    setOpenIngredientListingCategoryId(String(selectedIngredientCategoryId));
+
+    const node = ingredientListingRefs.current[String(selectedIngredientCategoryId)];
+    if (node && typeof node.scrollIntoView === "function") {
+      window.requestAnimationFrame(() => {
+        node.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    }
+  }, [activePanel, selectedIngredientCategoryId]);
+
   if (authLoading || loading) return <p>{tr("Chargement...", "Loading...")}</p>;
   if (!token || user?.role !== "ADMIN") {
     return <p>{tr("Acces refuse : administrateur uniquement", "Access denied: admin only")}</p>;
@@ -758,7 +786,13 @@ export default function Products() {
                   const rows = productsByCategory[String(category.id)] || [];
                   const isOpen = String(openMenuListingCategoryId) === String(category.id);
                   return (
-                    <div key={category.id} className="overflow-hidden rounded-2xl border border-white/10 bg-charcoal/35">
+                    <div
+                      key={category.id}
+                      ref={(node) => {
+                        menuListingRefs.current[String(category.id)] = node;
+                      }}
+                      className="scroll-mt-24 overflow-hidden rounded-2xl border border-white/10 bg-charcoal/35"
+                    >
                       <button
                         type="button"
                         onClick={() =>
@@ -856,7 +890,13 @@ export default function Products() {
                   const rows = ingredientsByCategory[String(category.id)] || [];
                   const isOpen = String(openIngredientListingCategoryId) === String(category.id);
                   return (
-                    <div key={category.id} className="overflow-hidden rounded-2xl border border-white/10 bg-charcoal/35">
+                    <div
+                      key={category.id}
+                      ref={(node) => {
+                        ingredientListingRefs.current[String(category.id)] = node;
+                      }}
+                      className="scroll-mt-24 overflow-hidden rounded-2xl border border-white/10 bg-charcoal/35"
+                    >
                       <button
                         type="button"
                         onClick={() =>
