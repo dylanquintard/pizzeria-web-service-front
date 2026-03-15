@@ -5,6 +5,7 @@ import {
   getAllIngredients,
   getProductById,
   removeIngredientFromProduct,
+  updateIngredientLinkOnProduct,
   updateProduct,
 } from "../api/admin.api";
 import { getCategories } from "../api/category.api";
@@ -77,14 +78,14 @@ export default function EditProduct() {
       .finally(() => setLoading(false));
   }, [authLoading, user, fetchData, tr]);
 
-  const linkedIngredients = useMemo(
-    () => (product?.ingredients || []).map((entry) => entry.ingredient).filter(Boolean),
+  const linkedIngredientEntries = useMemo(
+    () => (product?.ingredients || []).filter((entry) => entry?.ingredient),
     [product]
   );
 
   const linkedIngredientIds = useMemo(
-    () => new Set(linkedIngredients.map((entry) => entry.id)),
-    [linkedIngredients]
+    () => new Set(linkedIngredientEntries.map((entry) => entry.ingredient.id)),
+    [linkedIngredientEntries]
   );
 
   const availableIngredients = useMemo(
@@ -180,6 +181,23 @@ export default function EditProduct() {
     }
   };
 
+  const handleToggleBaseIngredient = async (ingredientId, isBase) => {
+    try {
+      await updateIngredientLinkOnProduct(token, id, ingredientId, { isBase });
+      await refreshProductOnly();
+      setMessage(
+        isBase
+          ? tr("Ingredient marque comme element de base", "Ingredient marked as base element")
+          : tr("Ingredient retire des elements de base", "Ingredient removed from base elements")
+      );
+    } catch (err) {
+      setMessage(
+        err.response?.data?.error ||
+          tr("Erreur lors de la mise a jour", "Error while updating")
+      );
+    }
+  };
+
   const handleSearch = () => {
     setSearchSubmitted(true);
   };
@@ -269,23 +287,35 @@ export default function EditProduct() {
 
       <section className="space-y-3 rounded-2xl border border-white/10 bg-black/20 p-4">
         <h3 className="text-lg font-semibold text-white">{tr("Ingredients lies", "Linked ingredients")}</h3>
-        {linkedIngredients.length === 0 ? (
+        {linkedIngredientEntries.length === 0 ? (
           <p className="text-sm text-stone-400">{tr("Aucun ingredient lie", "No linked ingredient")}</p>
         ) : (
           <div className="space-y-2">
-            {linkedIngredients.map((ingredient) => (
-              <div key={ingredient.id} className="flex items-center justify-between rounded-lg border border-white/10 bg-charcoal/35 px-3 py-2">
-                <div>
-                  <p className="text-sm font-semibold text-white">{ingredient.name}</p>
-                  <p className="text-xs text-stone-300">{formatPrice(ingredient.price)} EUR</p>
+            {linkedIngredientEntries.map((entry) => (
+              <div key={entry.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-white/10 bg-charcoal/35 px-3 py-2">
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-white">{entry.ingredient.name}</p>
+                  <p className="text-xs text-stone-300">{formatPrice(entry.ingredient.price)} EUR</p>
                 </div>
-                <ActionIconButton
-                  onClick={() => handleRemoveIngredient(ingredient.id)}
-                  label={tr("Supprimer la liaison", "Remove link")}
-                  variant="danger"
-                >
-                  <DeleteIcon />
-                </ActionIconButton>
+                <div className="flex flex-wrap items-center gap-3">
+                  <label className="flex items-center gap-2 text-xs text-stone-200">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(entry.isBase)}
+                      onChange={(event) =>
+                        handleToggleBaseIngredient(entry.ingredient.id, event.target.checked)
+                      }
+                    />
+                    <span>{tr("Element de base", "Base element")}</span>
+                  </label>
+                  <ActionIconButton
+                    onClick={() => handleRemoveIngredient(entry.ingredient.id)}
+                    label={tr("Supprimer la liaison", "Remove link")}
+                    variant="danger"
+                  >
+                    <DeleteIcon />
+                  </ActionIconButton>
+                </div>
               </div>
             ))}
           </div>

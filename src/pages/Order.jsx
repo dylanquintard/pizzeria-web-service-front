@@ -84,6 +84,20 @@ function isCustomizableProduct(product, categoryTitle) {
   return Array.isArray(product.ingredients) && product.ingredients.length > 0;
 }
 
+function getIngredientCategoryKey(ingredient) {
+  return String(ingredient?.category?.id ?? "uncategorized");
+}
+
+function dedupeIngredients(list) {
+  const unique = new Map();
+  (Array.isArray(list) ? list : []).forEach((ingredient) => {
+    if (ingredient?.id) {
+      unique.set(ingredient.id, ingredient);
+    }
+  });
+  return [...unique.values()];
+}
+
 function formatPickupAddress(location, tr) {
   if (!location) return tr("Adresse de retrait non disponible", "Pickup address unavailable");
   const cityLine = `${location.postalCode || ""} ${location.city || ""}`.trim();
@@ -95,21 +109,31 @@ function ProductCustomizerModal({
   ingredients,
   selectedExtras,
   removedIngredients,
+  baseAddedIngredients,
+  baseRemovedIngredients,
   quantity,
   onClose,
   onExtrasChange,
   onRemovedChange,
+  onBaseChangesChange,
   onQuantityChange,
   onConfirm,
   tr,
 }) {
-  const [showCustomizationOptions, setShowCustomizationOptions] = useState(false);
-  const baseIngredients = Array.isArray(product.ingredients)
-    ? product.ingredients.map((entry) => entry?.ingredient).filter(Boolean)
-    : [];
-
-  const groupedExtras = ingredients.reduce((acc, ingredient) => {
-    const key = String(ingredient.category?.id ?? "uncategorized");
+  const [step, setStep] = useState("intro");
+  const extraIngredients = useMemo(
+    () => (Array.isArray(ingredients) ? ingredients.filter((ingredient) => ingredient?.isExtra) : []),
+    [ingredients]
+  );
+  const removableIngredients = useMemo(
+    () =>
+      Array.isArray(product.ingredients)
+        ? product.ingredients.map((entry) => entry?.ingredient).filter(Boolean)
+        : [],
+    [product]
+  );
+  const groupedExtras = extraIngredients.reduce((acc, ingredient) => {
+    const key = getIngredientCategoryKey(ingredient);
     if (!acc[key]) {
       acc[key] = {
         key,
@@ -121,8 +145,8 @@ function ProductCustomizerModal({
     return acc;
   }, {});
 
-  const groupedBaseIngredients = baseIngredients.reduce((acc, ingredient) => {
-    const key = String(ingredient.category?.id ?? "uncategorized");
+  const groupedRemovableIngredients = removableIngredients.reduce((acc, ingredient) => {
+    const key = getIngredientCategoryKey(ingredient);
     if (!acc[key]) {
       acc[key] = {
         key,
@@ -133,6 +157,83 @@ function ProductCustomizerModal({
     acc[key].items.push(ingredient);
     return acc;
   }, {});
+
+  const groupedBaseChoices = useMemo(() => {
+    const currentBaseEntries = Array.isArray(product.ingredients)
+      ? product.ingredients.filter((entry) => entry?.ingredient && entry.isBase)
+      : [];
+
+    return currentBaseEntries.reduce((acc, entry) => {
+      const key = getIngredientCategoryKey(entry.ingredient);
+      if (!acc[key]) {
+        acc[key] = {
+          key,
+          label: entry.ingredient.category?.name || tr("Sans categorie", "Uncategorized"),
+          currentItems: [],
+          options: [],
+        };
+      }
+      acc[key].currentItems.push(entry.ingredient);
+      return acc;
+    }, {});
+  }, [product, tr]);
+
+  const baseChoiceGroups = useMemo(() => {
+    return Object.values(groupedBaseChoices).map((group) => {
+      const currentIds = new Set(group.currentItems.map((ingredient) => ingredient.id));
+      const options = (Array.isArray(ingredients) ? ingredients : []).filter(
+        (ingredient) =>
+          ingredient &&
+          !ingredient.isExtra &&
+          getIngredientCategoryKey(ingredient) === group.key &&
+          !currentIds.has(ingredient.id)
+      );
+
+      return {
+        ...group,
+        options,
+      };
+    });
+  }, [groupedBaseChoices, ingredients]);
+
+  const [pendingBaseSelectionByGroup, setPendingBaseSelectionByGroup] = useState({});
+  const initialBaseAddedRef = useRef(baseAddedIngredients);
+
+  useEffect(() => {
+    const nextSelections = {};
+    baseChoiceGroups.forEach((group) => {
+      const existing = (initialBaseAddedRef.current || []).find(
+        (ingredient) => getIngredientCategoryKey(ingredient) === group.key
+      );
+      nextSelections[group.key] = existing?.id ? String(existing.id) : "";
+    });
+    setPendingBaseSelectionByGroup(nextSelections);
+    setStep("intro");
+  }, [baseChoiceGroups, product]);
+
+  const appliedBaseChangesCount = Object.values(pendingBaseSelectionByGroup).filter(Boolean).length;
+
+  const applyBaseChangesAndContinue = () => {
+    const nextAdded = [];
+    const nextRemoved = [];
+
+    baseChoiceGroups.forEach((group) => {
+      const selectedId = Number(pendingBaseSelectionByGroup[group.key] || 0);
+      if (!selectedId) return;
+
+      const nextIngredient = group.options.find((ingredient) => ingredient.id === selectedId);
+      if (!nextIngredient) return;
+
+      nextAdded.push(nextIngredient);
+      nextRemoved.push(...group.currentItems);
+    });
+
+    onBaseChangesChange({
+      added: dedupeIngredients(nextAdded),
+      removed: dedupeIngredients(nextRemoved),
+    });
+    setStep("customize");
+  };
 
   return (
     <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 p-4">
@@ -170,16 +271,10 @@ function ProductCustomizerModal({
           <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <button
               type="button"
-              onClick={() => setShowCustomizationOptions((current) => !current)}
-              className={`inline-flex items-center justify-center rounded-full border px-5 py-3 text-sm font-bold uppercase tracking-wide transition ${
-                showCustomizationOptions
-                  ? "border-ember bg-ember text-white hover:bg-tomato"
-                  : "border-stone-300 bg-white text-stone-800 hover:bg-stone-100"
-              }`}
+              onClick={() => setStep(baseChoiceGroups.length > 0 ? "base" : "customize")}
+              className="inline-flex items-center justify-center rounded-full border border-stone-300 bg-white px-5 py-3 text-sm font-bold uppercase tracking-wide text-stone-800 transition hover:bg-stone-100"
             >
-              {showCustomizationOptions
-                ? tr("Masquer les modifications", "Hide customizations")
-                : tr("Apporter des modifications", "Customize this pizza")}
+              {tr("Apporter des modifications", "Customize this pizza")}
             </button>
 
             <div className="flex flex-wrap items-center gap-3">
@@ -216,12 +311,112 @@ function ProductCustomizerModal({
           </div>
         </div>
 
-        {showCustomizationOptions ? (
+        {step === "base" ? (
+          <div className="mt-5 rounded-3xl border border-stone-200 bg-white p-5">
+            <p className="text-base font-semibold text-stone-900">
+              {tr(
+                "Voulez-vous changer la base de votre plat ?",
+                "Would you like to change the base of your dish?"
+              )}
+            </p>
+            <p className="mt-2 text-sm text-stone-500">
+              {tr(
+                "Si vous remplacez un element de base, il sera retire puis remplace sans surcout.",
+                "If you replace a base element, it will be removed and replaced with no extra charge."
+              )}
+            </p>
+
+            <div className="mt-4 space-y-3">
+              {baseChoiceGroups.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-3 text-sm text-stone-500">
+                  {tr(
+                    "Aucun element de base n'est configure pour ce plat. Vous pouvez continuer.",
+                    "No base element is configured for this dish. You can continue."
+                  )}
+                </div>
+              ) : (
+                baseChoiceGroups.map((group) => (
+                  <div key={group.key} className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
+                    <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-stone-500">
+                      {group.label}
+                    </p>
+                    <p className="mt-2 text-sm font-semibold text-stone-900">
+                      {tr("Base actuelle", "Current base")}:{" "}
+                      {group.currentItems.map((ingredient) => ingredient.name).join(", ")}
+                    </p>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setPendingBaseSelectionByGroup((prev) => ({
+                            ...prev,
+                            [group.key]: "",
+                          }))
+                        }
+                        className={`rounded-full border px-3 py-2 text-xs font-semibold transition ${
+                          !pendingBaseSelectionByGroup[group.key]
+                            ? "border-ember bg-ember text-white"
+                            : "border-stone-300 bg-white text-stone-700 hover:bg-stone-100"
+                        }`}
+                      >
+                        {tr("Conserver", "Keep current")}
+                      </button>
+                      {group.options.map((ingredient) => (
+                        <button
+                          key={ingredient.id}
+                          type="button"
+                          onClick={() =>
+                            setPendingBaseSelectionByGroup((prev) => ({
+                              ...prev,
+                              [group.key]: String(ingredient.id),
+                            }))
+                          }
+                          className={`rounded-full border px-3 py-2 text-xs font-semibold transition ${
+                            String(pendingBaseSelectionByGroup[group.key] || "") ===
+                            String(ingredient.id)
+                              ? "border-ember bg-ember text-white"
+                              : "border-stone-300 bg-white text-stone-700 hover:bg-stone-100"
+                          }`}
+                        >
+                          {ingredient.name}
+                        </button>
+                      ))}
+                      {group.options.length === 0 && (
+                        <span className="rounded-full border border-stone-200 bg-white px-3 py-2 text-xs text-stone-500">
+                          {tr("Aucune autre base disponible", "No other base available")}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <div className="mt-5 flex items-center justify-between gap-3 border-t border-stone-200 pt-4">
+              <button
+                type="button"
+                onClick={() => setStep("intro")}
+                className="rounded-full border border-stone-300 px-4 py-2 text-sm font-semibold text-stone-600 transition hover:bg-stone-100"
+              >
+                {tr("Retour", "Back")}
+              </button>
+              <button
+                type="button"
+                onClick={applyBaseChangesAndContinue}
+                className="rounded-full bg-ember px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-white transition hover:bg-tomato"
+              >
+                {appliedBaseChangesCount > 0
+                  ? tr("Valider le changement", "Validate change")
+                  : tr("Continuer ->", "Continue ->")}
+              </button>
+            </div>
+          </div>
+        ) : step === "customize" ? (
           <div className="mt-5 grid gap-6 md:grid-cols-2">
             <div className="rounded-3xl border border-stone-200 bg-white p-5">
               <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-500">{tr("Supplements", "Extras")}</p>
               <div className="space-y-3">
-                {ingredients.length === 0 && (
+                {extraIngredients.length === 0 && (
                   <p className="text-xs text-stone-500">{tr("Aucun supplement disponible.", "No extra available.")}</p>
                 )}
                 {Object.values(groupedExtras).map((group) => (
@@ -251,10 +446,10 @@ function ProductCustomizerModal({
             <div className="rounded-3xl border border-stone-200 bg-white p-5">
               <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-500">{tr("Retirer ingredients", "Remove ingredients")}</p>
               <div className="space-y-3">
-                {baseIngredients.length === 0 && (
+                {removableIngredients.length === 0 && (
                   <p className="text-xs text-stone-500">{tr("Aucun ingredient a retirer pour ce produit.", "No ingredient can be removed for this product.")}</p>
                 )}
-                {Object.values(groupedBaseIngredients).map((group) => (
+                {Object.values(groupedRemovableIngredients).map((group) => (
                   <div key={group.key} className="space-y-2">
                     <p className="text-[11px] font-bold uppercase tracking-wide text-stone-500">{group.label}</p>
                     {group.items.map((ingredient) => (
@@ -285,11 +480,27 @@ function ProductCustomizerModal({
           </div>
         )}
 
+        {(baseAddedIngredients?.length || baseRemovedIngredients?.length) && step === "customize" ? (
+          <div className="mt-4 rounded-2xl border border-ember/20 bg-ember/5 px-4 py-3 text-sm text-stone-700">
+            <strong>{tr("Changements de base", "Base changes")}</strong>
+            <div className="mt-1 space-y-1">
+              {baseRemovedIngredients?.length > 0 ? (
+                <p>- {baseRemovedIngredients.map((ingredient) => ingredient.name).join(", ")}</p>
+              ) : null}
+              {baseAddedIngredients?.length > 0 ? (
+                <p>+ {baseAddedIngredients.map((ingredient) => ingredient.name).join(", ")}</p>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
+
         <div className="mt-5 flex items-center justify-between gap-3 border-t border-stone-200 pt-4">
           <div className="text-sm text-stone-500">
-            {showCustomizationOptions
+            {step === "customize"
               ? tr("Les modifications seront ajoutees a cette pizza.", "Customizations will be added to this pizza.")
-              : tr("Version standard de la pizza.", "Standard pizza version.")}
+              : step === "base"
+                ? tr("La base peut etre remplacee sans surcout.", "The base can be replaced with no extra charge.")
+                : tr("Version standard de la pizza.", "Standard pizza version.")}
           </div>
           <button
             type="button"
@@ -323,6 +534,8 @@ export default function Order() {
   const [editingProduct, setEditingProduct] = useState(null);
   const [selectedExtras, setSelectedExtras] = useState([]);
   const [removedIngredients, setRemovedIngredients] = useState([]);
+  const [baseAddedIngredients, setBaseAddedIngredients] = useState([]);
+  const [baseRemovedIngredients, setBaseRemovedIngredients] = useState([]);
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -377,7 +590,7 @@ export default function Order() {
         const [productData, categoryData, ingredientData, locationData] = await Promise.all([
           getAllProductsClient(),
           getCategories({ active: true, kind: "PRODUCT" }),
-          getAllIngredients(token, { isExtra: true }),
+          getAllIngredients(token),
           getLocations({ active: true }),
         ]);
 
@@ -541,6 +754,7 @@ export default function Order() {
       key: `category-${category.id}`,
       title: category.name,
       description: category.description,
+      customerCanCustomize: category.customerCanCustomize,
       items: products.filter((product) => String(product.categoryId ?? "") === String(category.id)),
     }));
 
@@ -550,6 +764,7 @@ export default function Order() {
         key: "category-uncategorized",
         title: tr("Autres produits", "Other products"),
         description: "",
+        customerCanCustomize: false,
         items: uncategorized,
       });
     }
@@ -559,6 +774,7 @@ export default function Order() {
         key: "category-default",
         title: tr("Le menu", "Menu"),
         description: "",
+        customerCanCustomize: false,
         items: products,
       });
     }
@@ -606,6 +822,8 @@ export default function Order() {
     setEditingProduct(product);
     setSelectedExtras([]);
     setRemovedIngredients([]);
+    setBaseAddedIngredients([]);
+    setBaseRemovedIngredients([]);
     setQuantity(1);
   };
 
@@ -637,8 +855,14 @@ export default function Order() {
     try {
       setLoading(true);
       const response = await addToCart(token, editingProduct.id, quantity, {
-        addedIngredients: selectedExtras.map((entry) => entry.id),
-        removedIngredients: removedIngredients.map((entry) => entry.id),
+        addedIngredients: dedupeIngredients([
+          ...baseAddedIngredients,
+          ...selectedExtras,
+        ]).map((entry) => entry.id),
+        removedIngredients: dedupeIngredients([
+          ...baseRemovedIngredients,
+          ...removedIngredients,
+        ]).map((entry) => entry.id),
       });
       setCartFromResponse(response);
       setEditingProduct(null);
@@ -1264,6 +1488,8 @@ export default function Order() {
           ingredients={extras}
           selectedExtras={selectedExtras}
           removedIngredients={removedIngredients}
+          baseAddedIngredients={baseAddedIngredients}
+          baseRemovedIngredients={baseRemovedIngredients}
           quantity={quantity}
           onClose={() => setEditingProduct(null)}
           onExtrasChange={(ingredient, checked) => {
@@ -1275,6 +1501,10 @@ export default function Order() {
             setRemovedIngredients((prev) =>
               checked ? [...prev, ingredient] : prev.filter((entry) => entry.id !== ingredient.id)
             );
+          }}
+          onBaseChangesChange={({ added, removed }) => {
+            setBaseAddedIngredients(dedupeIngredients(added));
+            setBaseRemovedIngredients(dedupeIngredients(removed));
           }}
           onQuantityChange={setQuantity}
           onConfirm={handleAddToCart}

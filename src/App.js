@@ -12,7 +12,6 @@ import { SiteSettingsProvider } from "./context/SiteSettingsContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { slugifyCity } from "./seo/localLandingContent";
 
-const Categories = lazy(() => import("./pages/Categories"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const EditProduct = lazy(() => import("./pages/EditProduct"));
 const Gallery = lazy(() => import("./pages/Gallery"));
@@ -238,16 +237,6 @@ function AppRoutes() {
               <AdminRoute>
                 <Dashboard>
                   <Ingredients />
-                </Dashboard>
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/admin/categories"
-            element={
-              <AdminRoute>
-                <Dashboard>
-                  <Categories />
                 </Dashboard>
               </AdminRoute>
             }

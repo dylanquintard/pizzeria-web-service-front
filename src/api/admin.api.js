@@ -92,6 +92,20 @@ export const removeIngredientFromProduct = async (token, productId, ingredientId
   return response.data;
 };
 
+export const updateIngredientLinkOnProduct = async (
+  token,
+  productId,
+  ingredientId,
+  data
+) => {
+  const response = await api.patch(
+    "/products/ingredients/link",
+    { productId, ingredientId, ...data },
+    authConfig(token)
+  );
+  return response.data;
+};
+
 export const getOrdersAdmin = async (token, filters = {}) => {
   const response = await api.get("/orders", {
     ...authConfig(token),

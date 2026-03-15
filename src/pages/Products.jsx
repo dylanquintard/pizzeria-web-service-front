@@ -12,7 +12,6 @@ import {
 import {
   activateCategory,
   createCategory,
-  deleteCategory,
   getCategories,
   updateCategory,
 } from "../api/category.api";
@@ -68,6 +67,7 @@ function normalizeIngredient(ingredient) {
 
 function CategoryTable({ title, categories, token, tr, onRefresh, onError, kind }) {
   const [busyId, setBusyId] = useState(null);
+  const [editingId, setEditingId] = useState(null);
 
   const patchLocal = (id, patch) => {
     onRefresh((prev) =>
@@ -88,6 +88,7 @@ function CategoryTable({ title, categories, token, tr, onRefresh, onError, kind 
         kind: category.kind,
       });
       await onRefresh();
+      setEditingId(null);
     } catch (err) {
       onError?.(
         err?.response?.data?.error || tr("Erreur lors de la mise a jour", "Error while updating")
@@ -109,18 +110,6 @@ function CategoryTable({ title, categories, token, tr, onRefresh, onError, kind 
     }
   };
 
-  const removeCategory = async (category) => {
-    if (!window.confirm(tr("Supprimer cette categorie ?", "Delete this category?"))) return;
-    try {
-      await deleteCategory(token, category.id);
-      await onRefresh();
-    } catch (err) {
-      onError?.(
-        err?.response?.data?.error || tr("Erreur lors de la suppression", "Error while deleting")
-      );
-    }
-  };
-
   return (
     <div className="overflow-x-auto rounded-xl border border-white/10 bg-charcoal/40 p-3">
       <p className="mb-2 text-sm font-semibold text-white">{title}</p>
@@ -128,7 +117,6 @@ function CategoryTable({ title, categories, token, tr, onRefresh, onError, kind 
         <thead>
           <tr>
             <th>{tr("Nom", "Name")}</th>
-            <th>{tr("Ordre", "Order")}</th>
             {kind === KIND.MENU ? (
               <th>{tr("Modifiable client", "Customer customizable")}</th>
             ) : null}
@@ -139,25 +127,20 @@ function CategoryTable({ title, categories, token, tr, onRefresh, onError, kind 
         <tbody>
           {categories.length === 0 ? (
             <tr>
-              <td colSpan={kind === KIND.MENU ? 5 : 4}>{tr("Aucune categorie", "No category")}</td>
+              <td colSpan={kind === KIND.MENU ? 4 : 3}>{tr("Aucune categorie", "No category")}</td>
             </tr>
           ) : (
             categories.map((category) => (
               <tr key={category.id}>
                 <td>
-                  <input
-                    value={category.name || ""}
-                    onChange={(event) => patchLocal(category.id, { name: event.target.value })}
-                  />
-                </td>
-                <td>
-                  <input
-                    type="number"
-                    min="0"
-                    value={category.sortOrder ?? 0}
-                    onChange={(event) => patchLocal(category.id, { sortOrder: event.target.value })}
-                    className="w-24"
-                  />
+                  {editingId === category.id ? (
+                    <input
+                      value={category.name || ""}
+                      onChange={(event) => patchLocal(category.id, { name: event.target.value })}
+                    />
+                  ) : (
+                    <span className="text-sm font-medium text-white">{category.name}</span>
+                  )}
                 </td>
                 {kind === KIND.MENU ? (
                   <td>
@@ -186,20 +169,22 @@ function CategoryTable({ title, categories, token, tr, onRefresh, onError, kind 
                 </td>
                 <td>
                   <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => saveRow(category)}
-                      disabled={busyId === category.id}
-                    >
-                      {tr("Sauvegarder", "Save")}
-                    </button>
-                    <ActionIconButton
-                      onClick={() => removeCategory(category)}
-                      label={tr("Supprimer", "Delete")}
-                      variant="danger"
-                    >
-                      <DeleteIcon />
-                    </ActionIconButton>
+                    {editingId === category.id ? (
+                      <button
+                        type="button"
+                        onClick={() => saveRow(category)}
+                        disabled={busyId === category.id}
+                      >
+                        {tr("Sauvegarder", "Save")}
+                      </button>
+                    ) : (
+                      <ActionIconButton
+                        onClick={() => setEditingId(category.id)}
+                        label={tr("Modifier", "Edit")}
+                      >
+                        <EditIcon />
+                      </ActionIconButton>
+                    )}
                   </div>
                 </td>
               </tr>
@@ -226,6 +211,8 @@ export default function Products() {
   const [selectedIngredientCategoryId, setSelectedIngredientCategoryId] = useState("");
 
   const [newMenuCategoryName, setNewMenuCategoryName] = useState("");
+  const [newMenuCategoryCustomerCanCustomize, setNewMenuCategoryCustomerCanCustomize] =
+    useState(false);
   const [newIngredientCategoryName, setNewIngredientCategoryName] = useState("");
 
   const [newProductName, setNewProductName] = useState("");
@@ -301,10 +288,17 @@ export default function Products() {
         description: null,
         sortOrder: 0,
         active: true,
+        customerCanCustomize:
+          kind === KIND.MENU ? newMenuCategoryCustomerCanCustomize : false,
         kind,
       });
-      if (kind === KIND.MENU) setNewMenuCategoryName("");
-      if (kind === KIND.INGREDIENT) setNewIngredientCategoryName("");
+      if (kind === KIND.MENU) {
+        setNewMenuCategoryName("");
+        setNewMenuCategoryCustomerCanCustomize(false);
+      }
+      if (kind === KIND.INGREDIENT) {
+        setNewIngredientCategoryName("");
+      }
       await refreshAfterAction(tr("Categorie creee avec succes", "Category created successfully"));
     } catch (err) {
       setMessage(err.response?.data?.error || tr("Erreur lors de la creation", "Error while creating"));
@@ -604,11 +598,28 @@ export default function Products() {
                 {tr("Categorie non disponible ? Ajouter une categorie :", "Missing category? Create one:")}
               </p>
               <div className="flex gap-2">
-                <input
-                  value={newMenuCategoryName}
-                  onChange={(event) => setNewMenuCategoryName(event.target.value)}
-                  placeholder={tr("Nom categorie menu", "Menu category name")}
-                />
+                <div className="flex-1 space-y-2">
+                  <input
+                    value={newMenuCategoryName}
+                    onChange={(event) => setNewMenuCategoryName(event.target.value)}
+                    placeholder={tr("Nom categorie menu", "Menu category name")}
+                  />
+                  <label className="flex items-center gap-2 text-xs text-stone-200">
+                    <input
+                      type="checkbox"
+                      checked={newMenuCategoryCustomerCanCustomize}
+                      onChange={(event) =>
+                        setNewMenuCategoryCustomerCanCustomize(event.target.checked)
+                      }
+                    />
+                    <span>
+                      {tr(
+                        "Le client peut modifier cette categorie dans la modale",
+                        "Customers can customize this category in the modal"
+                      )}
+                    </span>
+                  </label>
+                </div>
                 <button type="button" onClick={() => createCategoryByKind(KIND.MENU)}>
                   {tr("Creer", "Create")}
                 </button>
@@ -648,11 +659,13 @@ export default function Products() {
                 )}
               </p>
               <div className="flex gap-2">
-                <input
-                  value={newIngredientCategoryName}
-                  onChange={(event) => setNewIngredientCategoryName(event.target.value)}
-                  placeholder={tr("Nom categorie ingredients", "Ingredient category name")}
-                />
+                <div className="flex-1 space-y-2">
+                  <input
+                    value={newIngredientCategoryName}
+                    onChange={(event) => setNewIngredientCategoryName(event.target.value)}
+                    placeholder={tr("Nom categorie ingredients", "Ingredient category name")}
+                  />
+                </div>
                 <button type="button" onClick={() => createCategoryByKind(KIND.INGREDIENT)}>
                   {tr("Creer", "Create")}
                 </button>
