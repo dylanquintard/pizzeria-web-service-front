@@ -169,6 +169,124 @@ function mergeTranslatedMultilineValue(previousValue, translatedValue) {
   };
 }
 
+function parseHighlightedIngredientList(value) {
+  return String(value || "")
+    .split(/\r?\n/)
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+}
+
+function serializeHighlightedIngredientList(items) {
+  return items
+    .map((entry) => String(entry || "").trim())
+    .filter(Boolean)
+    .join("\n");
+}
+
+function HighlightedIngredientsManager({
+  items,
+  pendingValue,
+  isAdding,
+  onPendingChange,
+  onStartAdd,
+  onConfirmAdd,
+  onCancelAdd,
+  onRemove,
+  tr,
+}) {
+  return (
+    <div className="grid gap-4">
+      <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
+        <div className="flex flex-wrap items-center gap-3">
+          {isAdding ? (
+            <>
+              <input
+                value={pendingValue}
+                onChange={(event) => onPendingChange(event.target.value)}
+                placeholder={tr("Nom de l'ingredient", "Ingredient name")}
+                className="min-w-[240px] flex-1 rounded-2xl border border-white/15 bg-charcoal/70 px-4 py-3 text-sm text-white"
+              />
+              <button
+                type="button"
+                onClick={onConfirmAdd}
+                disabled={!pendingValue.trim()}
+                className="rounded-full bg-saffron px-5 py-3 text-xs font-bold uppercase tracking-wide text-charcoal transition hover:bg-yellow-300 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {tr("Valider", "Confirm")}
+              </button>
+              <button
+                type="button"
+                onClick={onCancelAdd}
+                className="rounded-full border border-white/20 bg-black/20 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-white transition hover:bg-white/10"
+              >
+                {tr("Annuler", "Cancel")}
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={onStartAdd}
+              className="rounded-full border border-white/20 bg-black/20 px-5 py-3 text-xs font-semibold uppercase tracking-wide text-white transition hover:bg-white/10"
+            >
+              {tr("Ajouter un ingredient", "Add an ingredient")}
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="grid gap-3">
+        <p className="text-xs uppercase tracking-[0.2em] text-stone-400">
+          {tr("Liste actuelle", "Current list")}
+        </p>
+        {items.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-white/15 bg-black/10 px-4 py-4 text-sm text-stone-400">
+            {tr(
+              "Aucun ingredient mis en avant pour le moment.",
+              "No highlighted ingredients yet."
+            )}
+          </div>
+        ) : (
+          <div className="grid gap-2 sm:grid-cols-2">
+            {items.map((ingredient, index) => (
+              <div
+                key={`${ingredient}-${index}`}
+                className="flex items-center justify-between gap-3 rounded-lg border border-white/20 bg-stone-200/20 px-3 py-2 text-sm text-stone-100"
+              >
+                <span className="min-w-0 flex-1 truncate">{ingredient}</span>
+                <button
+                  type="button"
+                  onClick={() => onRemove(index)}
+                  className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-white/15 bg-black/20 text-xs text-stone-200 transition hover:border-red-300/40 hover:bg-red-500/10 hover:text-red-100"
+                  aria-label={tr("Supprimer l'ingredient", "Remove ingredient")}
+                  title={tr("Supprimer", "Remove")}
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
+        <p className="text-xs uppercase tracking-[0.2em] text-saffron">
+          {tr("Apercu accueil", "Home preview")}
+        </p>
+        <ul className="mt-4 grid gap-2 text-sm text-stone-200 sm:grid-cols-2">
+          {items.map((ingredient, index) => (
+            <li
+              key={`${ingredient}-preview-${index}`}
+              className="rounded-lg border border-white/20 bg-stone-200/20 px-3 py-2"
+            >
+              {ingredient}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
 export default function SiteInfoAdmin() {
   const { token, user, loading: authLoading } = useContext(AuthContext);
   const { tr } = useLanguage();
@@ -181,6 +299,8 @@ export default function SiteInfoAdmin() {
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("info");
   const [openSectionId, setOpenSectionId] = useState(null);
+  const [highlightedIngredientDraft, setHighlightedIngredientDraft] = useState("");
+  const [isAddingHighlightedIngredient, setIsAddingHighlightedIngredient] = useState(false);
   const sectionRefs = useRef({});
 
   useEffect(() => {
@@ -226,6 +346,10 @@ export default function SiteInfoAdmin() {
   }, [messageType]);
 
   const saveButtonLabel = tr("Sauvegarder", "Save");
+  const highlightedIngredients = useMemo(
+    () => parseHighlightedIngredientList(form.home?.highlightedIngredients?.fr),
+    [form.home?.highlightedIngredients?.fr]
+  );
 
   const updateRootField = (field, value) => {
     setForm((prev) => ({
@@ -265,6 +389,52 @@ export default function SiteInfoAdmin() {
         },
       },
     }));
+  };
+
+  const updateHighlightedIngredients = (nextFrenchItems, nextEnglishItems) => {
+    setForm((prev) => ({
+      ...prev,
+      home: {
+        ...prev.home,
+        highlightedIngredients: {
+          fr: serializeHighlightedIngredientList(nextFrenchItems),
+          en: serializeHighlightedIngredientList(nextEnglishItems),
+        },
+      },
+    }));
+  };
+
+  const handleStartAddHighlightedIngredient = () => {
+    setIsAddingHighlightedIngredient(true);
+    setHighlightedIngredientDraft("");
+  };
+
+  const handleCancelAddHighlightedIngredient = () => {
+    setIsAddingHighlightedIngredient(false);
+    setHighlightedIngredientDraft("");
+  };
+
+  const handleConfirmAddHighlightedIngredient = () => {
+    const nextIngredient = highlightedIngredientDraft.trim();
+    if (!nextIngredient) return;
+
+    const currentFrenchItems = parseHighlightedIngredientList(form.home?.highlightedIngredients?.fr);
+    const currentEnglishItems = parseHighlightedIngredientList(form.home?.highlightedIngredients?.en);
+    updateHighlightedIngredients(
+      [...currentFrenchItems, nextIngredient],
+      [...currentEnglishItems, nextIngredient]
+    );
+    setIsAddingHighlightedIngredient(false);
+    setHighlightedIngredientDraft("");
+  };
+
+  const handleRemoveHighlightedIngredient = (indexToRemove) => {
+    const currentFrenchItems = parseHighlightedIngredientList(form.home?.highlightedIngredients?.fr);
+    const currentEnglishItems = parseHighlightedIngredientList(form.home?.highlightedIngredients?.en);
+    updateHighlightedIngredients(
+      currentFrenchItems.filter((_entry, index) => index !== indexToRemove),
+      currentEnglishItems.filter((_entry, index) => index !== indexToRemove)
+    );
   };
 
   const handleOgImageUpload = (file) => {
@@ -913,23 +1083,25 @@ export default function SiteInfoAdmin() {
                 updateNestedLocalized("home", "reassuranceText", locale, value)
               }
             />
-            <LocalizedField
-              label={tr(
-                "Ingredients mis en avant Accueil",
-                "Highlighted home ingredients"
-              )}
-              value={form.home.highlightedIngredients}
-              multiline
-              onChange={(locale, value) =>
-                updateNestedLocalized("home", "highlightedIngredients", locale, value)
-              }
-            />
-            <p className="text-xs text-stone-400">
-              {tr(
-                "Ajoutez un ingredient par ligne. En anglais, les lignes manquantes retombent sur la version francaise tant qu'elles ne sont pas traduites.",
-                "Add one ingredient per line. In English, missing lines fall back to the French version until they are translated."
-              )}
-            </p>
+            <div className="grid gap-3">
+              <p className="text-xs text-stone-300">
+                {tr(
+                  "Ingredients mis en avant Accueil",
+                  "Highlighted home ingredients"
+                )}
+              </p>
+              <HighlightedIngredientsManager
+                items={highlightedIngredients}
+                pendingValue={highlightedIngredientDraft}
+                isAdding={isAddingHighlightedIngredient}
+                onPendingChange={setHighlightedIngredientDraft}
+                onStartAdd={handleStartAddHighlightedIngredient}
+                onConfirmAdd={handleConfirmAddHighlightedIngredient}
+                onCancelAdd={handleCancelAddHighlightedIngredient}
+                onRemove={handleRemoveHighlightedIngredient}
+                tr={tr}
+              />
+            </div>
           </div>
         </AccordionSection>
 
