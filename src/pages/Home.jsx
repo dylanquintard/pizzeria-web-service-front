@@ -65,13 +65,25 @@ const DAY_LABELS = {
 const DEFAULT_HOME_BACKGROUND = "/pizza-background-1920.webp";
 const HERO_AUTOPLAY_DELAY_MS = 5000;
 const HERO_IMAGE_LIMIT = 5;
-const MOBILE_HERO_MEDIA_QUERY = "(max-width: 767px)";
+const MOBILE_HERO_MEDIA_QUERY = "(max-width: 1023px)";
+const MOBILE_USER_AGENT_REGEX =
+  /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
 
 function getInitialIsMobileViewport() {
-  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+  if (typeof window === "undefined") {
     return true;
   }
-  return window.matchMedia(MOBILE_HERO_MEDIA_QUERY).matches;
+
+  const hasMobileUserAgent =
+    typeof navigator !== "undefined" &&
+    MOBILE_USER_AGENT_REGEX.test(String(navigator.userAgent || ""));
+
+  if (typeof window.matchMedia !== "function") {
+    return true;
+  }
+
+  const isMobileByViewport = window.matchMedia(MOBILE_HERO_MEDIA_QUERY).matches;
+  return hasMobileUserAgent || isMobileByViewport;
 }
 
 function formatLocationAddress(location, tr) {
@@ -122,7 +134,10 @@ export default function Home() {
 
     const mediaQueryList = window.matchMedia(MOBILE_HERO_MEDIA_QUERY);
     const handleViewportChange = () => {
-      setIsMobileViewport(mediaQueryList.matches);
+      const hasMobileUserAgent =
+        typeof navigator !== "undefined" &&
+        MOBILE_USER_AGENT_REGEX.test(String(navigator.userAgent || ""));
+      setIsMobileViewport(hasMobileUserAgent || mediaQueryList.matches);
     };
 
     handleViewportChange();
