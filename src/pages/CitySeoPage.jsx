@@ -50,12 +50,6 @@ function formatHourRange(startTime, endTime) {
   return `${formatHourValue(startTime)}-${formatHourValue(endTime)}`;
 }
 
-function formatAddress(location) {
-  if (!location) return "";
-  const cityLine = `${location.postalCode || ""} ${location.city || ""}`.trim();
-  return [location.addressLine1, cityLine].filter(Boolean).join(", ");
-}
-
 function getSeoLocationLabel(location) {
   return String(location?.name || location?.city || "").trim();
 }
@@ -258,10 +252,9 @@ export default function CitySeoPage({ forcedCitySlug = "" }) {
         }
 
         const dayLabel = DAY_LABELS[dayEntry?.dayOfWeek] || dayEntry?.dayOfWeek || "";
-        const address = formatAddress(service?.location);
         const hours = formatHourRange(service?.startTime, service?.endTime);
         const locationName = service?.location?.name || "Emplacement";
-        const dedupeKey = `${locationName}|${address}|${dayLabel}|${hours}`;
+        const dedupeKey = `${locationName}|${dayLabel}|${hours}`;
         const bucket = map.get(slug);
         const alreadyExists = bucket.entries.some((entry) => entry.key === dedupeKey);
 
@@ -269,7 +262,6 @@ export default function CitySeoPage({ forcedCitySlug = "" }) {
           bucket.entries.push({
             key: dedupeKey,
             locationName,
-            address,
             dayLabel,
             hours,
           });
@@ -466,7 +458,6 @@ export default function CitySeoPage({ forcedCitySlug = "" }) {
             {currentBucket.entries.slice(0, 6).map((entry) => (
               <li key={entry.key} className="rounded-xl border border-white/15 bg-white/5 p-4 text-sm text-stone-200">
                 <p className="font-semibold text-white">{entry.locationName}</p>
-                <p className="mt-1 text-xs text-stone-300">{entry.address || "Adresse a venir"}</p>
                 <p className="mt-1 text-xs text-stone-300">
                   {entry.dayLabel} - {entry.hours}
                 </p>

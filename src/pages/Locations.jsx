@@ -233,6 +233,12 @@ export default function Locations() {
                 }
                 className="rounded-lg border border-white/20 bg-charcoal/70 px-3 py-2 text-sm text-stone-100"
               />
+              <span className="text-[11px] text-stone-400">
+                {tr(
+                  "Le nom de l'emplacement reprend automatiquement la ville.",
+                  "The location name is automatically set from the city."
+                )}
+              </span>
             </label>
             <label className="grid gap-1 text-xs text-stone-300 md:col-span-2">
               <span>{tr("Pays", "Country")}</span>
@@ -260,7 +266,7 @@ export default function Locations() {
           <table className="w-full min-w-[680px] text-sm">
             <thead>
               <tr className="text-left text-xs uppercase tracking-wider text-stone-400">
-                <th className="pb-2">{tr("Nom", "Name")}</th>
+                <th className="pb-2">{tr("Ville", "City")}</th>
                 <th className="pb-2">{tr("Adresse", "Address")}</th>
                 <th className="pb-2">{tr("Actif", "Active")}</th>
                 <th className="pb-2">{tr("Actions", "Actions")}</th>
@@ -345,6 +351,12 @@ export default function Locations() {
                 }
                 className="rounded-lg border border-white/20 bg-charcoal/70 px-3 py-2 text-sm text-stone-100"
               />
+              <span className="text-[11px] text-stone-400">
+                {tr(
+                  "Le nom de l'emplacement reprend automatiquement la ville.",
+                  "The location name is automatically set from the city."
+                )}
+              </span>
             </label>
             <label className="grid gap-1 text-xs text-stone-300">
               <span>{tr("Pays", "Country")}</span>

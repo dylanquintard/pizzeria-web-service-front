@@ -299,7 +299,7 @@ function ProductCustomizerModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-start justify-center overflow-y-auto bg-black/70 p-3 sm:items-center sm:p-4">
+    <div className="fixed inset-0 z-[80] flex items-start justify-center overflow-y-auto overflow-x-hidden bg-black/70 p-3 sm:items-center sm:p-4">
       <div className="my-4 max-h-[calc(100vh-1.5rem)] w-full max-w-2xl overflow-y-auto rounded-[28px] border border-white/50 bg-white p-4 text-stone-900 shadow-2xl sm:my-0 sm:max-h-[min(92vh,960px)] sm:p-7">
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
@@ -1345,7 +1345,7 @@ export default function Order() {
   };
 
   return (
-    <div className="order-page section-shell pb-16">
+    <div className="order-page section-shell overflow-x-hidden pb-16">
       <SeoHead
         title={orderPageTitle}
         description={orderPageDescription}
@@ -1374,8 +1374,8 @@ export default function Order() {
         </div>
       )}
 
-      <div className="grid gap-6 xl:grid-cols-[1.65fr_1fr] xl:gap-8">
-        <section className="space-y-4">
+      <div className="grid min-w-0 gap-6 xl:grid-cols-[1.65fr_1fr] xl:gap-8">
+        <section className="min-w-0 space-y-4">
           <h2 className="text-xl font-bold text-white">{tr("Nos produits", "Our products")}</h2>
           {menuByCategory.length === 0 ? (
             <div className="rounded-2xl border border-white/10 bg-white/5 p-5 text-sm text-stone-300">
@@ -1463,7 +1463,7 @@ export default function Order() {
           )}
         </section>
 
-        <section className="space-y-4">
+        <section className="min-w-0 space-y-4">
           <div className="order-cart-shell overflow-hidden rounded-2xl p-4 sm:p-5">
             <div className="mb-4 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
               <h2 className="text-xl font-bold text-white">{tr("Mon panier", "My cart")}</h2>

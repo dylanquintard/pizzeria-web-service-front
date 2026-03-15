@@ -13,6 +13,7 @@ import {
 } from "../api/timeslot.api";
 import { AuthContext } from "../context/AuthContext";
 import { useLanguage } from "../context/LanguageContext";
+import { getLocationDisplayName } from "../utils/location";
 
 const WEEK_DAYS = [
   { key: "MONDAY", labelFr: "Lundi", labelEn: "Monday" },
@@ -53,7 +54,9 @@ const DEFAULT_CLOSURE_FORM = {
 function formatLocation(location, tr) {
   if (!location) return tr("Sans emplacement", "No location");
   const cityLine = `${location.postalCode || ""} ${location.city || ""}`.trim();
-  return [location.name, location.addressLine1, cityLine].filter(Boolean).join(" - ");
+  return [getLocationDisplayName(location, tr("Emplacement", "Location")), location.addressLine1, cityLine]
+    .filter(Boolean)
+    .join(" - ");
 }
 
 function closedSetting(dayOfWeek) {
