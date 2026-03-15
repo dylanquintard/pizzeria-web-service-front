@@ -1308,7 +1308,7 @@ export default function Order() {
   };
 
   return (
-    <div className="order-page section-shell overflow-x-hidden pb-16">
+    <div className="order-page section-shell overflow-x-hidden pb-16 pt-12 sm:pt-14">
       <SeoHead
         title={orderPageTitle}
         description={orderPageDescription}
