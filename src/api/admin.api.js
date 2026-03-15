@@ -75,6 +75,15 @@ export const deleteIngredient = async (token, id) => {
   return response.data;
 };
 
+export const activateIngredient = async (token, id, active) => {
+  const response = await api.patch(
+    `/products/ingredients/${id}/activate`,
+    { active },
+    authConfig(token)
+  );
+  return response.data;
+};
+
 export const addIngredientToProduct = async (token, productId, ingredientId) => {
   const response = await api.post(
     "/products/ingredients/link",

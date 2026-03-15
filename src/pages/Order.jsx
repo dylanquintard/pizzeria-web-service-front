@@ -184,7 +184,7 @@ function ProductCustomizerModal({
       const options = (Array.isArray(ingredients) ? ingredients : []).filter(
         (ingredient) =>
           ingredient &&
-          !ingredient.isExtra &&
+          ingredient.isBaseIngredient &&
           getIngredientCategoryKey(ingredient) === group.key &&
           !currentIds.has(ingredient.id)
       );
@@ -590,7 +590,7 @@ export default function Order() {
         const [productData, categoryData, ingredientData, locationData] = await Promise.all([
           getAllProductsClient(),
           getCategories({ active: true, kind: "PRODUCT" }),
-          getAllIngredients(token),
+          getAllIngredients(token, { active: true }),
           getLocations({ active: true }),
         ]);
 

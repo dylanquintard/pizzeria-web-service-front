@@ -1,6 +1,7 @@
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
+  activateIngredient,
   createIngredient,
   createProduct,
   deleteIngredient,
@@ -62,6 +63,8 @@ function normalizeIngredient(ingredient) {
     tempName: ingredient.name || "",
     tempPrice: ingredient.price ?? "",
     tempIsExtra: Boolean(ingredient.isExtra),
+    tempIsBaseIngredient: Boolean(ingredient.isBaseIngredient),
+    active: ingredient.active !== false,
   };
 }
 
@@ -120,7 +123,7 @@ function CategoryTable({ title, categories, token, tr, onRefresh, onError, kind 
             {kind === KIND.MENU ? (
               <th>{tr("Modifiable client", "Customer customizable")}</th>
             ) : null}
-            <th>{tr("Actif / Inactif", "Active / Inactive")}</th>
+            <th>{tr("Visible menu", "Visible in menu")}</th>
             <th>{tr("Actions", "Actions")}</th>
           </tr>
         </thead>
@@ -148,6 +151,7 @@ function CategoryTable({ title, categories, token, tr, onRefresh, onError, kind 
                       <input
                         type="checkbox"
                         checked={Boolean(category.customerCanCustomize)}
+                        disabled={editingId !== category.id}
                         onChange={(event) =>
                           patchLocal(category.id, {
                             customerCanCustomize: event.target.checked,
@@ -162,8 +166,8 @@ function CategoryTable({ title, categories, token, tr, onRefresh, onError, kind 
                   <StatusToggle
                     checked={Boolean(category.active)}
                     onChange={() => toggleActive(category)}
-                    labelOn={tr("Desactiver", "Disable")}
-                    labelOff={tr("Activer", "Enable")}
+                    labelOn={tr("Masquer", "Hide")}
+                    labelOff={tr("Afficher", "Show")}
                     disabled={busyId === category.id}
                   />
                 </td>
@@ -211,8 +215,6 @@ export default function Products() {
   const [selectedIngredientCategoryId, setSelectedIngredientCategoryId] = useState("");
 
   const [newMenuCategoryName, setNewMenuCategoryName] = useState("");
-  const [newMenuCategoryCustomerCanCustomize, setNewMenuCategoryCustomerCanCustomize] =
-    useState(false);
   const [newIngredientCategoryName, setNewIngredientCategoryName] = useState("");
 
   const [newProductName, setNewProductName] = useState("");
@@ -221,6 +223,7 @@ export default function Products() {
   const [newIngredientName, setNewIngredientName] = useState("");
   const [newIngredientPrice, setNewIngredientPrice] = useState("");
   const [newIngredientIsExtra, setNewIngredientIsExtra] = useState(true);
+  const [newIngredientIsBaseIngredient, setNewIngredientIsBaseIngredient] = useState(false);
 
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -288,13 +291,11 @@ export default function Products() {
         description: null,
         sortOrder: 0,
         active: true,
-        customerCanCustomize:
-          kind === KIND.MENU ? newMenuCategoryCustomerCanCustomize : false,
+        customerCanCustomize: false,
         kind,
       });
       if (kind === KIND.MENU) {
         setNewMenuCategoryName("");
-        setNewMenuCategoryCustomerCanCustomize(false);
       }
       if (kind === KIND.INGREDIENT) {
         setNewIngredientCategoryName("");
@@ -368,11 +369,13 @@ export default function Products() {
         name,
         price: Number(newIngredientPrice),
         isExtra: Boolean(newIngredientIsExtra),
+        isBaseIngredient: Boolean(newIngredientIsBaseIngredient),
         categoryId: Number(selectedIngredientCategoryId),
       });
       setNewIngredientName("");
       setNewIngredientPrice("");
       setNewIngredientIsExtra(true);
+      setNewIngredientIsBaseIngredient(false);
       await refreshAfterAction(tr("Ingredient ajoute avec succes", "Ingredient added successfully"));
     } catch (err) {
       setMessage(err.response?.data?.error || tr("Erreur lors de la creation", "Error while creating"));
@@ -391,6 +394,7 @@ export default function Products() {
       tempName: ingredient.name || "",
       tempPrice: ingredient.price ?? "",
       tempIsExtra: Boolean(ingredient.isExtra),
+      tempIsBaseIngredient: Boolean(ingredient.isBaseIngredient),
     });
   };
 
@@ -400,6 +404,7 @@ export default function Products() {
         name: String(ingredient.tempName || "").trim(),
         price: Number(ingredient.tempPrice),
         isExtra: Boolean(ingredient.tempIsExtra),
+        isBaseIngredient: Boolean(ingredient.tempIsBaseIngredient),
       });
       setIngredients((prev) =>
         prev.map((entry) => (entry.id === ingredient.id ? normalizeIngredient(updated) : entry))
@@ -407,6 +412,25 @@ export default function Products() {
       setMessage(tr("Ingredient mis a jour", "Ingredient updated"));
     } catch (err) {
       setMessage(err.response?.data?.error || tr("Erreur lors de la mise a jour", "Error while updating"));
+    }
+  };
+
+  const toggleIngredientActive = async (ingredient) => {
+    try {
+      const updated = await activateIngredient(token, ingredient.id, !ingredient.active);
+      setIngredients((prev) =>
+        prev.map((entry) => (entry.id === ingredient.id ? normalizeIngredient(updated) : entry))
+      );
+      setMessage(
+        updated.active
+          ? tr("Ingredient affiche", "Ingredient shown")
+          : tr("Ingredient masque", "Ingredient hidden")
+      );
+    } catch (err) {
+      setMessage(
+        err.response?.data?.error ||
+          tr("Erreur lors du changement de statut", "Error while changing status")
+      );
     }
   };
 
@@ -598,27 +622,12 @@ export default function Products() {
                 {tr("Categorie non disponible ? Ajouter une categorie :", "Missing category? Create one:")}
               </p>
               <div className="flex gap-2">
-                <div className="flex-1 space-y-2">
+                <div className="flex-1">
                   <input
                     value={newMenuCategoryName}
                     onChange={(event) => setNewMenuCategoryName(event.target.value)}
                     placeholder={tr("Nom categorie menu", "Menu category name")}
                   />
-                  <label className="flex items-center gap-2 text-xs text-stone-200">
-                    <input
-                      type="checkbox"
-                      checked={newMenuCategoryCustomerCanCustomize}
-                      onChange={(event) =>
-                        setNewMenuCategoryCustomerCanCustomize(event.target.checked)
-                      }
-                    />
-                    <span>
-                      {tr(
-                        "Le client peut modifier cette categorie dans la modale",
-                        "Customers can customize this category in the modal"
-                      )}
-                    </span>
-                  </label>
                 </div>
                 <button type="button" onClick={() => createCategoryByKind(KIND.MENU)}>
                   {tr("Creer", "Create")}
@@ -765,7 +774,7 @@ export default function Products() {
             <div className="space-y-4">
               <div className="rounded-xl border border-white/10 bg-charcoal/40 p-3">
                 <p className="mb-2 text-sm font-semibold text-white">{tr("Ajouter un ingredient", "Add ingredient")}</p>
-                <div className="grid gap-2 sm:grid-cols-4">
+                <div className="grid gap-2 sm:grid-cols-5">
                   <input
                     placeholder={tr("Nom ingredient", "Ingredient name")}
                     value={newIngredientName}
@@ -787,6 +796,14 @@ export default function Products() {
                     />
                     <span>{tr("Supplement", "Extra")}</span>
                   </label>
+                  <label className="flex items-center gap-2 rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-stone-100">
+                    <input
+                      type="checkbox"
+                      checked={newIngredientIsBaseIngredient}
+                      onChange={(event) => setNewIngredientIsBaseIngredient(event.target.checked)}
+                    />
+                    <span>{tr("Ingredient de base", "Base ingredient")}</span>
+                  </label>
                   <button type="button" onClick={createMenuIngredient}>{tr("Ajouter un ingredient", "Add ingredient")}</button>
                 </div>
               </div>
@@ -806,7 +823,7 @@ export default function Products() {
                             <div key={ingredient.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-white/10 bg-black/20 px-3 py-2">
                               <div className="min-w-0">
                                 {ingredient.isEditing ? (
-                                  <div className="grid gap-2 sm:grid-cols-3">
+                                  <div className="grid gap-2 sm:grid-cols-4">
                                     <input
                                       value={ingredient.tempName}
                                       onChange={(event) => patchIngredient(ingredient.id, { tempName: event.target.value })}
@@ -826,18 +843,39 @@ export default function Products() {
                                       />
                                       <span>{tr("Supplement", "Extra")}</span>
                                     </label>
+                                    <label className="flex items-center gap-2 text-xs text-stone-200">
+                                      <input
+                                        type="checkbox"
+                                        checked={ingredient.tempIsBaseIngredient}
+                                        onChange={(event) =>
+                                          patchIngredient(ingredient.id, {
+                                            tempIsBaseIngredient: event.target.checked,
+                                          })
+                                        }
+                                      />
+                                      <span>{tr("Ingredient de base", "Base ingredient")}</span>
+                                    </label>
                                   </div>
                                 ) : (
                                   <div>
                                     <p className="truncate text-sm font-semibold text-white">{ingredient.name}</p>
                                     <p className="text-xs text-stone-300">
                                       {toMoney(ingredient.price)} EUR - {ingredient.isExtra ? tr("Supplement", "Extra") : tr("Standard", "Standard")}
+                                      {ingredient.isBaseIngredient
+                                        ? ` - ${tr("Ingredient de base", "Base ingredient")}`
+                                        : ""}
                                     </p>
                                   </div>
                                 )}
                               </div>
 
                               <div className="flex items-center gap-2">
+                                <StatusToggle
+                                  checked={Boolean(ingredient.active)}
+                                  onChange={() => toggleIngredientActive(ingredient)}
+                                  labelOn={tr("Masquer", "Hide")}
+                                  labelOff={tr("Afficher", "Show")}
+                                />
                                 {ingredient.isEditing ? (
                                   <ActionIconButton onClick={() => saveIngredient(ingredient)} label={tr("Valider", "Validate")} variant="success">
                                     <CheckIcon />
