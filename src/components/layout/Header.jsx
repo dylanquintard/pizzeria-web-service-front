@@ -166,7 +166,7 @@ export default function Header() {
               <img
                 src={headerLogoUrl}
                 alt={siteSettings.siteName || DEFAULT_SITE_SETTINGS.siteName}
-                className="block h-11 w-auto max-w-[min(42vw,168px)] object-contain sm:h-14 sm:max-w-[240px]"
+                className="block h-24 w-auto max-w-[min(78vw,360px)] object-contain sm:h-28 sm:max-w-[520px]"
                 loading="eager"
                 decoding="async"
                 onError={() => setHasLogoError(true)}

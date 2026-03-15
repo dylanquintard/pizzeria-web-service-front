@@ -146,6 +146,7 @@ function ProductCustomizerModal({
   onBaseChangesChange,
   onQuantityChange,
   onConfirm,
+  onCancelCustomization,
   tr,
 }) {
   const [step, setStep] = useState("intro");
@@ -293,6 +294,11 @@ function ProductCustomizerModal({
     }
 
     onConfirm();
+  };
+
+  const handleCancelCurrentProduct = () => {
+    onCancelCustomization();
+    onClose();
   };
 
   return (
@@ -517,22 +523,13 @@ function ProductCustomizerModal({
           </div>
         ) : step === "customize" ? (
           <div className="mt-5 space-y-5">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-ember">
-                  {tr("Etape 2", "Step 2")}
-                </p>
-                <p className="mt-2 text-base font-semibold text-stone-900">
-                  {tr("Ajouter des ingredients et verifier le recap", "Add ingredients and review the summary")}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setStep("base")}
-                className="rounded-full border border-stone-300 px-4 py-2 text-sm font-semibold text-stone-600 transition hover:bg-stone-100"
-              >
-                {tr("Retour etape 1", "Back to step 1")}
-              </button>
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-ember">
+                {tr("Etape 2", "Step 2")}
+              </p>
+              <p className="mt-2 text-base font-semibold text-stone-900">
+                {tr("Ajouter des ingredients et verifier le recap", "Add ingredients and review the summary")}
+              </p>
             </div>
 
             <div className="grid gap-4 md:grid-cols-[minmax(0,7fr)_minmax(260px,3fr)]">
@@ -715,6 +712,20 @@ function ProductCustomizerModal({
                   className="w-full rounded-full bg-ember px-5 py-3 text-sm font-semibold text-white transition hover:bg-tomato"
                 >
                   {tr("Valider modifications", "Validate changes")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStep("base")}
+                  className="w-full rounded-full border border-stone-300 bg-white px-5 py-3 text-sm font-semibold text-stone-700 transition hover:bg-stone-100"
+                >
+                  {tr("Retour", "Back")}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCancelCurrentProduct}
+                  className="w-full rounded-full border border-rose-300 bg-rose-50 px-5 py-3 text-sm font-semibold text-rose-800 transition hover:bg-rose-100"
+                >
+                  {tr("Annuler la commande", "Cancel order")}
                 </button>
               </div>
             </div>
@@ -1766,6 +1777,13 @@ export default function Order() {
           }}
           onQuantityChange={setQuantity}
           onConfirm={handleAddToCart}
+          onCancelCustomization={() => {
+            setSelectedExtras([]);
+            setRemovedIngredients([]);
+            setBaseAddedIngredients([]);
+            setBaseRemovedIngredients([]);
+            setQuantity(1);
+          }}
           tr={tr}
         />
       )}
