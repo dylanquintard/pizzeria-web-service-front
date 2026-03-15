@@ -68,6 +68,21 @@ function normalizeIngredient(ingredient) {
   };
 }
 
+function AccordionChevron({ open }) {
+  return (
+    <svg
+      viewBox="0 0 20 20"
+      aria-hidden="true"
+      className={`h-4 w-4 transition-transform duration-200 ${open ? "rotate-180" : "rotate-0"}`}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+    >
+      <path d="m5 7 5 6 5-6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 function CategoryTable({ title, categories, token, tr, onRefresh, onError, kind }) {
   const [busyId, setBusyId] = useState(null);
   const [editingId, setEditingId] = useState(null);
@@ -213,6 +228,8 @@ export default function Products() {
   const [activePanel, setActivePanel] = useState("");
   const [selectedMenuCategoryId, setSelectedMenuCategoryId] = useState("");
   const [selectedIngredientCategoryId, setSelectedIngredientCategoryId] = useState("");
+  const [openMenuListingCategoryId, setOpenMenuListingCategoryId] = useState("");
+  const [openIngredientListingCategoryId, setOpenIngredientListingCategoryId] = useState("");
 
   const [newMenuCategoryName, setNewMenuCategoryName] = useState("");
   const [newIngredientCategoryName, setNewIngredientCategoryName] = useState("");
@@ -740,31 +757,57 @@ export default function Products() {
                 <p className="text-sm font-semibold text-white">{tr("Listing complet du menu", "Full menu listing")}</p>
                 {menuCategoryListForUi.map((category) => {
                   const rows = productsByCategory[String(category.id)] || [];
+                  const isOpen = String(openMenuListingCategoryId) === String(category.id);
                   return (
-                    <div key={category.id} className="rounded-xl border border-white/10 bg-charcoal/35 p-3">
-                      <p className="mb-2 text-sm font-bold uppercase tracking-wide text-saffron">{category.name}</p>
-                      {rows.length === 0 ? (
-                        <p className="text-xs text-stone-400">{tr("Aucun produit", "No product")}</p>
-                      ) : (
-                        <div className="space-y-2">
-                          {rows.map((product) => (
-                            <div key={product.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-white/10 bg-black/20 px-3 py-2">
-                              <div className="min-w-0">
-                                <p className="truncate text-sm font-semibold text-white">{product.name}</p>
-                                <p className="text-xs text-stone-300">{toMoney(product.basePrice)} EUR</p>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <Link to={`/admin/editproduct/${product.id}`}>
-                                  <button type="button">{tr("Modifier", "Edit")}</button>
-                                </Link>
-                                <ActionIconButton onClick={() => removeMenuProduct(product.id)} label={tr("Supprimer", "Delete")} variant="danger">
-                                  <DeleteIcon />
-                                </ActionIconButton>
-                              </div>
-                            </div>
-                          ))}
+                    <div key={category.id} className="overflow-hidden rounded-2xl border border-white/10 bg-charcoal/35">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setOpenMenuListingCategoryId((prev) =>
+                            String(prev) === String(category.id) ? "" : String(category.id)
+                          )
+                        }
+                        className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition hover:bg-white/5"
+                      >
+                        <div className="min-w-0">
+                          <p className="text-sm font-bold uppercase tracking-wide text-saffron">{category.name}</p>
+                          <p className="mt-1 text-xs text-stone-400">
+                            {rows.length > 0
+                              ? `${rows.length} ${tr("plat(s)", "dish(es)")}`
+                              : tr("Aucun produit", "No product")}
+                          </p>
                         </div>
-                      )}
+                        <span className="shrink-0 text-stone-300">
+                          <AccordionChevron open={isOpen} />
+                        </span>
+                      </button>
+
+                      {isOpen ? (
+                        <div className="border-t border-white/10 bg-black/10 p-3">
+                          {rows.length === 0 ? (
+                            <p className="text-xs text-stone-400">{tr("Aucun produit", "No product")}</p>
+                          ) : (
+                            <div className="space-y-2">
+                              {rows.map((product) => (
+                                <div key={product.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-white/10 bg-black/20 px-3 py-2">
+                                  <div className="min-w-0">
+                                    <p className="truncate text-sm font-semibold text-white">{product.name}</p>
+                                    <p className="text-xs text-stone-300">{toMoney(product.basePrice)} EUR</p>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <Link to={`/admin/editproduct/${product.id}`}>
+                                      <button type="button">{tr("Modifier", "Edit")}</button>
+                                    </Link>
+                                    <ActionIconButton onClick={() => removeMenuProduct(product.id)} label={tr("Supprimer", "Delete")} variant="danger">
+                                      <DeleteIcon />
+                                    </ActionIconButton>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ) : null}
                     </div>
                   );
                 })}
@@ -812,94 +855,120 @@ export default function Products() {
                 <p className="text-sm font-semibold text-white">{tr("Listing complet ingredients", "Full ingredients listing")}</p>
                 {ingredientCategoryListForUi.map((category) => {
                   const rows = ingredientsByCategory[String(category.id)] || [];
+                  const isOpen = String(openIngredientListingCategoryId) === String(category.id);
                   return (
-                    <div key={category.id} className="rounded-xl border border-white/10 bg-charcoal/35 p-3">
-                      <p className="mb-2 text-sm font-bold uppercase tracking-wide text-saffron">{category.name}</p>
-                      {rows.length === 0 ? (
-                        <p className="text-xs text-stone-400">{tr("Aucun ingredient", "No ingredient")}</p>
-                      ) : (
-                        <div className="space-y-2">
-                          {rows.map((ingredient) => (
-                            <div key={ingredient.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-white/10 bg-black/20 px-3 py-2">
-                              <div className="min-w-0">
-                                {ingredient.isEditing ? (
-                                  <div className="grid gap-2 sm:grid-cols-4">
-                                    <input
-                                      value={ingredient.tempName}
-                                      onChange={(event) => patchIngredient(ingredient.id, { tempName: event.target.value })}
-                                    />
-                                    <input
-                                      type="number"
-                                      min="0"
-                                      step="0.01"
-                                      value={ingredient.tempPrice}
-                                      onChange={(event) => patchIngredient(ingredient.id, { tempPrice: event.target.value })}
-                                    />
-                                    <label className="flex items-center gap-2 text-xs text-stone-200">
-                                      <input
-                                        type="checkbox"
-                                        checked={ingredient.tempIsExtra}
-                                        onChange={(event) => patchIngredient(ingredient.id, { tempIsExtra: event.target.checked })}
-                                      />
-                                      <span>{tr("Supplement", "Extra")}</span>
-                                    </label>
-                                    <label className="flex items-center gap-2 text-xs text-stone-200">
-                                      <input
-                                        type="checkbox"
-                                        checked={ingredient.tempIsBaseIngredient}
-                                        onChange={(event) =>
-                                          patchIngredient(ingredient.id, {
-                                            tempIsBaseIngredient: event.target.checked,
-                                          })
-                                        }
-                                      />
-                                      <span>{tr("Ingredient de base", "Base ingredient")}</span>
-                                    </label>
-                                  </div>
-                                ) : (
-                                  <div>
-                                    <p className="truncate text-sm font-semibold text-white">{ingredient.name}</p>
-                                    <p className="text-xs text-stone-300">
-                                      {toMoney(ingredient.price)} EUR - {ingredient.isExtra ? tr("Supplement", "Extra") : tr("Standard", "Standard")}
-                                      {ingredient.isBaseIngredient
-                                        ? ` - ${tr("Ingredient de base", "Base ingredient")}`
-                                        : ""}
-                                    </p>
-                                  </div>
-                                )}
-                              </div>
-
-                              <div className="flex items-center gap-2">
-                                <StatusToggle
-                                  checked={Boolean(ingredient.active)}
-                                  onChange={() => toggleIngredientActive(ingredient)}
-                                  labelOn={tr("Masquer", "Hide")}
-                                  labelOff={tr("Afficher", "Show")}
-                                />
-                                {ingredient.isEditing ? (
-                                  <ActionIconButton onClick={() => saveIngredient(ingredient)} label={tr("Valider", "Validate")} variant="success">
-                                    <CheckIcon />
-                                  </ActionIconButton>
-                                ) : (
-                                  <ActionIconButton onClick={() => toggleIngredientEdit(ingredient)} label={tr("Modifier", "Edit")}>
-                                    <EditIcon />
-                                  </ActionIconButton>
-                                )}
-
-                                {ingredient.isEditing && (
-                                  <button type="button" onClick={() => toggleIngredientEdit(ingredient)}>
-                                    {tr("Annuler", "Cancel")}
-                                  </button>
-                                )}
-
-                                <ActionIconButton onClick={() => removeIngredient(ingredient.id)} label={tr("Supprimer", "Delete")} variant="danger">
-                                  <DeleteIcon />
-                                </ActionIconButton>
-                              </div>
-                            </div>
-                          ))}
+                    <div key={category.id} className="overflow-hidden rounded-2xl border border-white/10 bg-charcoal/35">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setOpenIngredientListingCategoryId((prev) =>
+                            String(prev) === String(category.id) ? "" : String(category.id)
+                          )
+                        }
+                        className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition hover:bg-white/5"
+                      >
+                        <div className="min-w-0">
+                          <p className="text-sm font-bold uppercase tracking-wide text-saffron">{category.name}</p>
+                          <p className="mt-1 text-xs text-stone-400">
+                            {rows.length > 0
+                              ? `${rows.length} ${tr("ingredient(s)", "ingredient(s)")}`
+                              : tr("Aucun ingredient", "No ingredient")}
+                          </p>
                         </div>
-                      )}
+                        <span className="shrink-0 text-stone-300">
+                          <AccordionChevron open={isOpen} />
+                        </span>
+                      </button>
+
+                      {isOpen ? (
+                        <div className="border-t border-white/10 bg-black/10 p-3">
+                          {rows.length === 0 ? (
+                            <p className="text-xs text-stone-400">{tr("Aucun ingredient", "No ingredient")}</p>
+                          ) : (
+                            <div className="space-y-2">
+                              {rows.map((ingredient) => (
+                                <div key={ingredient.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-white/10 bg-black/20 px-3 py-2">
+                                  <div className="min-w-0">
+                                    {ingredient.isEditing ? (
+                                      <div className="grid gap-2 sm:grid-cols-4">
+                                        <input
+                                          value={ingredient.tempName}
+                                          onChange={(event) => patchIngredient(ingredient.id, { tempName: event.target.value })}
+                                        />
+                                        <input
+                                          type="number"
+                                          min="0"
+                                          step="0.01"
+                                          value={ingredient.tempPrice}
+                                          onChange={(event) => patchIngredient(ingredient.id, { tempPrice: event.target.value })}
+                                        />
+                                        <label className="flex items-center gap-2 text-xs text-stone-200">
+                                          <input
+                                            type="checkbox"
+                                            checked={ingredient.tempIsExtra}
+                                            onChange={(event) => patchIngredient(ingredient.id, { tempIsExtra: event.target.checked })}
+                                          />
+                                          <span>{tr("Supplement", "Extra")}</span>
+                                        </label>
+                                        <label className="flex items-center gap-2 text-xs text-stone-200">
+                                          <input
+                                            type="checkbox"
+                                            checked={ingredient.tempIsBaseIngredient}
+                                            onChange={(event) =>
+                                              patchIngredient(ingredient.id, {
+                                                tempIsBaseIngredient: event.target.checked,
+                                              })
+                                            }
+                                          />
+                                          <span>{tr("Ingredient de base", "Base ingredient")}</span>
+                                        </label>
+                                      </div>
+                                    ) : (
+                                      <div>
+                                        <p className="truncate text-sm font-semibold text-white">{ingredient.name}</p>
+                                        <p className="text-xs text-stone-300">
+                                          {toMoney(ingredient.price)} EUR - {ingredient.isExtra ? tr("Supplement", "Extra") : tr("Standard", "Standard")}
+                                          {ingredient.isBaseIngredient
+                                            ? ` - ${tr("Ingredient de base", "Base ingredient")}`
+                                            : ""}
+                                        </p>
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  <div className="flex items-center gap-2">
+                                    <StatusToggle
+                                      checked={Boolean(ingredient.active)}
+                                      onChange={() => toggleIngredientActive(ingredient)}
+                                      labelOn={tr("Masquer", "Hide")}
+                                      labelOff={tr("Afficher", "Show")}
+                                    />
+                                    {ingredient.isEditing ? (
+                                      <ActionIconButton onClick={() => saveIngredient(ingredient)} label={tr("Valider", "Validate")} variant="success">
+                                        <CheckIcon />
+                                      </ActionIconButton>
+                                    ) : (
+                                      <ActionIconButton onClick={() => toggleIngredientEdit(ingredient)} label={tr("Modifier", "Edit")}>
+                                        <EditIcon />
+                                      </ActionIconButton>
+                                    )}
+
+                                    {ingredient.isEditing && (
+                                      <button type="button" onClick={() => toggleIngredientEdit(ingredient)}>
+                                        {tr("Annuler", "Cancel")}
+                                      </button>
+                                    )}
+
+                                    <ActionIconButton onClick={() => removeIngredient(ingredient.id)} label={tr("Supprimer", "Delete")} variant="danger">
+                                      <DeleteIcon />
+                                    </ActionIconButton>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ) : null}
                     </div>
                   );
                 })}
