@@ -1,10 +1,20 @@
-import { createContext, useEffect, useState } from "react";
+import { createContext, useCallback, useEffect, useRef, useState } from "react";
 import { getCsrfToken, getMe, logoutUser } from "../api/user.api";
 import { clearCsrfToken } from "../api/http";
+import {
+  clearLastActivity,
+  INACTIVITY_TIMEOUT_MS,
+  isSessionInactive,
+  readLastActivity,
+  shouldWriteActivity,
+  writeLastActivity,
+} from "./authSession";
 
 export const AuthContext = createContext();
 const INVALID_TOKEN_VALUES = new Set(["", "undefined", "null"]);
 const SESSION_COOKIE_TOKEN = "__cookie_session__";
+const ACTIVITY_EVENTS = ["pointerdown", "keydown", "touchstart", "scroll"];
+const INACTIVITY_CHECK_INTERVAL_MS = 60 * 1000;
 
 function hasValidToken(token) {
   if (typeof token !== "string") return false;
@@ -15,21 +25,76 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
+  const tokenRef = useRef(null);
+  const logoutInProgressRef = useRef(false);
+  const lastActivityWriteRef = useRef(null);
+
+  useEffect(() => {
+    tokenRef.current = token;
+  }, [token]);
+
+  const clearLocalSession = useCallback(() => {
+    setUser(null);
+    setToken(null);
+    clearCsrfToken();
+    clearLastActivity();
+    lastActivityWriteRef.current = null;
+  }, []);
+
+  const writeActivity = useCallback((force = false) => {
+    const now = Date.now();
+    if (!force && !shouldWriteActivity(lastActivityWriteRef.current, now)) {
+      return;
+    }
+    const saved = writeLastActivity(now);
+    if (saved !== null) {
+      lastActivityWriteRef.current = saved;
+    }
+  }, []);
+
+  const runLogout = useCallback(
+    async ({ notifyServer = true } = {}) => {
+      if (logoutInProgressRef.current) return;
+      logoutInProgressRef.current = true;
+
+      try {
+        if (notifyServer) {
+          try {
+            await logoutUser(tokenRef.current);
+          } catch (_err) {
+            // Always clear local state even if server logout fails.
+          }
+        }
+      } finally {
+        clearLocalSession();
+        logoutInProgressRef.current = false;
+      }
+    },
+    [clearLocalSession]
+  );
 
   useEffect(() => {
     let cancelled = false;
 
     const hydrateSession = async () => {
+      const lastActivity = readLastActivity();
+      if (isSessionInactive(lastActivity, Date.now(), INACTIVITY_TIMEOUT_MS)) {
+        await runLogout({ notifyServer: true });
+        if (!cancelled) {
+          setLoading(false);
+        }
+        return;
+      }
+
       try {
         const profile = await getMe();
         if (cancelled) return;
         setUser(profile);
         setToken(SESSION_COOKIE_TOKEN);
+        writeActivity(true);
       } catch (_err) {
         if (cancelled) return;
-        setUser(null);
-        setToken(null);
-        clearCsrfToken();
+        clearLocalSession();
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -40,7 +105,7 @@ export function AuthProvider({ children }) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [clearLocalSession, runLogout, writeActivity]);
 
   useEffect(() => {
     if (!token) return;
@@ -62,6 +127,47 @@ export function AuthProvider({ children }) {
     };
   }, [token]);
 
+  useEffect(() => {
+    if (!token) return;
+
+    writeActivity(true);
+
+    const checkInactivity = () => {
+      const lastActivity = readLastActivity();
+      if (!isSessionInactive(lastActivity, Date.now(), INACTIVITY_TIMEOUT_MS)) {
+        return false;
+      }
+      void runLogout({ notifyServer: true });
+      return true;
+    };
+
+    const recordActivity = () => {
+      writeActivity(false);
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState !== "visible") return;
+      const inactive = checkInactivity();
+      if (inactive) return;
+      writeActivity(true);
+    };
+
+    const intervalId = window.setInterval(checkInactivity, INACTIVITY_CHECK_INTERVAL_MS);
+
+    ACTIVITY_EVENTS.forEach((eventName) => {
+      window.addEventListener(eventName, recordActivity, { passive: true });
+    });
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.clearInterval(intervalId);
+      ACTIVITY_EVENTS.forEach((eventName) => {
+        window.removeEventListener(eventName, recordActivity);
+      });
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [token, runLogout, writeActivity]);
+
   const login = (userData, jwtToken) => {
     if (!userData) {
       return;
@@ -70,19 +176,12 @@ export function AuthProvider({ children }) {
     setUser(userData);
     const normalizedToken = hasValidToken(jwtToken) ? jwtToken.trim() : SESSION_COOKIE_TOKEN;
     setToken(normalizedToken);
+    writeActivity(true);
   };
 
-  const logout = async () => {
-    try {
-      await logoutUser(token);
-    } catch (_err) {
-      // Always clear local state even if server logout fails.
-    }
-
-    setUser(null);
-    setToken(null);
-    clearCsrfToken();
-  };
+  const logout = useCallback(async () => {
+    await runLogout({ notifyServer: true });
+  }, [runLogout]);
 
   const updateUserContext = (updatedUser) => {
     setUser(updatedUser);
