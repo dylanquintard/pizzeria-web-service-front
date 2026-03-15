@@ -98,6 +98,31 @@ function dedupeIngredients(list) {
   return [...unique.values()];
 }
 
+function moveSelectedItemToTop(list, selectedId) {
+  if (!selectedId) return list;
+  const selectedEntry = list.find((entry) => String(entry.id) === String(selectedId));
+  if (!selectedEntry) return list;
+  return [
+    selectedEntry,
+    ...list.filter((entry) => String(entry.id) !== String(selectedId)),
+  ];
+}
+
+function AccordionChevron({ open }) {
+  return (
+    <svg
+      viewBox="0 0 20 20"
+      aria-hidden="true"
+      className={`h-4 w-4 transition-transform duration-200 ${open ? "rotate-180" : "rotate-0"}`}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+    >
+      <path d="m5 7 5 6 5-6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 function formatPickupAddress(location, tr) {
   if (!location) return tr("Adresse de retrait non disponible", "Pickup address unavailable");
   const cityLine = `${location.postalCode || ""} ${location.city || ""}`.trim();
@@ -157,81 +182,95 @@ function ProductCustomizerModal({
     acc[key].items.push(ingredient);
     return acc;
   }, {});
+  const currentBaseIngredient = useMemo(() => {
+    const productBaseEntry = Array.isArray(product.ingredients)
+      ? product.ingredients.find((entry) => entry?.ingredient && entry.isBase)
+      : null;
+    return productBaseEntry?.ingredient || null;
+  }, [product]);
 
-  const groupedBaseChoices = useMemo(() => {
-    const currentBaseEntries = Array.isArray(product.ingredients)
-      ? product.ingredients.filter((entry) => entry?.ingredient && entry.isBase)
-      : [];
+  const availableBaseIngredients = useMemo(() => {
+    return (Array.isArray(ingredients) ? ingredients : []).filter(
+      (ingredient) =>
+        ingredient &&
+        ingredient.isBaseIngredient &&
+        (!currentBaseIngredient || ingredient.id !== currentBaseIngredient.id)
+    );
+  }, [ingredients, currentBaseIngredient]);
 
-    return currentBaseEntries.reduce((acc, entry) => {
-      const key = getIngredientCategoryKey(entry.ingredient);
-      if (!acc[key]) {
-        acc[key] = {
-          key,
-          label: entry.ingredient.category?.name || tr("Sans categorie", "Uncategorized"),
-          currentItems: [],
-          options: [],
-        };
-      }
-      acc[key].currentItems.push(entry.ingredient);
-      return acc;
-    }, {});
-  }, [product, tr]);
-
-  const baseChoiceGroups = useMemo(() => {
-    return Object.values(groupedBaseChoices).map((group) => {
-      const currentIds = new Set(group.currentItems.map((ingredient) => ingredient.id));
-      const options = (Array.isArray(ingredients) ? ingredients : []).filter(
-        (ingredient) =>
-          ingredient &&
-          ingredient.isBaseIngredient &&
-          getIngredientCategoryKey(ingredient) === group.key &&
-          !currentIds.has(ingredient.id)
-      );
-
-      return {
-        ...group,
-        options,
-      };
-    });
-  }, [groupedBaseChoices, ingredients]);
-
-  const [pendingBaseSelectionByGroup, setPendingBaseSelectionByGroup] = useState({});
-  const initialBaseAddedRef = useRef(baseAddedIngredients);
+  const [selectedBaseIngredientId, setSelectedBaseIngredientId] = useState("");
+  const [openCustomizationSectionKey, setOpenCustomizationSectionKey] = useState("");
 
   useEffect(() => {
-    const nextSelections = {};
-    baseChoiceGroups.forEach((group) => {
-      const existing = (initialBaseAddedRef.current || []).find(
-        (ingredient) => getIngredientCategoryKey(ingredient) === group.key
-      );
-      nextSelections[group.key] = existing?.id ? String(existing.id) : "";
-    });
-    setPendingBaseSelectionByGroup(nextSelections);
+    const existingReplacement = Array.isArray(baseAddedIngredients) ? baseAddedIngredients[0] : null;
+    setSelectedBaseIngredientId(
+      existingReplacement?.id
+        ? String(existingReplacement.id)
+        : currentBaseIngredient?.id
+          ? String(currentBaseIngredient.id)
+          : ""
+    );
+    setOpenCustomizationSectionKey("");
     setStep("intro");
-  }, [baseChoiceGroups, product]);
+  }, [baseAddedIngredients, currentBaseIngredient, product]);
 
-  const appliedBaseChangesCount = Object.values(pendingBaseSelectionByGroup).filter(Boolean).length;
+  const displayedBaseIngredients = useMemo(() => {
+    const allChoices = [
+      ...(currentBaseIngredient ? [currentBaseIngredient] : []),
+      ...availableBaseIngredients,
+    ];
+    return moveSelectedItemToTop(dedupeIngredients(allChoices), selectedBaseIngredientId);
+  }, [availableBaseIngredients, currentBaseIngredient, selectedBaseIngredientId]);
+
+  const selectedBaseIngredient = useMemo(
+    () =>
+      displayedBaseIngredients.find(
+        (ingredient) => String(ingredient.id) === String(selectedBaseIngredientId)
+      ) || currentBaseIngredient,
+    [displayedBaseIngredients, selectedBaseIngredientId, currentBaseIngredient]
+  );
+
+  const hasBaseReplacement =
+    currentBaseIngredient &&
+    selectedBaseIngredient &&
+    String(selectedBaseIngredient.id) !== String(currentBaseIngredient.id);
+
+  const customizationSections = useMemo(() => {
+    const extraSections = Object.values(groupedExtras).map((group) => ({
+      key: `extra-${group.key}`,
+      label: group.label,
+      type: "extra",
+      items: group.items,
+    }));
+
+    const removableSections = Object.values(groupedRemovableIngredients).map((group) => ({
+      key: `remove-${group.key}`,
+      label: group.label,
+      type: "remove",
+      items: group.items,
+    }));
+
+    return [...extraSections, ...removableSections].filter(
+      (section) => Array.isArray(section.items) && section.items.length > 0
+    );
+  }, [groupedExtras, groupedRemovableIngredients]);
 
   const applyBaseChangesAndContinue = () => {
-    const nextAdded = [];
-    const nextRemoved = [];
+    if (hasBaseReplacement) {
+      onBaseChangesChange({
+        added: dedupeIngredients([selectedBaseIngredient]),
+        removed: dedupeIngredients([currentBaseIngredient]),
+      });
+    } else {
+      onBaseChangesChange({
+        added: [],
+        removed: [],
+      });
+    }
 
-    baseChoiceGroups.forEach((group) => {
-      const selectedId = Number(pendingBaseSelectionByGroup[group.key] || 0);
-      if (!selectedId) return;
-
-      const nextIngredient = group.options.find((ingredient) => ingredient.id === selectedId);
-      if (!nextIngredient) return;
-
-      nextAdded.push(nextIngredient);
-      nextRemoved.push(...group.currentItems);
-    });
-
-    onBaseChangesChange({
-      added: dedupeIngredients(nextAdded),
-      removed: dedupeIngredients(nextRemoved),
-    });
+    setOpenCustomizationSectionKey((prev) =>
+      prev || customizationSections[0]?.key || ""
+    );
     setStep("customize");
   };
 
@@ -268,44 +307,41 @@ function ProductCustomizerModal({
             )}
           </p>
 
-          <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
             <button
               type="button"
-              onClick={() => setStep(baseChoiceGroups.length > 0 ? "base" : "customize")}
+              onClick={() => {
+                if (currentBaseIngredient || availableBaseIngredients.length > 0) {
+                  setStep("base");
+                  return;
+                }
+                setOpenCustomizationSectionKey(customizationSections[0]?.key || "");
+                setStep("customize");
+              }}
               className="inline-flex items-center justify-center rounded-full border border-stone-300 bg-white px-5 py-3 text-sm font-bold uppercase tracking-wide text-stone-800 transition hover:bg-stone-100"
             >
               {tr("Apporter des modifications", "Customize this pizza")}
             </button>
 
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center rounded-full border border-stone-300 bg-white p-1 shadow-sm">
-                <button
-                  type="button"
-                  onClick={() => onQuantityChange(Math.max(1, Number(quantity || 1) - 1))}
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full text-lg font-bold text-stone-700 transition hover:bg-stone-100"
-                  aria-label={tr("Retirer un article", "Decrease quantity")}
-                >
-                  -
-                </button>
-                <span className="min-w-[56px] text-center text-base font-bold text-stone-900">
-                  {Math.max(1, Number(quantity || 1))}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => onQuantityChange(Math.max(1, Number(quantity || 1) + 1))}
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full text-lg font-bold text-stone-700 transition hover:bg-stone-100"
-                  aria-label={tr("Ajouter un article", "Increase quantity")}
-                >
-                  +
-                </button>
-              </div>
-
+            <div className="flex items-center rounded-full border border-stone-300 bg-white p-1 shadow-sm">
               <button
                 type="button"
-                onClick={onConfirm}
-                className="rounded-full bg-ember px-5 py-3 text-sm font-semibold text-white transition hover:bg-tomato"
+                onClick={() => onQuantityChange(Math.max(1, Number(quantity || 1) - 1))}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full text-lg font-bold text-stone-700 transition hover:bg-stone-100"
+                aria-label={tr("Retirer un article", "Decrease quantity")}
               >
-                {tr("Ajouter au panier", "Add to cart")}
+                -
+              </button>
+              <span className="min-w-[56px] text-center text-base font-bold text-stone-900">
+                {Math.max(1, Number(quantity || 1))}
+              </span>
+              <button
+                type="button"
+                onClick={() => onQuantityChange(Math.max(1, Number(quantity || 1) + 1))}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full text-lg font-bold text-stone-700 transition hover:bg-stone-100"
+                aria-label={tr("Ajouter un article", "Increase quantity")}
+              >
+                +
               </button>
             </div>
           </div>
@@ -327,7 +363,7 @@ function ProductCustomizerModal({
             </p>
 
             <div className="mt-4 space-y-3">
-              {baseChoiceGroups.length === 0 ? (
+              {!currentBaseIngredient && availableBaseIngredients.length === 0 ? (
                 <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-3 text-sm text-stone-500">
                   {tr(
                     "Aucun element de base n'est configure pour ce plat. Vous pouvez continuer.",
@@ -335,60 +371,44 @@ function ProductCustomizerModal({
                   )}
                 </div>
               ) : (
-                baseChoiceGroups.map((group) => (
-                  <div key={group.key} className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
-                    <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-stone-500">
-                      {group.label}
-                    </p>
-                    <p className="mt-2 text-sm font-semibold text-stone-900">
-                      {tr("Base actuelle", "Current base")}:{" "}
-                      {group.currentItems.map((ingredient) => ingredient.name).join(", ")}
-                    </p>
-                    <div className="mt-3 flex flex-wrap gap-2">
+                <div className="space-y-3">
+                  {displayedBaseIngredients.map((ingredient, index) => {
+                    const isSelected =
+                      String(selectedBaseIngredientId || "") === String(ingredient.id);
+                    const isCurrentBase =
+                      currentBaseIngredient &&
+                      String(currentBaseIngredient.id) === String(ingredient.id);
+
+                    return (
                       <button
+                        key={ingredient.id}
                         type="button"
-                        onClick={() =>
-                          setPendingBaseSelectionByGroup((prev) => ({
-                            ...prev,
-                            [group.key]: "",
-                          }))
-                        }
-                        className={`rounded-full border px-3 py-2 text-xs font-semibold transition ${
-                          !pendingBaseSelectionByGroup[group.key]
-                            ? "border-ember bg-ember text-white"
-                            : "border-stone-300 bg-white text-stone-700 hover:bg-stone-100"
+                        onClick={() => setSelectedBaseIngredientId(String(ingredient.id))}
+                        className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left transition ${
+                          isSelected
+                            ? "border-emerald-500 bg-emerald-50 text-emerald-900"
+                            : "border-rose-200 bg-rose-50 text-rose-900 hover:bg-rose-100"
                         }`}
                       >
-                        {tr("Conserver", "Keep current")}
-                      </button>
-                      {group.options.map((ingredient) => (
-                        <button
-                          key={ingredient.id}
-                          type="button"
-                          onClick={() =>
-                            setPendingBaseSelectionByGroup((prev) => ({
-                              ...prev,
-                              [group.key]: String(ingredient.id),
-                            }))
-                          }
-                          className={`rounded-full border px-3 py-2 text-xs font-semibold transition ${
-                            String(pendingBaseSelectionByGroup[group.key] || "") ===
-                            String(ingredient.id)
-                              ? "border-ember bg-ember text-white"
-                              : "border-stone-300 bg-white text-stone-700 hover:bg-stone-100"
-                          }`}
-                        >
-                          {ingredient.name}
-                        </button>
-                      ))}
-                      {group.options.length === 0 && (
-                        <span className="rounded-full border border-stone-200 bg-white px-3 py-2 text-xs text-stone-500">
-                          {tr("Aucune autre base disponible", "No other base available")}
+                        <div>
+                          <p className="text-sm font-semibold">{ingredient.name}</p>
+                          <p className="mt-1 text-xs font-medium uppercase tracking-[0.16em]">
+                            {isSelected
+                              ? tr("Base active", "Active base")
+                              : isCurrentBase
+                                ? tr("Base remplacee", "Replaced base")
+                                : tr("Base disponible", "Available base")}
+                          </p>
+                        </div>
+                        <span className="text-xs font-bold uppercase tracking-[0.18em]">
+                          {index === 0 && isSelected
+                            ? tr("Selection", "Selected")
+                            : tr("Choisir", "Choose")}
                         </span>
-                      )}
-                    </div>
-                  </div>
-                ))
+                      </button>
+                    );
+                  })}
+                </div>
               )}
             </div>
 
@@ -405,69 +425,169 @@ function ProductCustomizerModal({
                 onClick={applyBaseChangesAndContinue}
                 className="rounded-full bg-ember px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-white transition hover:bg-tomato"
               >
-                {appliedBaseChangesCount > 0
-                  ? tr("Valider le changement", "Validate change")
-                  : tr("Continuer ->", "Continue ->")}
+                {tr("Continuer ->", "Continue ->")}
               </button>
             </div>
           </div>
         ) : step === "customize" ? (
           <div className="mt-5 grid gap-6 md:grid-cols-2">
             <div className="rounded-3xl border border-stone-200 bg-white p-5">
-              <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-500">{tr("Supplements", "Extras")}</p>
+              <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-500">
+                {tr("Categories d'ingredients", "Ingredient categories")}
+              </p>
               <div className="space-y-3">
-                {extraIngredients.length === 0 && (
-                  <p className="text-xs text-stone-500">{tr("Aucun supplement disponible.", "No extra available.")}</p>
-                )}
-                {Object.values(groupedExtras).map((group) => (
-                  <div key={group.key} className="space-y-2">
-                    <p className="text-[11px] font-bold uppercase tracking-wide text-stone-500">{group.label}</p>
-                    {group.items.map((ingredient) => (
-                      <label
-                        key={ingredient.id}
-                        className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm transition hover:bg-stone-100"
+                {customizationSections.length === 0 ? (
+                  <p className="text-xs text-stone-500">
+                    {tr(
+                      "Aucune categorie d'ingredients disponible pour cette pizza.",
+                      "No ingredient category is available for this pizza."
+                    )}
+                  </p>
+                ) : (
+                  customizationSections.map((section) => {
+                    const isOpen = openCustomizationSectionKey === section.key;
+                    return (
+                      <div
+                        key={section.key}
+                        className="overflow-hidden rounded-2xl border border-stone-200 bg-stone-50"
                       >
-                        <input
-                          type="checkbox"
-                          checked={selectedExtras.some((entry) => entry.id === ingredient.id)}
-                          onChange={(event) => onExtrasChange(ingredient, event.target.checked)}
-                          className="h-4 w-4 cursor-pointer accent-saffron"
-                        />
-                        <span>
-                          {ingredient.name} (+{formatPrice(ingredient.price)} EUR)
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                ))}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setOpenCustomizationSectionKey((prev) =>
+                              prev === section.key ? "" : section.key
+                            )
+                          }
+                          className="flex w-full items-center justify-between gap-3 bg-stone-100/80 px-4 py-3 text-left transition hover:bg-stone-200/70"
+                        >
+                          <div className="min-w-0">
+                            <p className="text-sm font-bold uppercase tracking-wide text-stone-800">
+                              {section.label}
+                            </p>
+                            <p className="mt-1 text-xs text-stone-500">
+                              {section.type === "extra"
+                                ? tr("Supplements disponibles", "Available extras")
+                                : tr("Ingredients retirables", "Removable ingredients")}
+                            </p>
+                          </div>
+                          <span className="shrink-0 text-stone-500">
+                            <AccordionChevron open={isOpen} />
+                          </span>
+                        </button>
+
+                        {isOpen ? (
+                          <div className="border-t border-stone-200 bg-white p-3">
+                            <div className="space-y-2">
+                              {section.items.map((ingredient) => (
+                                <label
+                                  key={ingredient.id}
+                                  className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition hover:bg-stone-100"
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={
+                                      section.type === "extra"
+                                        ? selectedExtras.some((entry) => entry.id === ingredient.id)
+                                        : removedIngredients.some((entry) => entry.id === ingredient.id)
+                                    }
+                                    onChange={(event) =>
+                                      section.type === "extra"
+                                        ? onExtrasChange(ingredient, event.target.checked)
+                                        : onRemovedChange(ingredient, event.target.checked)
+                                    }
+                                    className="h-4 w-4 cursor-pointer accent-saffron"
+                                  />
+                                  <div>
+                                    <p className="font-medium text-stone-900">{ingredient.name}</p>
+                                    {section.type === "extra" ? (
+                                      <p className="text-xs text-stone-500">
+                                        +{formatPrice(ingredient.price)} EUR
+                                      </p>
+                                    ) : null}
+                                  </div>
+                                </label>
+                              ))}
+                            </div>
+                          </div>
+                        ) : null}
+                      </div>
+                    );
+                  })
+                )}
               </div>
             </div>
 
             <div className="rounded-3xl border border-stone-200 bg-white p-5">
-              <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-500">{tr("Retirer ingredients", "Remove ingredients")}</p>
+              <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-500">
+                {tr("Recap des modifications", "Customization summary")}
+              </p>
               <div className="space-y-3">
-                {removableIngredients.length === 0 && (
-                  <p className="text-xs text-stone-500">{tr("Aucun ingredient a retirer pour ce produit.", "No ingredient can be removed for this product.")}</p>
-                )}
-                {Object.values(groupedRemovableIngredients).map((group) => (
-                  <div key={group.key} className="space-y-2">
-                    <p className="text-[11px] font-bold uppercase tracking-wide text-stone-500">{group.label}</p>
-                    {group.items.map((ingredient) => (
-                      <label
-                        key={ingredient.id}
-                        className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm transition hover:bg-stone-100"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={removedIngredients.some((entry) => entry.id === ingredient.id)}
-                          onChange={(event) => onRemovedChange(ingredient, event.target.checked)}
-                          className="h-4 w-4 cursor-pointer accent-saffron"
-                        />
-                        <span>{ingredient.name}</span>
-                      </label>
-                    ))}
+                <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-stone-500">
+                    {tr("Base du plat", "Dish base")}
+                  </p>
+                  <div className="mt-2 space-y-1 text-sm text-stone-700">
+                    {currentBaseIngredient ? (
+                      <>
+                        {hasBaseReplacement ? (
+                          <>
+                            <p>- {currentBaseIngredient.name}</p>
+                            <p className="font-semibold text-emerald-700">
+                              + {selectedBaseIngredient?.name}
+                            </p>
+                          </>
+                        ) : (
+                          <p className="font-semibold text-emerald-700">
+                            {currentBaseIngredient.name}
+                          </p>
+                        )}
+                      </>
+                    ) : (
+                      <p>{tr("Aucune base configuree", "No base configured")}</p>
+                    )}
                   </div>
-                ))}
+                </div>
+
+                <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-stone-500">
+                    {tr("Supplements ajoutes", "Added extras")}
+                  </p>
+                  <div className="mt-2 space-y-1 text-sm text-stone-700">
+                    {selectedExtras.length > 0 ? (
+                      selectedExtras.map((ingredient) => (
+                        <p key={ingredient.id}>
+                          + {ingredient.name} (+{formatPrice(ingredient.price)} EUR)
+                        </p>
+                      ))
+                    ) : (
+                      <p>{tr("Aucun supplement ajoute", "No extra added")}</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-stone-500">
+                    {tr("Ingredients retires", "Removed ingredients")}
+                  </p>
+                  <div className="mt-2 space-y-1 text-sm text-stone-700">
+                    {removedIngredients.length > 0 ? (
+                      removedIngredients.map((ingredient) => (
+                        <p key={ingredient.id}>- {ingredient.name}</p>
+                      ))
+                    ) : (
+                      <p>{tr("Aucun ingredient retire", "No ingredient removed")}</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-stone-500">
+                    {tr("Quantite", "Quantity")}
+                  </p>
+                  <p className="mt-2 text-sm font-semibold text-stone-900">
+                    {Math.max(1, Number(quantity || 1))}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -479,20 +599,6 @@ function ProductCustomizerModal({
             )}
           </div>
         )}
-
-        {(baseAddedIngredients?.length || baseRemovedIngredients?.length) && step === "customize" ? (
-          <div className="mt-4 rounded-2xl border border-ember/20 bg-ember/5 px-4 py-3 text-sm text-stone-700">
-            <strong>{tr("Changements de base", "Base changes")}</strong>
-            <div className="mt-1 space-y-1">
-              {baseRemovedIngredients?.length > 0 ? (
-                <p>- {baseRemovedIngredients.map((ingredient) => ingredient.name).join(", ")}</p>
-              ) : null}
-              {baseAddedIngredients?.length > 0 ? (
-                <p>+ {baseAddedIngredients.map((ingredient) => ingredient.name).join(", ")}</p>
-              ) : null}
-            </div>
-          </div>
-        ) : null}
 
         <div className="mt-5 flex items-center justify-between gap-3 border-t border-stone-200 pt-4">
           <div className="text-sm text-stone-500">
