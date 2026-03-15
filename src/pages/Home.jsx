@@ -598,18 +598,19 @@ const truckTourSchedule = useMemo(
               </div>
             </article>
 
-            <article id="paiements" className="glass-panel p-5 sm:p-6">
+            <article id="paiements" className="glass-panel p-4 sm:p-5">
               <p className="theme-light-keep-dark text-xs uppercase tracking-[0.22em] text-saffron">
                 {tr("Moyens de paiement acceptes", "Accepted payment methods")}
               </p>
-              <h2 className="mt-2 font-display text-3xl uppercase tracking-wide text-white">
+              <h2 className="mt-2 font-display text-2xl uppercase tracking-wide text-white sm:text-3xl">
                 {tr("Paiement simple", "Simple payment")}
               </h2>
-              <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-2">
+              <div className="mt-4 rounded-2xl border border-white/10 bg-black/20 px-3 py-3">
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 xl:grid-cols-2">
                 {paymentLogos.map((logo) => (
                   <div
                     key={logo.alt}
-                    className="flex items-center justify-center rounded-2xl border border-white/10 bg-black/20 px-3 py-4"
+                    className="flex min-h-[72px] items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] px-2 py-2"
                   >
                     <picture>
                       <source srcSet={logo.src} type="image/webp" />
@@ -620,11 +621,12 @@ const truckTourSchedule = useMemo(
                         height={logo.height}
                         loading="lazy"
                         decoding="async"
-                        className={logo.className}
+                        className="h-7 w-auto object-contain sm:h-8"
                       />
                     </picture>
                   </div>
                 ))}
+                </div>
               </div>
             </article>
           </div>
