@@ -137,6 +137,12 @@ function buildBackendApiBaseUrl() {
   return `${configured}/api`;
 }
 
+function buildBackendOriginUrl() {
+  const apiBase = buildBackendApiBaseUrl();
+  if (!apiBase) return "";
+  return apiBase.replace(/\/api$/i, "");
+}
+
 function buildApiUrl(pathname) {
   const apiBase = buildBackendApiBaseUrl();
   if (!apiBase) return "";
@@ -310,6 +316,29 @@ async function fetchJsonWithTimeout(url) {
     }
 
     return response.json();
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function fetchTextWithTimeout(url, acceptHeader = "text/plain") {
+  if (!url) return "";
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), SEO_FETCH_TIMEOUT_MS);
+
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      signal: controller.signal,
+      headers: { Accept: acceptHeader },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP_${response.status}`);
+    }
+
+    return response.text();
   } finally {
     clearTimeout(timer);
   }
@@ -738,10 +767,47 @@ function sendSpaWithSeo(req, res, meta) {
 }
 
 app.disable("x-powered-by");
+app.use((req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.setHeader("Permissions-Policy", "geolocation=(), microphone=(), camera=()");
+  res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+
+  const forwardedProto = String(req.headers["x-forwarded-proto"] || "").toLowerCase();
+  const isHttps = req.secure || forwardedProto === "https";
+  if (isHttps) {
+    res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+  }
+
+  next();
+});
 app.use(express.static(BUILD_DIR, { index: false, maxAge: "7d" }));
 
 app.get("/healthz", (_req, res) => {
   res.status(200).json({ ok: true });
+});
+
+app.get("/sitemap.xml", async (_req, res) => {
+  try {
+    const backendOrigin = buildBackendOriginUrl();
+    if (!backendOrigin) {
+      return res.status(503).type("text/plain; charset=utf-8").send("Sitemap unavailable");
+    }
+
+    const sitemapXml = await fetchTextWithTimeout(
+      `${backendOrigin}/sitemap.xml`,
+      "application/xml, text/xml;q=0.9, text/plain;q=0.8"
+    );
+
+    return res
+      .status(200)
+      .type("application/xml; charset=utf-8")
+      .set("Cache-Control", "public, max-age=300")
+      .send(sitemapXml);
+  } catch (_error) {
+    return res.status(502).type("text/plain; charset=utf-8").send("Sitemap unavailable");
+  }
 });
 
 app.use(async (req, res) => {

@@ -20,12 +20,12 @@ const normalizeBrandLogoUrl = (value) => {
 };
 
 const localApiBaseUrl = "http://localhost:5000/api";
-const defaultSiteUrl = "https://pizzeria-web-service-front.onrender.com";
 const isProduction = process.env.NODE_ENV === "production";
 const configuredApiBaseUrl = normalizeUrl(process.env.REACT_APP_API_BASE_URL);
 const configuredSiteUrl = normalizeUrl(process.env.REACT_APP_SITE_URL);
 const runtimeSiteUrl =
   typeof window !== "undefined" ? normalizeUrl(window.location.origin) : "";
+const fallbackSiteUrl = "https://example.invalid";
 
 if (isProduction) {
   if (!configuredApiBaseUrl) {
@@ -40,7 +40,7 @@ if (isProduction) {
 export const API_BASE_URL =
   configuredApiBaseUrl || localApiBaseUrl;
 
-export const SITE_URL = configuredSiteUrl || runtimeSiteUrl || defaultSiteUrl;
+export const SITE_URL = configuredSiteUrl || runtimeSiteUrl || fallbackSiteUrl;
 
 export const REALTIME_STREAM_URL = `${API_BASE_URL}/realtime/stream`;
 

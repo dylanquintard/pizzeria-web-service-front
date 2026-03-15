@@ -7,8 +7,6 @@ services:
     envVars:
       - key: REACT_APP_API_BASE_URL
         sync: false
-      - key: REACT_APP_SOCKET_URL
-        sync: false
       - key: REACT_APP_INSTAGRAM_URL
         sync: false
       - key: REACT_APP_SITE_URL
