@@ -401,9 +401,6 @@ function ProductCustomizerModal({
                         <div className="mt-3 flex items-center justify-between gap-3">
                           <div>
                             <p className="text-[13px] font-semibold">{selectedBaseIngredient.name}</p>
-                            <p className="mt-1 text-[10px] font-medium uppercase tracking-[0.12em] text-emerald-700">
-                              {tr("Element actuellement selectionne", "Currently selected element")}
-                            </p>
                           </div>
                           <span className="rounded-full bg-emerald-600 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-white">
                             {tr("Actif", "Active")}
@@ -478,15 +475,6 @@ function ProductCustomizerModal({
                         >
                           <div>
                             <p className="text-[13px] font-semibold">{ingredient.name}</p>
-                            <p
-                              className={`mt-1 text-[10px] font-medium uppercase tracking-[0.12em] ${
-                                isRemoved ? "text-rose-700" : "text-emerald-700"
-                              }`}
-                            >
-                              {isRemoved
-                                ? tr("Ingredient retire", "Ingredient removed")
-                                : tr("Ingredient conserve", "Ingredient kept")}
-                            </p>
                           </div>
                           <span
                             className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-white ${
