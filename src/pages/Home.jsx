@@ -65,6 +65,14 @@ const DAY_LABELS = {
 const DEFAULT_HOME_BACKGROUND = "/pizza-background-1920.webp";
 const HERO_AUTOPLAY_DELAY_MS = 5000;
 const HERO_IMAGE_LIMIT = 5;
+const MOBILE_HERO_MEDIA_QUERY = "(max-width: 767px)";
+
+function getInitialIsMobileViewport() {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+    return false;
+  }
+  return window.matchMedia(MOBILE_HERO_MEDIA_QUERY).matches;
+}
 
 function formatLocationAddress(location, tr) {
   if (!location) return tr("Adresse non renseignee", "Address not available");
@@ -105,9 +113,36 @@ export default function Home() {
   const [galleryImages, setGalleryImages] = useState([]);
   const [weeklySettings, setWeeklySettings] = useState([]);
   const [activeHeroIndex, setActiveHeroIndex] = useState(0);
+  const [isMobileViewport, setIsMobileViewport] = useState(getInitialIsMobileViewport);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+      return undefined;
+    }
+
+    const mediaQueryList = window.matchMedia(MOBILE_HERO_MEDIA_QUERY);
+    const handleViewportChange = () => {
+      setIsMobileViewport(mediaQueryList.matches);
+    };
+
+    handleViewportChange();
+
+    if (typeof mediaQueryList.addEventListener === "function") {
+      mediaQueryList.addEventListener("change", handleViewportChange);
+      return () => {
+        mediaQueryList.removeEventListener("change", handleViewportChange);
+      };
+    }
+
+    mediaQueryList.addListener(handleViewportChange);
+    return () => {
+      mediaQueryList.removeListener(handleViewportChange);
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
+    const shouldLoadHeroMedia = !isMobileViewport;
 
     async function fetchHomeData() {
       try {
@@ -115,7 +150,7 @@ export default function Home() {
           await Promise.all([
             getAllProductsClient(),
             getCategories({ active: true, kind: "PRODUCT" }),
-            getPublicGallery({ active: true }),
+            shouldLoadHeroMedia ? getPublicGallery({ active: true }) : Promise.resolve([]),
             getPublicWeeklySettings(),
           ]);
 
@@ -141,7 +176,7 @@ export default function Home() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [isMobileViewport]);
 
 const truckTourSchedule = useMemo(
   () => {
@@ -263,6 +298,7 @@ const truckTourSchedule = useMemo(
       return String(left?.id ?? "").localeCompare(String(right?.id ?? ""));
     }).slice(0, HERO_IMAGE_LIMIT);
   }, [galleryImages]);
+  const shouldRenderHeroImages = !isMobileViewport && heroGalleryImages.length > 0;
 
   const heroOverlay = theme === "light"
     ? "linear-gradient(118deg, rgba(246,235,221,0.90) 6%, rgba(246,235,221,0.68) 42%, rgba(58,38,28,0.48) 100%)"
@@ -412,20 +448,20 @@ const truckTourSchedule = useMemo(
 
   useEffect(() => {
     setActiveHeroIndex((prev) => {
-      if (heroGalleryImages.length === 0) return 0;
+      if (!shouldRenderHeroImages || heroGalleryImages.length === 0) return 0;
       return prev % heroGalleryImages.length;
     });
-  }, [heroGalleryImages.length]);
+  }, [heroGalleryImages.length, shouldRenderHeroImages]);
 
   useEffect(() => {
-    if (heroGalleryImages.length <= 1) return undefined;
+    if (!shouldRenderHeroImages || heroGalleryImages.length <= 1) return undefined;
 
     const intervalId = window.setInterval(() => {
       setActiveHeroIndex((prev) => (prev + 1) % heroGalleryImages.length);
     }, HERO_AUTOPLAY_DELAY_MS);
 
     return () => window.clearInterval(intervalId);
-  }, [heroGalleryImages.length]);
+  }, [heroGalleryImages.length, shouldRenderHeroImages]);
 
   return (
     <div className="space-y-20 pb-24">
@@ -437,20 +473,22 @@ const truckTourSchedule = useMemo(
       />
       <section className="relative overflow-hidden">
         <div className="absolute inset-0">
-          {heroGalleryImages.map((image, index) => (
-            <img
-              key={image.id || `${image.imageUrl}-${index}`}
-              src={image.imageUrl}
-              alt=""
-              aria-hidden="true"
-              fetchPriority={index === 0 ? "high" : undefined}
-              loading={index === 0 ? "eager" : "lazy"}
-              decoding="async"
-              className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ${
-                index === activeHeroIndex ? "opacity-100" : "opacity-0"
-              }`}
-            />
-          ))}
+          {shouldRenderHeroImages
+            ? heroGalleryImages.map((image, index) => (
+                <img
+                  key={image.id || `${image.imageUrl}-${index}`}
+                  src={image.imageUrl}
+                  alt=""
+                  aria-hidden="true"
+                  fetchPriority={index === 0 ? "high" : undefined}
+                  loading={index === 0 ? "eager" : "lazy"}
+                  decoding="async"
+                  className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ${
+                    index === activeHeroIndex ? "opacity-100" : "opacity-0"
+                  }`}
+                />
+              ))
+            : null}
           <div
             className="absolute inset-0"
             style={{
