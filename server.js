@@ -975,7 +975,9 @@ app.get("/sitemap.xml", async (req, res) => {
   return res
     .status(200)
     .type("application/xml; charset=utf-8")
-    .set("Cache-Control", "public, max-age=120")
+    .set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+    .set("Pragma", "no-cache")
+    .set("Expires", "0")
     .set("X-Sitemap-Source", sourceLabel)
     .send(sitemapXml);
 });

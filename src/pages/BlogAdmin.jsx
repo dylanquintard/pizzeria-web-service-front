@@ -37,7 +37,7 @@ function createEmptyArticleForm() {
     title: "",
     slug: "",
     description: "",
-    published: false,
+    published: true,
     paragraphs: [createParagraph()],
   };
 }

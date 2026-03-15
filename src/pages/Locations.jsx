@@ -22,8 +22,73 @@ const emptyLocationForm = {
   active: true,
 };
 
+function compactWhitespace(value) {
+  return String(value || "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function normalizeCityCandidate(value) {
+  return compactWhitespace(value).replace(/^[,;:\-\s]+|[,;:\-\s]+$/g, "");
+}
+
+function inferCityFromAddressLine(addressLine, postalCode, country) {
+  const source = compactWhitespace(addressLine);
+  if (!source) return "";
+
+  const normalizedPostalCode = compactWhitespace(postalCode);
+  if (normalizedPostalCode) {
+    const escapedPostalCode = normalizedPostalCode.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const postalMatch = source.match(
+      new RegExp(
+        `(?:^|\\b)${escapedPostalCode}\\s+([a-zA-ZÀ-ÿ][a-zA-ZÀ-ÿ'’\\-\\s]{1,})$`,
+        "i"
+      )
+    );
+    if (postalMatch?.[1]) {
+      return normalizeCityCandidate(postalMatch[1]);
+    }
+  }
+
+  const genericPostalMatch = source.match(/\b\d{4,5}\s+([a-zA-ZÀ-ÿ][a-zA-ZÀ-ÿ'’\-\s]{1,})$/);
+  if (genericPostalMatch?.[1]) {
+    return normalizeCityCandidate(genericPostalMatch[1]);
+  }
+
+  const normalizedCountry = compactWhitespace(country);
+  const segments = source.split(",").map(compactWhitespace).filter(Boolean);
+  for (let index = segments.length - 1; index >= 0; index -= 1) {
+    let candidate = segments[index];
+    if (!candidate) continue;
+
+    if (normalizedCountry) {
+      const escapedCountry = normalizedCountry.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      candidate = candidate.replace(new RegExp(`\\b${escapedCountry}\\b`, "ig"), "").trim();
+    }
+
+    candidate = candidate.replace(/^\d{4,5}\s+/, "").replace(/\b\d{4,5}\b/g, "").trim();
+    if (!candidate) continue;
+    if (/\d/.test(candidate)) continue;
+    if (!/[a-zA-ZÀ-ÿ]/.test(candidate)) continue;
+
+    return normalizeCityCandidate(candidate);
+  }
+
+  return "";
+}
+
+function inferCityFromLocationForm(form) {
+  const explicitCity = normalizeCityCandidate(form.city);
+  if (explicitCity) return explicitCity;
+
+  const fromAddressLine2 = inferCityFromAddressLine(form.addressLine2, form.postalCode, form.country);
+  if (fromAddressLine2) return fromAddressLine2;
+
+  return inferCityFromAddressLine(form.addressLine1, form.postalCode, form.country);
+}
+
 function normalizeLocationPayload(form) {
-  const city = form.city.trim();
+  const city = inferCityFromLocationForm(form);
 
   return {
     name: city,
@@ -58,6 +123,24 @@ export default function Locations() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const autoFillCityForCreate = () => {
+    setNewLocation((prev) => {
+      if (prev.city.trim()) return prev;
+      const inferredCity = inferCityFromLocationForm(prev);
+      if (!inferredCity) return prev;
+      return { ...prev, city: inferredCity };
+    });
+  };
+
+  const autoFillCityForEdit = () => {
+    setEditLocation((prev) => {
+      if (prev.city.trim()) return prev;
+      const inferredCity = inferCityFromLocationForm(prev);
+      if (!inferredCity) return prev;
+      return { ...prev, city: inferredCity };
+    });
+  };
+
   const fetchLocations = useCallback(async () => {
     try {
       const data = await getLocations();
@@ -78,13 +161,23 @@ export default function Locations() {
 
     if (
       !newLocation.addressLine1.trim() ||
-      !newLocation.postalCode.trim() ||
-      !newLocation.city.trim()
+      !newLocation.postalCode.trim()
     ) {
       setMessage(
         tr(
-          "Adresse, code postal et ville sont obligatoires",
-          "Address, postal code and city are required"
+          "Adresse et code postal sont obligatoires",
+          "Address and postal code are required"
+        )
+      );
+      return;
+    }
+
+    const inferredCity = inferCityFromLocationForm(newLocation);
+    if (!inferredCity) {
+      setMessage(
+        tr(
+          "Ville introuvable dans l'adresse. Renseignez le champ ville ou ajoutez-la dans l'adresse.",
+          "Unable to infer city from the address. Fill in the city field or include it in the address."
         )
       );
       return;
@@ -121,13 +214,23 @@ export default function Locations() {
   const handleUpdate = async () => {
     if (
       !editLocation.addressLine1.trim() ||
-      !editLocation.postalCode.trim() ||
-      !editLocation.city.trim()
+      !editLocation.postalCode.trim()
     ) {
       setMessage(
         tr(
-          "Adresse, code postal et ville sont obligatoires",
-          "Address, postal code and city are required"
+          "Adresse et code postal sont obligatoires",
+          "Address and postal code are required"
+        )
+      );
+      return;
+    }
+
+    const inferredCity = inferCityFromLocationForm(editLocation);
+    if (!inferredCity) {
+      setMessage(
+        tr(
+          "Ville introuvable dans l'adresse. Renseignez le champ ville ou ajoutez-la dans l'adresse.",
+          "Unable to infer city from the address. Fill in the city field or include it in the address."
         )
       );
       return;
@@ -201,6 +304,7 @@ export default function Locations() {
                 onChange={(event) =>
                   setNewLocation((prev) => ({ ...prev, addressLine1: event.target.value }))
                 }
+                onBlur={autoFillCityForCreate}
                 className="rounded-lg border border-white/20 bg-charcoal/70 px-3 py-2 text-sm text-stone-100"
               />
             </label>
@@ -211,6 +315,7 @@ export default function Locations() {
                 onChange={(event) =>
                   setNewLocation((prev) => ({ ...prev, addressLine2: event.target.value }))
                 }
+                onBlur={autoFillCityForCreate}
                 className="rounded-lg border border-white/20 bg-charcoal/70 px-3 py-2 text-sm text-stone-100"
               />
             </label>
@@ -221,6 +326,7 @@ export default function Locations() {
                 onChange={(event) =>
                   setNewLocation((prev) => ({ ...prev, postalCode: event.target.value }))
                 }
+                onBlur={autoFillCityForCreate}
                 className="rounded-lg border border-white/20 bg-charcoal/70 px-3 py-2 text-sm text-stone-100"
               />
             </label>
@@ -235,8 +341,8 @@ export default function Locations() {
               />
               <span className="text-[11px] text-stone-400">
                 {tr(
-                  "Le nom de l'emplacement reprend automatiquement la ville.",
-                  "The location name is automatically set from the city."
+                  "La ville est detectee automatiquement depuis l'adresse si possible.",
+                  "The city is automatically inferred from the address when possible."
                 )}
               </span>
             </label>
@@ -319,6 +425,7 @@ export default function Locations() {
                 onChange={(event) =>
                   setEditLocation((prev) => ({ ...prev, addressLine1: event.target.value }))
                 }
+                onBlur={autoFillCityForEdit}
                 className="rounded-lg border border-white/20 bg-charcoal/70 px-3 py-2 text-sm text-stone-100"
               />
             </label>
@@ -329,6 +436,7 @@ export default function Locations() {
                 onChange={(event) =>
                   setEditLocation((prev) => ({ ...prev, addressLine2: event.target.value }))
                 }
+                onBlur={autoFillCityForEdit}
                 className="rounded-lg border border-white/20 bg-charcoal/70 px-3 py-2 text-sm text-stone-100"
               />
             </label>
@@ -339,6 +447,7 @@ export default function Locations() {
                 onChange={(event) =>
                   setEditLocation((prev) => ({ ...prev, postalCode: event.target.value }))
                 }
+                onBlur={autoFillCityForEdit}
                 className="rounded-lg border border-white/20 bg-charcoal/70 px-3 py-2 text-sm text-stone-100"
               />
             </label>
@@ -353,8 +462,8 @@ export default function Locations() {
               />
               <span className="text-[11px] text-stone-400">
                 {tr(
-                  "Le nom de l'emplacement reprend automatiquement la ville.",
-                  "The location name is automatically set from the city."
+                  "La ville est detectee automatiquement depuis l'adresse si possible.",
+                  "The city is automatically inferred from the address when possible."
                 )}
               </span>
             </label>
