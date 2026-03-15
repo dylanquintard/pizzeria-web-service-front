@@ -69,7 +69,7 @@ const MOBILE_HERO_MEDIA_QUERY = "(max-width: 767px)";
 
 function getInitialIsMobileViewport() {
   if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
-    return false;
+    return true;
   }
   return window.matchMedia(MOBILE_HERO_MEDIA_QUERY).matches;
 }
