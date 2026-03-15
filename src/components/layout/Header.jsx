@@ -320,12 +320,6 @@ export default function Header() {
                   <div className="absolute right-0 mt-3 w-[260px] max-w-[90vw] rounded-2xl border border-stone-200 bg-white p-3 text-stone-900 shadow-2xl">
                     <p className="mb-2 text-xs font-bold uppercase tracking-wide text-stone-500">{tr("Espace client", "Account")}</p>
                     <div className="grid gap-1">
-                      <Link
-                        to="/profile"
-                        className="rounded-md px-3 py-2 text-sm font-medium text-stone-800 transition hover:bg-stone-100"
-                      >
-                        {tr("Informations personnelles", "Personal information")}
-                      </Link>
                       {!isAdminUser && (
                         <Link
                           to="/userorders"
@@ -334,6 +328,12 @@ export default function Header() {
                           {tr("Mes commandes", "My orders")}
                         </Link>
                       )}
+                      <Link
+                        to="/profile"
+                        className="rounded-md px-3 py-2 text-sm font-medium text-stone-800 transition hover:bg-stone-100"
+                      >
+                        {tr("Informations personnelles", "Personal information")}
+                      </Link>
                       <button
                         type="button"
                         onClick={logout}
@@ -401,6 +401,26 @@ export default function Header() {
                   </Link>
                 ))}
 
+                {token && !isAdminUser && (
+                  <Link
+                    to="/userorders"
+                    onClick={closeMobileMenus}
+                    className="rounded-md px-3 py-2 text-sm transition hover:bg-white/10"
+                  >
+                    {tr("Mes commandes", "My orders")}
+                  </Link>
+                )}
+
+                {token && (
+                  <Link
+                    to="/profile"
+                    onClick={closeMobileMenus}
+                    className="rounded-md px-3 py-2 text-sm transition hover:bg-white/10"
+                  >
+                    {tr("Informations personnelles", "Personal information")}
+                  </Link>
+                )}
+
                 {token ? (
                   <Link
                     to="/order"
@@ -416,26 +436,6 @@ export default function Header() {
                     className="mt-1 rounded-md border border-saffron/70 px-3 py-2 text-center text-sm font-semibold text-saffron"
                   >
                     {tr("Se connecter", "Sign in")}
-                  </Link>
-                )}
-
-                {token && (
-                  <Link
-                    to="/profile"
-                    onClick={closeMobileMenus}
-                    className="rounded-md px-3 py-2 text-sm transition hover:bg-white/10"
-                  >
-                    {tr("Informations personnelles", "Personal information")}
-                  </Link>
-                )}
-
-                {token && !isAdminUser && (
-                  <Link
-                    to="/userorders"
-                    onClick={closeMobileMenus}
-                    className="rounded-md px-3 py-2 text-sm transition hover:bg-white/10"
-                  >
-                    {tr("Mes commandes", "My orders")}
                   </Link>
                 )}
 

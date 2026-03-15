@@ -840,6 +840,16 @@ export default function Order() {
   );
 
   useEffect(() => {
+    if (!message) return undefined;
+
+    const timeoutId = window.setTimeout(() => {
+      setMessage("");
+    }, 2000);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [message]);
+
+  useEffect(() => {
     let cancelled = false;
 
     async function fetchInitialData() {
