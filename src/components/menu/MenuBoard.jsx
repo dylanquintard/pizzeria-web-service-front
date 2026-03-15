@@ -16,6 +16,11 @@ function getCategoryWeight(category) {
   return category.items?.length || category.products?.length || 1;
 }
 
+function normalizeCategoryId(value) {
+  if (value === undefined || value === null || value === "") return "";
+  return String(value);
+}
+
 function buildMenuColumns(categories) {
   if (!categories?.length) {
     return { left: [], right: [] };
@@ -42,15 +47,17 @@ function buildMenuColumns(categories) {
   return { left, right };
 }
 
-function buildMenuGroups(categories, products, tr) {
+export function buildMenuGroups(categories, products, tr) {
   const grouped = categories.map((category) => ({
     key: `category-${category.id}`,
     title: category.name,
     description: category.description,
-    items: products.filter((product) => product.categoryId === category.id),
+    items: products.filter(
+      (product) => normalizeCategoryId(product.categoryId) === normalizeCategoryId(category.id)
+    ),
   }));
 
-  const uncategorized = products.filter((product) => !product.categoryId);
+  const uncategorized = products.filter((product) => !normalizeCategoryId(product.categoryId));
   if (uncategorized.length > 0) {
     grouped.push({
       key: "category-uncategorized",
