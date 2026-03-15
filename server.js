@@ -92,6 +92,21 @@ const NOINDEX_EXACT_ROUTES = new Set([
 ]);
 
 const PREFIX_SPA_ROUTES = ["/admin"];
+const SITEMAP_STATIC_ROUTES = new Set([
+  "/",
+  "/a-propos",
+  "/blog",
+  "/contact",
+  "/gallery",
+  "/menu",
+  "/planing",
+  "/pizza",
+  "/pizza-napolitaine-thionville",
+  "/food-truck-pizza-moselle",
+  "/mentions-legales",
+  "/confidentialite",
+  "/conditions-generales",
+]);
 
 const seoCache = {
   expiresAt: 0,
@@ -114,6 +129,57 @@ function ensureIndexTemplate() {
 
 function normalizeBaseUrl(value) {
   return String(value || "").trim().replace(/\/+$/, "");
+}
+
+function normalizeRoutePath(pathname) {
+  const normalized = `/${String(pathname || "").trim().replace(/^\/+/, "")}`.replace(/\/+$/, "");
+  if (normalized === "") return "/";
+  return normalized;
+}
+
+function decodeXmlEntities(value) {
+  return String(value || "")
+    .replaceAll("&amp;", "&")
+    .replaceAll("&lt;", "<")
+    .replaceAll("&gt;", ">")
+    .replaceAll("&quot;", '"')
+    .replaceAll("&#39;", "'");
+}
+
+function extractSitemapLocs(xmlPayload) {
+  return [...String(xmlPayload || "").matchAll(/<loc>(.*?)<\/loc>/gi)].map((match) =>
+    decodeXmlEntities(match[1]).trim()
+  );
+}
+
+function normalizeAbsoluteHttpUrl(value) {
+  try {
+    const parsed = new URL(String(value || "").trim());
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return "";
+    parsed.hash = "";
+    parsed.search = "";
+    if (parsed.pathname !== "/") {
+      parsed.pathname = parsed.pathname.replace(/\/+$/, "");
+    }
+    return parsed.toString();
+  } catch (_error) {
+    return "";
+  }
+}
+
+function buildSitemapXml(urls) {
+  const safeUrls = Array.from(
+    new Set((Array.isArray(urls) ? urls : []).map((url) => normalizeAbsoluteHttpUrl(url)).filter(Boolean))
+  ).sort((left, right) => left.localeCompare(right));
+
+  const lastmod = new Date().toISOString().slice(0, 10);
+  const urlNodes = safeUrls
+    .map(
+      (url) => `  <url>\n    <loc>${escapeHtml(url)}</loc>\n    <lastmod>${lastmod}</lastmod>\n  </url>`
+    )
+    .join("\n");
+
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urlNodes}\n</urlset>`;
 }
 
 function getCanonicalBaseUrl(req) {
@@ -476,6 +542,49 @@ function isDynamicSeoPath(pathname) {
   );
 }
 
+function buildLocalSitemapUrls(req, cache) {
+  const settings = normalizeSiteSettings(cache?.siteSettings);
+  const configuredCanonical = normalizeBaseUrl(settings.seo?.canonicalSiteUrl);
+  const canonicalBase = configuredCanonical || normalizeBaseUrl(getCanonicalBaseUrl(req));
+
+  const routes = new Set();
+  for (const staticPath of SITEMAP_STATIC_ROUTES) {
+    routes.add(normalizeRoutePath(staticPath));
+  }
+
+  const citySlugs = cache?.citySlugs instanceof Set ? [...cache.citySlugs] : [];
+  for (const slug of citySlugs) {
+    if (!slug || FIXED_CITY_SLUGS.has(slug) || BLOCKED_CITY_SLUGS.has(slug)) continue;
+    routes.add(`/pizza-${slug}`);
+  }
+
+  const blogSlugs = cache?.blogSlugs instanceof Set ? [...cache.blogSlugs] : [];
+  for (const slug of blogSlugs) {
+    if (!slug) continue;
+    const blogPath = normalizeRoutePath(`/${slug}`);
+    if (EXACT_SPA_ROUTES.has(blogPath)) continue;
+    if (NOINDEX_EXACT_ROUTES.has(blogPath)) continue;
+    if (PREFIX_SPA_ROUTES.some((prefix) => blogPath === prefix || blogPath.startsWith(`${prefix}/`))) continue;
+    routes.add(blogPath);
+  }
+
+  const urls = [...routes]
+    .sort((left, right) => left.localeCompare(right))
+    .map((pathname) => `${canonicalBase}${pathname === "/" ? "" : pathname}`);
+
+  return urls.map((url) => normalizeAbsoluteHttpUrl(url)).filter(Boolean);
+}
+
+function buildBackendSitemapCandidates() {
+  const backendOrigin = buildBackendOriginUrl();
+  const backendApiBase = buildBackendApiBaseUrl();
+  const candidates = [
+    backendOrigin ? `${backendOrigin}/sitemap.xml` : "",
+    backendApiBase ? `${backendApiBase}/sitemap.xml` : "",
+  ].filter(Boolean);
+  return [...new Set(candidates)];
+}
+
 function buildSeoMeta(pathname, cache) {
   const settings = normalizeSiteSettings(cache?.siteSettings);
   const siteName = String(settings.siteName || DEFAULT_SITE_SETTINGS.siteName).trim();
@@ -794,26 +903,52 @@ app.get("/healthz", (_req, res) => {
   res.status(200).json({ ok: true });
 });
 
-app.get("/sitemap.xml", async (_req, res) => {
-  try {
-    const backendOrigin = buildBackendOriginUrl();
-    if (!backendOrigin) {
-      return res.status(503).type("text/plain; charset=utf-8").send("Sitemap unavailable");
+app.get("/sitemap.xml", async (req, res) => {
+  const backendCandidates = buildBackendSitemapCandidates();
+  const backendLocs = [];
+
+  for (const sitemapUrl of backendCandidates) {
+    try {
+      const xmlPayload = await fetchTextWithTimeout(
+        sitemapUrl,
+        "application/xml, text/xml;q=0.9, text/plain;q=0.8"
+      );
+      const locs = extractSitemapLocs(xmlPayload).map((entry) => normalizeAbsoluteHttpUrl(entry)).filter(Boolean);
+      if (locs.length > 0) {
+        backendLocs.push(...locs);
+      }
+    } catch (_error) {
+      // Keep trying other sitemap candidates and local fallback.
     }
-
-    const sitemapXml = await fetchTextWithTimeout(
-      `${backendOrigin}/sitemap.xml`,
-      "application/xml, text/xml;q=0.9, text/plain;q=0.8"
-    );
-
-    return res
-      .status(200)
-      .type("application/xml; charset=utf-8")
-      .set("Cache-Control", "public, max-age=300")
-      .send(sitemapXml);
-  } catch (_error) {
-    return res.status(502).type("text/plain; charset=utf-8").send("Sitemap unavailable");
   }
+
+  let localLocs = [];
+  try {
+    const cache = await refreshSeoCacheIfNeeded({ force: true });
+    localLocs = buildLocalSitemapUrls(req, cache);
+  } catch (_error) {
+    localLocs = [];
+  }
+
+  const mergedLocs = [...new Set([...backendLocs, ...localLocs])];
+  if (mergedLocs.length === 0) {
+    return res.status(503).type("text/plain; charset=utf-8").send("Sitemap unavailable");
+  }
+
+  const sitemapXml = buildSitemapXml(mergedLocs);
+  const sourceLabel =
+    backendLocs.length > 0 && localLocs.length > 0
+      ? "backend+local"
+      : backendLocs.length > 0
+        ? "backend"
+        : "local";
+
+  return res
+    .status(200)
+    .type("application/xml; charset=utf-8")
+    .set("Cache-Control", "public, max-age=120")
+    .set("X-Sitemap-Source", sourceLabel)
+    .send(sitemapXml);
 });
 
 app.use(async (req, res) => {

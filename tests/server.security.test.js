@@ -39,3 +39,13 @@ test("front server sends baseline security headers", async () => {
   });
 });
 
+test("sitemap endpoint stays available with local fallback", async () => {
+  await withServer(async (baseUrl) => {
+    const response = await fetch(`${baseUrl}/sitemap.xml`);
+    assert.equal(response.status, 200);
+    assert.match(String(response.headers.get("content-type") || ""), /application\/xml/i);
+    const xml = await response.text();
+    assert.match(xml, /<urlset/i);
+    assert.match(xml, /<loc>.*<\/loc>/i);
+  });
+});
