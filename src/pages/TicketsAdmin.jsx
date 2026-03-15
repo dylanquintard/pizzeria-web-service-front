@@ -137,7 +137,18 @@ function dedupeTicketsByOrder(jobs) {
   const deduped = [];
 
   for (const job of sorted) {
-    const key = Number(job?.orderId || 0) > 0 ? `order:${job.orderId}` : `job:${job?.id || Math.random()}`;
+    const hasOrderId = Number(job?.orderId || 0) > 0;
+    const stableFallback = [
+      job?.id,
+      job?.createdAt,
+      job?.updatedAt,
+      job?.status,
+      job?.printerCode,
+    ]
+      .map((value) => String(value || "").trim())
+      .filter(Boolean)
+      .join("|");
+    const key = hasOrderId ? `order:${job.orderId}` : `job:${stableFallback || "unknown"}`;
     if (seen.has(key)) continue;
     seen.add(key);
     deduped.push(job);

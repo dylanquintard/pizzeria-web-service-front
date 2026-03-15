@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { resetPassword } from "../api/user.api";
 import { useLanguage } from "../context/LanguageContext";
@@ -22,6 +22,16 @@ export default function ResetPassword() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
+  const redirectTimeoutRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (redirectTimeoutRef.current) {
+        clearTimeout(redirectTimeoutRef.current);
+        redirectTimeoutRef.current = null;
+      }
+    };
+  }, []);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -59,7 +69,10 @@ export default function ResetPassword() {
         password,
       });
       setInfo(tr("Mot de passe mis a jour. Redirection vers la connexion...", "Password updated. Redirecting to login..."));
-      setTimeout(() => navigate("/login", { replace: true, state: { email: normalizedEmail } }), 900);
+      redirectTimeoutRef.current = setTimeout(
+        () => navigate("/login", { replace: true, state: { email: normalizedEmail } }),
+        900
+      );
     } catch (err) {
       setError(
         err.response?.data?.error ||
