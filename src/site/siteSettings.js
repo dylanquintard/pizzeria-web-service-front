@@ -1,3 +1,9 @@
+import {
+  sanitizeAbsoluteHttpUrl,
+  sanitizeInternalOrAbsoluteHttpUrl,
+  sanitizeMediaUrl,
+} from "../utils/url";
+
 export const DEFAULT_SITE_SETTINGS = Object.freeze({
   siteName: "Camion Pizza Italienne",
   siteTagline: {
@@ -189,7 +195,7 @@ export function mergeSiteSettings(nextValue) {
           : defaults.contact.address,
       mapsUrl:
         typeof source.contact?.mapsUrl === "string"
-          ? source.contact.mapsUrl.trim()
+          ? sanitizeAbsoluteHttpUrl(source.contact.mapsUrl)
           : defaults.contact.mapsUrl,
       serviceArea: mergeLocalizedValue(
         defaults.contact.serviceArea,
@@ -199,15 +205,15 @@ export function mergeSiteSettings(nextValue) {
     social: {
       instagramUrl:
         typeof source.social?.instagramUrl === "string"
-          ? source.social.instagramUrl.trim()
+          ? sanitizeAbsoluteHttpUrl(source.social.instagramUrl)
           : defaults.social.instagramUrl,
       facebookUrl:
         typeof source.social?.facebookUrl === "string"
-          ? source.social.facebookUrl.trim()
+          ? sanitizeAbsoluteHttpUrl(source.social.facebookUrl)
           : defaults.social.facebookUrl,
       tiktokUrl:
         typeof source.social?.tiktokUrl === "string"
-          ? source.social.tiktokUrl.trim()
+          ? sanitizeAbsoluteHttpUrl(source.social.tiktokUrl)
           : defaults.social.tiktokUrl,
     },
     seo: {
@@ -221,15 +227,15 @@ export function mergeSiteSettings(nextValue) {
       ),
       defaultOgImageUrl:
         typeof source.seo?.defaultOgImageUrl === "string"
-          ? source.seo.defaultOgImageUrl.trim()
+          ? sanitizeMediaUrl(source.seo.defaultOgImageUrl)
           : defaults.seo.defaultOgImageUrl,
       headerLogoUrl:
         typeof source.seo?.headerLogoUrl === "string"
-          ? source.seo.headerLogoUrl.trim()
+          ? sanitizeMediaUrl(source.seo.headerLogoUrl)
           : defaults.seo.headerLogoUrl,
       canonicalSiteUrl:
         typeof source.seo?.canonicalSiteUrl === "string"
-          ? source.seo.canonicalSiteUrl.trim()
+          ? sanitizeAbsoluteHttpUrl(source.seo.canonicalSiteUrl)
           : defaults.seo.canonicalSiteUrl,
     },
     home: {
@@ -293,7 +299,7 @@ export function mergeSiteSettings(nextValue) {
       text: mergeLocalizedValue(defaults.announcement.text, source.announcement?.text),
       linkUrl:
         typeof source.announcement?.linkUrl === "string"
-          ? source.announcement.linkUrl.trim()
+          ? sanitizeInternalOrAbsoluteHttpUrl(source.announcement.linkUrl)
           : defaults.announcement.linkUrl,
       variant:
         typeof source.announcement?.variant === "string" &&

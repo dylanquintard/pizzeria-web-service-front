@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
 import { useSiteSettings } from "../../context/SiteSettingsContext";
 import { DEFAULT_SITE_SETTINGS, getLocalizedSiteText } from "../../site/siteSettings";
+import { sanitizeAbsoluteHttpUrl } from "../../utils/url";
 
 function InstagramIcon(props) {
   return (
@@ -46,17 +47,17 @@ export default function SiteFooter() {
   const serviceArea = getLocalizedSiteText(settings.contact?.serviceArea, language, "").trim();
   const socialLinks = [
     {
-      href: String(settings.social?.instagramUrl || "").trim(),
+      href: sanitizeAbsoluteHttpUrl(settings.social?.instagramUrl),
       label: "Instagram",
       Icon: InstagramIcon,
     },
     {
-      href: String(settings.social?.facebookUrl || "").trim(),
+      href: sanitizeAbsoluteHttpUrl(settings.social?.facebookUrl),
       label: "Facebook",
       Icon: FacebookIcon,
     },
     {
-      href: String(settings.social?.tiktokUrl || "").trim(),
+      href: sanitizeAbsoluteHttpUrl(settings.social?.tiktokUrl),
       label: "TikTok",
       Icon: TikTokIcon,
     },

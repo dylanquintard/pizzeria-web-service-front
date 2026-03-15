@@ -4,6 +4,7 @@ import { AuthContext } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
 import { useSiteSettings } from "../../context/SiteSettingsContext";
 import { getLocalizedSiteText } from "../../site/siteSettings";
+import { sanitizeAbsoluteHttpUrl } from "../../utils/url";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -16,6 +17,7 @@ export default function ContactPanel({ sectionId, sectionClassName = "" }) {
   const [contactSubject, setContactSubject] = useState("");
   const [contactMessage, setContactMessage] = useState("");
   const [contactFeedback, setContactFeedback] = useState("");
+  const [contactFeedbackTone, setContactFeedbackTone] = useState("info");
   const [submittingContact, setSubmittingContact] = useState(false);
 
   useEffect(() => {
@@ -28,22 +30,26 @@ export default function ContactPanel({ sectionId, sectionClassName = "" }) {
     event.preventDefault();
 
     if (!contactName.trim()) {
+      setContactFeedbackTone("error");
       setContactFeedback(tr("Le nom est obligatoire.", "Name is required."));
       return;
     }
 
     const normalizedEmail = contactEmail.trim().toLowerCase();
     if (!normalizedEmail) {
+      setContactFeedbackTone("error");
       setContactFeedback(tr("L'email est obligatoire.", "Email is required."));
       return;
     }
 
     if (!EMAIL_REGEX.test(normalizedEmail)) {
+      setContactFeedbackTone("error");
       setContactFeedback(tr("Format d'email invalide.", "Invalid email format."));
       return;
     }
 
     if (!contactMessage.trim()) {
+      setContactFeedbackTone("error");
       setContactFeedback(tr("Le message est obligatoire.", "Message is required."));
       return;
     }
@@ -51,6 +57,7 @@ export default function ContactPanel({ sectionId, sectionClassName = "" }) {
     try {
       setSubmittingContact(true);
       setContactFeedback("");
+      setContactFeedbackTone("info");
       await sendContactEmail({
         name: contactName.trim(),
         email: normalizedEmail,
@@ -65,7 +72,9 @@ export default function ContactPanel({ sectionId, sectionClassName = "" }) {
           "Email sent. We will reply quickly."
         )
       );
+      setContactFeedbackTone("success");
     } catch (err) {
+      setContactFeedbackTone("error");
       setContactFeedback(
         err.response?.data?.error || tr("Impossible d'envoyer l'email.", "Unable to send email.")
       );
@@ -77,10 +86,10 @@ export default function ContactPanel({ sectionId, sectionClassName = "" }) {
   const phone = String(settings.contact?.phone || "").trim();
   const email = String(settings.contact?.email || "").trim();
   const address = String(settings.contact?.address || "").trim();
-  const mapsUrl = String(settings.contact?.mapsUrl || "").trim();
-  const instagramUrl = String(settings.social?.instagramUrl || "").trim();
-  const facebookUrl = String(settings.social?.facebookUrl || "").trim();
-  const tiktokUrl = String(settings.social?.tiktokUrl || "").trim();
+  const mapsUrl = sanitizeAbsoluteHttpUrl(settings.contact?.mapsUrl);
+  const instagramUrl = sanitizeAbsoluteHttpUrl(settings.social?.instagramUrl);
+  const facebookUrl = sanitizeAbsoluteHttpUrl(settings.social?.facebookUrl);
+  const tiktokUrl = sanitizeAbsoluteHttpUrl(settings.social?.tiktokUrl);
   const serviceArea = getLocalizedSiteText(settings.contact?.serviceArea, language, "").trim();
 
   return (
@@ -178,34 +187,59 @@ export default function ContactPanel({ sectionId, sectionClassName = "" }) {
           <p className="theme-light-keep-dark text-sm uppercase tracking-wider text-saffron">
             {tr("Formulaire de contact", "Contact form")}
           </p>
-          <form onSubmit={handleContactSubmit} className="mt-3 space-y-3">
+          <form onSubmit={handleContactSubmit} className="mt-3 space-y-3" aria-busy={submittingContact}>
+            <label htmlFor="contact-name" className="sr-only">
+              {tr("Votre nom", "Your name")}
+            </label>
             <input
+              id="contact-name"
+              name="name"
               type="text"
               value={contactName}
               onChange={(event) => setContactName(event.target.value)}
               placeholder={tr("Votre nom", "Your name")}
               className="w-full rounded-xl border border-white/20 bg-black/20 px-3 py-2 text-sm text-white placeholder:text-stone-400 focus:border-saffron focus:outline-none"
+              autoComplete="name"
+              required
             />
+            <label htmlFor="contact-email" className="sr-only">
+              {tr("Votre email", "Your email")}
+            </label>
             <input
+              id="contact-email"
+              name="email"
               type="email"
               value={contactEmail}
               onChange={(event) => setContactEmail(event.target.value)}
               placeholder={tr("Votre email", "Your email")}
               className="w-full rounded-xl border border-white/20 bg-black/20 px-3 py-2 text-sm text-white placeholder:text-stone-400 focus:border-saffron focus:outline-none"
+              autoComplete="email"
+              required
             />
+            <label htmlFor="contact-subject" className="sr-only">
+              {tr("Sujet (optionnel)", "Subject (optional)")}
+            </label>
             <input
+              id="contact-subject"
+              name="subject"
               type="text"
               value={contactSubject}
               onChange={(event) => setContactSubject(event.target.value)}
               placeholder={tr("Sujet (optionnel)", "Subject (optional)")}
               className="w-full rounded-xl border border-white/20 bg-black/20 px-3 py-2 text-sm text-white placeholder:text-stone-400 focus:border-saffron focus:outline-none"
             />
+            <label htmlFor="contact-message" className="sr-only">
+              {tr("Votre message", "Your message")}
+            </label>
             <textarea
+              id="contact-message"
+              name="message"
               rows={4}
               value={contactMessage}
               onChange={(event) => setContactMessage(event.target.value)}
               placeholder={tr("Votre message", "Your message")}
               className="w-full rounded-xl border border-white/20 bg-black/20 px-3 py-2 text-sm text-white placeholder:text-stone-400 focus:border-saffron focus:outline-none"
+              required
             />
             <div className="flex flex-wrap items-center gap-3">
               <button
@@ -215,7 +249,17 @@ export default function ContactPanel({ sectionId, sectionClassName = "" }) {
               >
                 {submittingContact ? tr("Envoi...", "Sending...") : tr("Envoyer", "Send")}
               </button>
-              {contactFeedback && <p className="text-xs text-stone-200">{contactFeedback}</p>}
+              {contactFeedback && (
+                <p
+                  role={contactFeedbackTone === "error" ? "alert" : "status"}
+                  aria-live="polite"
+                  className={`text-xs ${
+                    contactFeedbackTone === "error" ? "text-red-200" : "text-emerald-200"
+                  }`}
+                >
+                  {contactFeedback}
+                </p>
+              )}
             </div>
           </form>
         </div>

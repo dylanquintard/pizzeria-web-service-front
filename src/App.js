@@ -1,5 +1,14 @@
-import { Suspense, lazy, useContext } from "react";
-import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation, useParams } from "react-router-dom";
+import { Suspense, lazy, useContext, useEffect } from "react";
+import {
+  BrowserRouter,
+  Navigate,
+  Outlet,
+  Route,
+  Routes,
+  useLocation,
+  useNavigationType,
+  useParams,
+} from "react-router-dom";
 import Header from "./components/layout/Header";
 import MobileStickyCta from "./components/layout/MobileStickyCta";
 import SiteFooter from "./components/layout/SiteFooter";
@@ -69,7 +78,16 @@ const AdminRoute = ({ children }) => {
 
 const AppLayout = () => {
   const location = useLocation();
+  const navigationType = useNavigationType();
   const isAdminRoute = location.pathname.startsWith("/admin");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      if (location.hash) return;
+      if (navigationType === "POP") return;
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    }
+  }, [location.pathname, location.search, location.hash, navigationType]);
 
   return (
     <>

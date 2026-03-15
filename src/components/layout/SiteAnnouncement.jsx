@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
 import { useSiteSettings } from "../../context/SiteSettingsContext";
 import { getLocalizedSiteText } from "../../site/siteSettings";
+import { isAbsoluteHttpUrl, sanitizeInternalOrAbsoluteHttpUrl } from "../../utils/url";
 
 const VARIANT_STYLES = {
   info: {
@@ -40,7 +41,7 @@ export default function SiteAnnouncement() {
     return null;
   }
 
-  const linkUrl = String(settings.announcement?.linkUrl || "").trim();
+  const linkUrl = sanitizeInternalOrAbsoluteHttpUrl(settings.announcement?.linkUrl);
   const variant = String(settings.announcement?.variant || "info").trim().toLowerCase();
   const styles = VARIANT_STYLES[variant] || VARIANT_STYLES.info;
   const badgeLabel =
@@ -68,7 +69,7 @@ export default function SiteAnnouncement() {
         <div className="flex min-h-[44px] flex-col gap-2 py-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:py-2.5">
           <div className="flex min-w-0 items-start gap-3 sm:items-center">{content}</div>
           {linkUrl ? (
-            /^(https?:)?\/\//i.test(linkUrl) ? (
+            isAbsoluteHttpUrl(linkUrl) ? (
               <a
                 href={linkUrl}
                 target="_blank"

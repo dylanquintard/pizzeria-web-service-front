@@ -10,7 +10,7 @@ import { BRAND_LOGO_URL } from "../../config/env";
 import { getAdminNavLinks } from "../../navigation/adminLinks";
 import { DEFAULT_SITE_SETTINGS } from "../../site/siteSettings";
 
-function CartItemRow({ item, onRemove, tr }) {
+function CartItemRow({ item, onRemove, tr, disabled = false }) {
   const lineTotal = (Number(item.unitPrice || 0) * Number(item.quantity || 0)).toFixed(2);
 
   return (
@@ -29,7 +29,8 @@ function CartItemRow({ item, onRemove, tr }) {
         <button
           type="button"
           onClick={() => onRemove(item.id)}
-          className="shrink-0 rounded-md border border-stone-300 px-2 py-1 text-[11px] font-semibold text-stone-700 transition hover:bg-stone-200"
+          disabled={disabled}
+          className="shrink-0 rounded-md border border-stone-300 px-2 py-1 text-[11px] font-semibold text-stone-700 transition hover:bg-stone-200 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {tr("Retirer", "Remove")}
         </button>
@@ -89,7 +90,7 @@ function ThemeToggle({ isLight, onToggle, tr, className = "" }) {
 export default function Header() {
   const location = useLocation();
   const { token, user, logout } = useContext(AuthContext);
-  const { cartItems, cartTotal, itemCount, removeItem, clearCart, loading } = useContext(CartContext);
+  const { cartItems, cartTotal, itemCount, removeItem, clearCart, loading, updating, error: cartError } = useContext(CartContext);
   const { language, setLanguage, tr } = useLanguage();
   const { settings: siteSettings } = useSiteSettings();
   const { theme, toggleTheme, setTheme } = useTheme();
@@ -126,6 +127,31 @@ export default function Header() {
   const closeMobileMenus = () => {
     setMobileOpen(false);
     setMobileAdminOpen(false);
+  };
+
+  const scrollPageToTop = () => {
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+    }
+  };
+
+  const handlePrimaryNavClick = (targetPath, closeMobileAfterClick = false) => (event) => {
+    if (location.pathname === targetPath && !location.hash) {
+      event.preventDefault();
+      scrollPageToTop();
+    }
+
+    if (closeMobileAfterClick) {
+      closeMobileMenus();
+    }
+  };
+
+  const handleRemoveCartItem = async (itemId) => {
+    await removeItem(itemId);
+  };
+
+  const handleClearCart = async () => {
+    await clearCart();
   };
 
   useEffect(() => {
@@ -215,6 +241,7 @@ export default function Header() {
               <Link
                 key={item.to}
                 to={item.to}
+                onClick={handlePrimaryNavClick(item.to)}
                 className="whitespace-nowrap rounded-full px-3 py-1.5 transition hover:bg-saffron/10 hover:text-saffron"
               >
                 {item.label}
@@ -285,8 +312,15 @@ export default function Header() {
                     <div className="max-h-56 space-y-2 overflow-y-auto pr-1">
                       {loading && <p className="text-xs text-stone-500">{tr("Chargement...", "Loading...")}</p>}
                       {!loading && cartItems.length === 0 && <p className="text-xs text-stone-500">{tr("Votre panier est vide", "Your cart is empty")}</p>}
+                      {cartError ? <p className="text-xs text-red-600">{cartError}</p> : null}
                       {cartItems.map((item) => (
-                        <CartItemRow key={item.id} item={item} onRemove={removeItem} tr={tr} />
+                        <CartItemRow
+                          key={item.id}
+                          item={item}
+                          onRemove={handleRemoveCartItem}
+                          tr={tr}
+                          disabled={loading || updating}
+                        />
                       ))}
                     </div>
 
@@ -304,10 +338,11 @@ export default function Header() {
                           </Link>
                           <button
                             type="button"
-                            onClick={clearCart}
-                            className="rounded-lg border border-stone-300 px-3 py-2 text-xs font-semibold text-stone-700 transition hover:bg-stone-100"
+                            onClick={handleClearCart}
+                            disabled={updating}
+                            className="rounded-lg border border-stone-300 px-3 py-2 text-xs font-semibold text-stone-700 transition hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-60"
                           >
-                            {tr("Vider", "Clear")}
+                            {updating ? tr("Mise a jour...", "Updating...") : tr("Vider", "Clear")}
                           </button>
                         </div>
                       </div>
@@ -426,7 +461,7 @@ export default function Header() {
                   <Link
                     key={item.to}
                     to={item.to}
-                    onClick={closeMobileMenus}
+                    onClick={handlePrimaryNavClick(item.to, true)}
                     className="rounded-md px-3 py-2 transition hover:bg-white/10"
                   >
                     {item.label}

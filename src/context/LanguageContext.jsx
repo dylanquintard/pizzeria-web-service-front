@@ -9,7 +9,15 @@ function normalizeLanguage(value) {
 }
 
 function getInitialLanguage() {
-  const stored = window.localStorage.getItem(STORAGE_KEY);
+  if (typeof window === "undefined") return "fr";
+
+  let stored = "";
+  try {
+    stored = window.localStorage.getItem(STORAGE_KEY);
+  } catch (_err) {
+    stored = "";
+  }
+
   if (stored) return normalizeLanguage(stored);
   return "fr";
 }
@@ -34,8 +42,17 @@ export function LanguageProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    window.localStorage.setItem(STORAGE_KEY, language);
-    document.documentElement.lang = language;
+    if (typeof window !== "undefined") {
+      try {
+        window.localStorage.setItem(STORAGE_KEY, language);
+      } catch (_err) {
+        // Ignore storage access errors (private mode / blocked storage).
+      }
+    }
+
+    if (typeof document !== "undefined") {
+      document.documentElement.lang = language;
+    }
   }, [language]);
 
   const tr = useCallback(

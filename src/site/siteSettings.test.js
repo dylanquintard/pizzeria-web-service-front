@@ -23,3 +23,23 @@ test("getLocalizedSiteText returns the requested language when available", () =>
   expect(getLocalizedSiteText(value, "fr", "")).toBe("Bonjour");
   expect(getLocalizedSiteText(value, "en", "")).toBe("Hello");
 });
+
+test("mergeSiteSettings sanitizes external and announcement urls", () => {
+  const merged = mergeSiteSettings({
+    contact: {
+      mapsUrl: "javascript:alert(1)",
+    },
+    social: {
+      instagramUrl: "https://instagram.com/example",
+      facebookUrl: "javascript:alert(1)",
+    },
+    announcement: {
+      linkUrl: "javascript:alert(1)",
+    },
+  });
+
+  expect(merged.contact.mapsUrl).toBe("");
+  expect(merged.social.instagramUrl).toBe("https://instagram.com/example");
+  expect(merged.social.facebookUrl).toBe("");
+  expect(merged.announcement.linkUrl).toBe("");
+});
