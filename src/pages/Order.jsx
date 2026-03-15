@@ -170,18 +170,6 @@ function ProductCustomizerModal({
     return acc;
   }, {});
 
-  const groupedRemovableIngredients = removableIngredients.reduce((acc, ingredient) => {
-    const key = getIngredientCategoryKey(ingredient);
-    if (!acc[key]) {
-      acc[key] = {
-        key,
-        label: ingredient.category?.name || tr("Sans categorie", "Uncategorized"),
-        items: [],
-      };
-    }
-    acc[key].items.push(ingredient);
-    return acc;
-  }, {});
   const currentBaseIngredient = useMemo(() => {
     const productBaseEntry = Array.isArray(product.ingredients)
       ? product.ingredients.find(
@@ -262,19 +250,12 @@ function ProductCustomizerModal({
       items: group.items,
     }));
 
-    const removableSections = Object.values(groupedRemovableIngredients).map((group) => ({
-      key: `remove-${group.key}`,
-      label: group.label,
-      type: "remove",
-      items: group.items,
-    }));
-
-    return [...extraSections, ...removableSections].filter(
+    return extraSections.filter(
       (section) => Array.isArray(section.items) && section.items.length > 0
     );
-  }, [groupedExtras, groupedRemovableIngredients]);
+  }, [groupedExtras]);
 
-  const applyBaseChangesAndContinue = () => {
+  const syncBaseChanges = () => {
     if (hasBaseReplacement) {
       onBaseChangesChange({
         added: dedupeIngredients([selectedBaseIngredient]),
@@ -286,11 +267,23 @@ function ProductCustomizerModal({
         removed: [],
       });
     }
+  };
+
+  const applyBaseChangesAndContinue = () => {
+    syncBaseChanges();
 
     setOpenCustomizationSectionKey((prev) =>
       prev || customizationSections[0]?.key || ""
     );
-    setStep("customize");
+    setStep(removableIngredients.length > 0 ? "remove" : "customize");
+  };
+
+  const handleConfirmFromCurrentStep = () => {
+    if (step === "base") {
+      syncBaseChanges();
+    }
+
+    onConfirm();
   };
 
   return (
@@ -312,62 +305,67 @@ function ProductCustomizerModal({
           </button>
         </div>
 
-        <div className="rounded-3xl border border-stone-200 bg-stone-50/80 p-5">
-          <p className="text-base font-semibold text-stone-900">
-            {tr(
-              "Souhaitez-vous apporter des modifications a votre pizza ou modifier la quantite commandee ?",
-              "Would you like to customize your pizza or change the quantity?"
-            )}
-          </p>
-          <p className="mt-2 text-sm text-stone-500">
-            {tr(
-              "Commencez simplement, puis ouvrez les modifications uniquement si vous souhaitez ajuster les ingredients.",
-              "Start simple, then open customization only if you want to adjust ingredients."
-            )}
-          </p>
+        {step === "intro" ? (
+          <div className="rounded-3xl border border-stone-200 bg-stone-50/80 p-5">
+            <p className="text-base font-semibold text-stone-900">
+              {tr(
+                "Souhaitez-vous apporter des modifications a votre pizza ou modifier la quantite commandee ?",
+                "Would you like to customize your pizza or change the quantity?"
+              )}
+            </p>
+            <p className="mt-2 text-sm text-stone-500">
+              {tr(
+                "Commencez simplement, puis ouvrez les modifications uniquement si vous souhaitez ajuster les ingredients.",
+                "Start simple, then open customization only if you want to adjust ingredients."
+              )}
+            </p>
 
-          <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
-            <button
-              type="button"
-              onClick={() => {
-                if (currentBaseIngredient || availableBaseIngredients.length > 0) {
-                  setStep("base");
-                  return;
-                }
-                setOpenCustomizationSectionKey(customizationSections[0]?.key || "");
-                setStep("customize");
-              }}
-              className="inline-flex items-center justify-center rounded-full border border-stone-300 bg-white px-5 py-3 text-sm font-bold uppercase tracking-wide text-stone-800 transition hover:bg-stone-100"
-            >
-              {tr("Apporter des modifications", "Customize this pizza")}
-            </button>
-
-            <div className="flex items-center rounded-full border border-stone-300 bg-white p-1 shadow-sm">
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
               <button
                 type="button"
-                onClick={() => onQuantityChange(Math.max(1, Number(quantity || 1) - 1))}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full text-lg font-bold text-stone-700 transition hover:bg-stone-100"
-                aria-label={tr("Retirer un article", "Decrease quantity")}
+                onClick={() => {
+                  if (currentBaseIngredient || availableBaseIngredients.length > 0) {
+                    setStep("base");
+                    return;
+                  }
+                  setOpenCustomizationSectionKey(customizationSections[0]?.key || "");
+                  setStep(removableIngredients.length > 0 ? "remove" : "customize");
+                }}
+                className="inline-flex items-center justify-center rounded-full border border-stone-300 bg-white px-5 py-3 text-sm font-bold uppercase tracking-wide text-stone-800 transition hover:bg-stone-100"
               >
-                -
+                {tr("Apporter des modifications", "Customize this pizza")}
               </button>
-              <span className="min-w-[56px] text-center text-base font-bold text-stone-900">
-                {Math.max(1, Number(quantity || 1))}
-              </span>
-              <button
-                type="button"
-                onClick={() => onQuantityChange(Math.max(1, Number(quantity || 1) + 1))}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full text-lg font-bold text-stone-700 transition hover:bg-stone-100"
-                aria-label={tr("Ajouter un article", "Increase quantity")}
-              >
-                +
-              </button>
+
+              <div className="flex items-center rounded-full border border-stone-300 bg-white p-1 shadow-sm">
+                <button
+                  type="button"
+                  onClick={() => onQuantityChange(Math.max(1, Number(quantity || 1) - 1))}
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full text-lg font-bold text-stone-700 transition hover:bg-stone-100"
+                  aria-label={tr("Retirer un article", "Decrease quantity")}
+                >
+                  -
+                </button>
+                <span className="min-w-[56px] text-center text-base font-bold text-stone-900">
+                  {Math.max(1, Number(quantity || 1))}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => onQuantityChange(Math.max(1, Number(quantity || 1) + 1))}
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full text-lg font-bold text-stone-700 transition hover:bg-stone-100"
+                  aria-label={tr("Ajouter un article", "Increase quantity")}
+                >
+                  +
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        ) : null}
 
         {step === "base" ? (
           <div className="mt-5 rounded-3xl border border-stone-200 bg-white p-5">
+            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-ember">
+              {tr("Etape 2", "Step 2")}
+            </p>
             <p className="text-base font-semibold text-stone-900">
               {tr(
                 "Voulez-vous changer la base de votre plat ?",
@@ -473,8 +471,105 @@ function ProductCustomizerModal({
               </button>
             </div>
           </div>
+        ) : step === "remove" ? (
+          <div className="mt-5 rounded-3xl border border-stone-200 bg-white p-5">
+            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-ember">
+              {tr("Etape 3", "Step 3")}
+            </p>
+            <p className="text-base font-semibold text-stone-900">
+              {tr(
+                "Retirer des ingredients de votre pizza",
+                "Remove ingredients from your pizza"
+              )}
+            </p>
+            <p className="mt-2 text-sm text-stone-500">
+              {tr(
+                "Les ingredients lies a la pizza sont actifs en vert. Touchez un ingredient pour le retirer : il passera en rouge.",
+                "Ingredients linked to the pizza are active in green. Tap an ingredient to remove it: it will turn red."
+              )}
+            </p>
+
+            <div className="mt-4 space-y-2">
+              {removableIngredients.length > 0 ? (
+                removableIngredients.map((ingredient) => {
+                  const isRemoved = removedIngredients.some((entry) => entry.id === ingredient.id);
+                  return (
+                    <button
+                      key={ingredient.id}
+                      type="button"
+                      onClick={() => onRemovedChange(ingredient, !isRemoved)}
+                      className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left transition ${
+                        isRemoved
+                          ? "border-rose-200 bg-rose-50 text-rose-900 hover:bg-rose-100"
+                          : "border-emerald-200 bg-emerald-50 text-emerald-950 hover:bg-emerald-100"
+                      }`}
+                    >
+                      <div>
+                        <p className="text-sm font-semibold">{ingredient.name}</p>
+                        <p
+                          className={`mt-1 text-xs font-medium uppercase tracking-[0.16em] ${
+                            isRemoved ? "text-rose-700" : "text-emerald-700"
+                          }`}
+                        >
+                          {isRemoved
+                            ? tr("Ingredient retire", "Ingredient removed")
+                            : tr("Ingredient conserve", "Ingredient kept")}
+                        </p>
+                      </div>
+                      <span
+                        className={`rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-white ${
+                          isRemoved ? "bg-rose-600" : "bg-emerald-600"
+                        }`}
+                      >
+                        {isRemoved ? tr("Retire", "Removed") : tr("Actif", "Active")}
+                      </span>
+                    </button>
+                  );
+                })
+              ) : (
+                <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-3 text-sm text-stone-500">
+                  {tr(
+                    "Aucun ingredient lie a cette pizza n'est disponible pour le retrait.",
+                    "No linked ingredient is available for removal on this pizza."
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="mt-5 flex items-center justify-between gap-3 border-t border-stone-200 pt-4">
+              <button
+                type="button"
+                onClick={() => setStep(currentBaseIngredient || availableBaseIngredients.length > 0 ? "base" : "intro")}
+                className="rounded-full border border-stone-300 px-4 py-2 text-sm font-semibold text-stone-600 transition hover:bg-stone-100"
+              >
+                {tr("Retour", "Back")}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setOpenCustomizationSectionKey((prev) =>
+                    prev || customizationSections[0]?.key || ""
+                  );
+                  setStep("customize");
+                }}
+                className="rounded-full bg-ember px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-white transition hover:bg-tomato"
+              >
+                {tr("Continuer ->", "Continue ->")}
+              </button>
+            </div>
+          </div>
         ) : step === "customize" ? (
-          <div className="mt-5 grid gap-6 md:grid-cols-2">
+          <div className="mt-5 space-y-5">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-ember">
+                {tr("Etape 4", "Step 4")}
+              </p>
+              <p className="mt-2 text-base font-semibold text-stone-900">
+                {tr("Ajouter des ingredients et verifier le recap", "Add ingredients and review the summary")}
+              </p>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-[minmax(0,7fr)_minmax(260px,3fr)]">
             <div className="rounded-3xl border border-stone-200 bg-white p-5">
               <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-500">
                 {tr("Categories d'ingredients", "Ingredient categories")}
@@ -502,21 +597,19 @@ function ProductCustomizerModal({
                               prev === section.key ? "" : section.key
                             )
                           }
-                          className="flex w-full items-center justify-between gap-3 bg-stone-100/80 px-4 py-3 text-left transition hover:bg-stone-200/70"
-                        >
-                          <div className="min-w-0">
-                            <p className="text-sm font-bold uppercase tracking-wide text-stone-800">
-                              {section.label}
-                            </p>
-                            <p className="mt-1 text-xs text-stone-500">
-                              {section.type === "extra"
-                                ? tr("Supplements disponibles", "Available extras")
-                                : tr("Ingredients retirables", "Removable ingredients")}
-                            </p>
-                          </div>
-                          <span className="shrink-0 text-stone-500">
-                            <AccordionChevron open={isOpen} />
-                          </span>
+                            className="flex w-full items-center justify-between gap-3 bg-stone-100/80 px-4 py-3 text-left transition hover:bg-stone-200/70"
+                          >
+                            <div className="min-w-0">
+                              <p className="text-sm font-bold uppercase tracking-wide text-stone-800">
+                                {section.label}
+                              </p>
+                              <p className="mt-1 text-xs text-stone-500">
+                              {tr("Supplements disponibles", "Available extras")}
+                              </p>
+                            </div>
+                            <span className="shrink-0 text-stone-500">
+                              <AccordionChevron open={isOpen} />
+                            </span>
                         </button>
 
                         {isOpen ? (
@@ -529,25 +622,15 @@ function ProductCustomizerModal({
                                 >
                                   <input
                                     type="checkbox"
-                                    checked={
-                                      section.type === "extra"
-                                        ? selectedExtras.some((entry) => entry.id === ingredient.id)
-                                        : removedIngredients.some((entry) => entry.id === ingredient.id)
-                                    }
-                                    onChange={(event) =>
-                                      section.type === "extra"
-                                        ? onExtrasChange(ingredient, event.target.checked)
-                                        : onRemovedChange(ingredient, event.target.checked)
-                                    }
+                                    checked={selectedExtras.some((entry) => entry.id === ingredient.id)}
+                                    onChange={(event) => onExtrasChange(ingredient, event.target.checked)}
                                     className="h-4 w-4 cursor-pointer accent-saffron"
                                   />
                                   <div>
                                     <p className="font-medium text-stone-900">{ingredient.name}</p>
-                                    {section.type === "extra" ? (
-                                      <p className="text-xs text-stone-500">
-                                        +{formatPrice(ingredient.price)} EUR
-                                      </p>
-                                    ) : null}
+                                    <p className="text-xs text-stone-500">
+                                      +{formatPrice(ingredient.price)}
+                                    </p>
                                   </div>
                                 </label>
                               ))}
@@ -561,7 +644,7 @@ function ProductCustomizerModal({
               </div>
             </div>
 
-            <div className="rounded-3xl border border-stone-200 bg-white p-5">
+            <div className="rounded-3xl border border-stone-200 bg-stone-50/85 p-4">
               <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-500">
                 {tr("Recap des modifications", "Customization summary")}
               </p>
@@ -600,7 +683,7 @@ function ProductCustomizerModal({
                     {selectedExtras.length > 0 ? (
                       selectedExtras.map((ingredient) => (
                         <p key={ingredient.id}>
-                          + {ingredient.name} (+{formatPrice(ingredient.price)} EUR)
+                          + {ingredient.name} (+{formatPrice(ingredient.price)})
                         </p>
                       ))
                     ) : (
@@ -628,12 +711,31 @@ function ProductCustomizerModal({
                   <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-stone-500">
                     {tr("Quantite", "Quantity")}
                   </p>
-                  <p className="mt-2 text-sm font-semibold text-stone-900">
-                    {Math.max(1, Number(quantity || 1))}
-                  </p>
+                  <div className="mt-2 flex items-center rounded-full border border-stone-300 bg-white p-1 shadow-sm">
+                    <button
+                      type="button"
+                      onClick={() => onQuantityChange(Math.max(1, Number(quantity || 1) - 1))}
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-full text-lg font-bold text-stone-700 transition hover:bg-stone-100"
+                      aria-label={tr("Retirer un article", "Decrease quantity")}
+                    >
+                      -
+                    </button>
+                    <span className="min-w-[48px] text-center text-sm font-bold text-stone-900">
+                      {Math.max(1, Number(quantity || 1))}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => onQuantityChange(Math.max(1, Number(quantity || 1) + 1))}
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-full text-lg font-bold text-stone-700 transition hover:bg-stone-100"
+                      aria-label={tr("Ajouter un article", "Increase quantity")}
+                    >
+                      +
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
+          </div>
           </div>
         ) : (
           <div className="mt-4 rounded-2xl border border-dashed border-stone-300 bg-white/70 px-4 py-3 text-sm text-stone-500">
@@ -648,13 +750,15 @@ function ProductCustomizerModal({
           <div className="text-sm text-stone-500">
             {step === "customize"
               ? tr("Les modifications seront ajoutees a cette pizza.", "Customizations will be added to this pizza.")
+              : step === "remove"
+                ? tr("Retirez uniquement les ingredients que vous ne souhaitez pas garder.", "Remove only the ingredients you do not want to keep.")
               : step === "base"
                 ? tr("La base peut etre remplacee sans surcout.", "The base can be replaced with no extra charge.")
                 : tr("Version standard de la pizza.", "Standard pizza version.")}
           </div>
           <button
             type="button"
-            onClick={onConfirm}
+            onClick={handleConfirmFromCurrentStep}
             className="rounded-full bg-ember px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-tomato"
           >
             {tr("Ajouter au panier", "Add to cart")}
