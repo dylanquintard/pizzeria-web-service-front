@@ -10,6 +10,15 @@ import { BRAND_LOGO_URL } from "../../config/env";
 import { getAdminNavLinks } from "../../navigation/adminLinks";
 import { DEFAULT_SITE_SETTINGS } from "../../site/siteSettings";
 
+const MOBILE_VIEWPORT_QUERY = "(max-width: 767px)";
+
+function getInitialIsNarrowViewport() {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+    return false;
+  }
+  return window.matchMedia(MOBILE_VIEWPORT_QUERY).matches;
+}
+
 function CartItemRow({ item, onRemove, tr, disabled = false }) {
   const lineTotal = (Number(item.unitPrice || 0) * Number(item.quantity || 0)).toFixed(2);
 
@@ -102,6 +111,7 @@ export default function Header() {
   const [cartOpen, setCartOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [hasLogoError, setHasLogoError] = useState(false);
+  const [isNarrowViewport, setIsNarrowViewport] = useState(getInitialIsNarrowViewport);
   const headerRef = useRef(null);
   const cartRef = useRef(null);
   const profileRef = useRef(null);
@@ -123,6 +133,7 @@ export default function Header() {
   );
   const configuredLogoUrl = String(siteSettings.seo?.headerLogoUrl || "").trim();
   const headerLogoUrl = configuredLogoUrl || BRAND_LOGO_URL;
+  const shouldEagerLoadLogo = !isNarrowViewport && location.pathname === "/";
 
   const closeMobileMenus = () => {
     setMobileOpen(false);
@@ -186,6 +197,31 @@ export default function Header() {
   }, [headerLogoUrl]);
 
   useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+      return undefined;
+    }
+
+    const mediaQueryList = window.matchMedia(MOBILE_VIEWPORT_QUERY);
+    const handleViewportChange = () => {
+      setIsNarrowViewport(mediaQueryList.matches);
+    };
+
+    handleViewportChange();
+
+    if (typeof mediaQueryList.addEventListener === "function") {
+      mediaQueryList.addEventListener("change", handleViewportChange);
+      return () => {
+        mediaQueryList.removeEventListener("change", handleViewportChange);
+      };
+    }
+
+    mediaQueryList.addListener(handleViewportChange);
+    return () => {
+      mediaQueryList.removeListener(handleViewportChange);
+    };
+  }, []);
+
+  useEffect(() => {
     const node = headerRef.current;
     if (!node || typeof document === "undefined") {
       return undefined;
@@ -225,8 +261,11 @@ export default function Header() {
               <img
                 src={headerLogoUrl}
                 alt={siteSettings.siteName || DEFAULT_SITE_SETTINGS.siteName}
+                width={520}
+                height={112}
                 className="block h-24 w-auto max-w-[min(78vw,360px)] object-contain sm:h-28 sm:max-w-[520px]"
-                loading="eager"
+                loading={shouldEagerLoadLogo ? "eager" : "lazy"}
+                fetchPriority={shouldEagerLoadLogo ? "high" : "auto"}
                 decoding="async"
                 onError={() => setHasLogoError(true)}
               />

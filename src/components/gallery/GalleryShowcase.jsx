@@ -135,8 +135,10 @@ export default function GalleryShowcase({ images = [], className = "" }) {
               className="group relative overflow-hidden rounded-2xl border border-white/10 text-left"
             >
               <img
-                src={image.imageUrl}
+                src={image.thumbnailUrl || image.imageUrl}
                 alt={image.altText || image.title || tr("Image galerie", "Gallery image")}
+                loading="lazy"
+                decoding="async"
                 className="h-72 w-full object-cover transition duration-500 group-hover:scale-105 sm:h-80"
               />
               <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-charcoal/90 to-transparent p-3">
@@ -188,6 +190,8 @@ export default function GalleryShowcase({ images = [], className = "" }) {
                     activeGalleryImage.title ||
                     tr("Image galerie", "Gallery image")
                   }
+                  loading="eager"
+                  decoding="async"
                   className="block max-h-[68vh] w-auto max-w-full object-contain"
                 />
                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-charcoal/90 to-transparent p-3">
@@ -243,6 +247,8 @@ export default function GalleryShowcase({ images = [], className = "" }) {
                       image.title ||
                       `${tr("Miniature", "Thumbnail")} ${index + 1}`
                     }
+                    loading="lazy"
+                    decoding="async"
                     className="h-16 w-24 object-cover"
                   />
                 </button>

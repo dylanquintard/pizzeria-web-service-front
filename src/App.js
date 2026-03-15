@@ -18,6 +18,7 @@ import { CartProvider } from "./context/CartContext";
 import { LanguageProvider, useLanguage } from "./context/LanguageContext";
 import { SiteSettingsProvider } from "./context/SiteSettingsContext";
 import { ThemeProvider } from "./context/ThemeContext";
+import Home from "./pages/Home";
 import { slugifyCity } from "./seo/localLandingContent";
 
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -25,7 +26,6 @@ const EditProduct = lazy(() => import("./pages/EditProduct"));
 const Gallery = lazy(() => import("./pages/Gallery"));
 const GalleryAdmin = lazy(() => import("./pages/GalleryAdmin"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
-const Home = lazy(() => import("./pages/Home"));
 const Menu = lazy(() => import("./pages/Menu"));
 const TourneeCamion = lazy(() => import("./pages/planing"));
 const APropos = lazy(() => import("./pages/APropos"));
