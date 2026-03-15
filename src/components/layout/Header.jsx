@@ -221,6 +221,7 @@ export default function Header() {
         <div className="flex min-h-[84px] min-w-0 items-center justify-between gap-1.5 py-2 sm:gap-2">
           <Link to="/" className="inline-flex min-w-0 flex-1 items-center bg-transparent p-0 sm:flex-none sm:shrink-0">
             {headerLogoUrl && !hasLogoError ? (
+              // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
               <img
                 src={headerLogoUrl}
                 alt={siteSettings.siteName || DEFAULT_SITE_SETTINGS.siteName}

@@ -537,7 +537,7 @@ export default function SiteInfoAdmin() {
       let payload = null;
 
       switch (sectionId) {
-        case "identity":
+        case "identity": {
           let headerLogoUrl = String(form.seo.headerLogoUrl || "").trim();
           if (form.seo.headerLogoFile) {
             const uploaded = await uploadGalleryImage(token, form.seo.headerLogoFile);
@@ -553,6 +553,7 @@ export default function SiteInfoAdmin() {
             },
           };
           break;
+        }
         case "contact":
           payload = { contact: form.contact };
           break;

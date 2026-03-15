@@ -199,7 +199,6 @@ export default function PrintAdmin() {
     }
 
     for (const printer of targetPrinters) {
-      // eslint-disable-next-line no-await-in-loop
       await upsertPrintPrinterAdmin(token, {
         code: printer.code,
         name: printer.name,

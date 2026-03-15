@@ -138,7 +138,6 @@ function ProductCustomizerModal({
   selectedExtras,
   removedIngredients,
   baseAddedIngredients,
-  baseRemovedIngredients,
   quantity,
   onClose,
   onExtrasChange,
@@ -583,6 +582,7 @@ function ProductCustomizerModal({
                                   key={ingredient.id}
                                   className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition hover:bg-stone-100"
                                 >
+                                  <span className="sr-only">{ingredient.name}</span>
                                   <input
                                     type="checkbox"
                                     checked={selectedExtras.some((entry) => entry.id === ingredient.id)}

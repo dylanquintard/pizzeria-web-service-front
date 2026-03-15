@@ -386,7 +386,7 @@ export default function TimeslotsAdmin() {
   const handleToggleConcreteSlot = async (slot) => {
     if (!managedService || !managedServiceDate || !slot?.pickupTime) return;
 
-    const nextActiveState = !Boolean(slot.active);
+    const nextActiveState = !slot.active;
     const actionKey = `${managedServiceDate}:${slot.pickupTime}`;
     setUpdatingConcreteSlotKey(actionKey);
 

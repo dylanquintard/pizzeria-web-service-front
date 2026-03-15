@@ -175,6 +175,7 @@ function CategoryTable({ title, categories, token, tr, onRefresh, onError, kind 
                 {kind === KIND.MENU ? (
                   <td>
                     <label className="flex items-center gap-2 text-xs text-stone-200">
+                      <span className="sr-only">{tr("Personnalisation client", "Customer customization")}</span>
                       <input
                         type="checkbox"
                         checked={Boolean(category.customerCanCustomize)}

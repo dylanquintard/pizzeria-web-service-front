@@ -81,7 +81,6 @@ export function CartProvider({ children }) {
       for (const itemId of itemIds) {
         // Sequential deletes keep backend state consistent for each response.
         // This also keeps the context synchronized after every item deletion.
-        // eslint-disable-next-line no-await-in-loop
         lastResponse = await removeFromCart(token, itemId);
       }
       setCart(lastResponse ? normalizeCart(lastResponse) : emptyCart);

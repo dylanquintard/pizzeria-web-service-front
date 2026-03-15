@@ -317,7 +317,6 @@ export default function TicketsAdmin() {
     try {
       for (const job of failedTickets) {
         try {
-          // eslint-disable-next-line no-await-in-loop
           await reprintJobAdmin(token, job.id, { copies: 1, reason: "bulk_failed_reprint_admin" });
           successCount += 1;
         } catch (_err) {
@@ -562,11 +561,15 @@ export default function TicketsAdmin() {
           className="mt-2 md:fixed md:inset-0 md:z-[70] md:flex md:items-center md:justify-center md:bg-black/70 md:p-4"
           role="dialog"
           aria-modal="true"
-          onClick={() => setPreviewJob(null)}
         >
+          <button
+            type="button"
+            aria-label={tr("Fermer l'apercu ticket", "Close ticket preview")}
+            onClick={() => setPreviewJob(null)}
+            className="hidden md:absolute md:inset-0 md:block"
+          />
           <div
-            className="w-full rounded-xl border border-white/20 bg-charcoal p-4 shadow-2xl md:max-w-xl"
-            onClick={(event) => event.stopPropagation()}
+            className="w-full rounded-xl border border-white/20 bg-charcoal p-4 shadow-2xl md:relative md:max-w-xl"
           >
             <div className="mb-3 flex items-center justify-between gap-2">
               <h4 className="text-sm font-semibold uppercase tracking-wider text-saffron">
