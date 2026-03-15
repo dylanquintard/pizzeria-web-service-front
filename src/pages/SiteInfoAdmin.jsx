@@ -454,7 +454,10 @@ export default function SiteInfoAdmin() {
           };
           break;
         case "home":
-          next.home = translated.home ?? prev.home;
+          next.home = {
+            ...prev.home,
+            ...(translated.home || {}),
+          };
           break;
         case "announcement":
           next.announcement = translated.announcement ?? prev.announcement;
@@ -891,6 +894,12 @@ export default function SiteInfoAdmin() {
                 updateNestedLocalized("home", "highlightedIngredients", locale, value)
               }
             />
+            <p className="text-xs text-stone-400">
+              {tr(
+                "Ajoutez un ingredient par ligne. En anglais, les lignes manquantes retombent sur la version francaise tant qu'elles ne sont pas traduites.",
+                "Add one ingredient per line. In English, missing lines fall back to the French version until they are translated."
+              )}
+            </p>
           </div>
         </AccordionSection>
 

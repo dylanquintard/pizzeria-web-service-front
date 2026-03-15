@@ -25,7 +25,7 @@ const paymentLogos = [
     alt: "CB",
     width: 112,
     height: 63,
-    className: "h-9 w-auto object-contain",
+    className: "h-7 w-auto object-contain sm:h-8",
   },
   {
     src: "/payments/visa.webp",
@@ -33,7 +33,7 @@ const paymentLogos = [
     alt: "VISA",
     width: 67,
     height: 63,
-    className: "h-9 w-auto object-contain",
+    className: "h-7 w-auto object-contain sm:h-8",
   },
   {
     src: "/payments/mastercard.webp",
@@ -41,7 +41,7 @@ const paymentLogos = [
     alt: "MASTERCARD",
     width: 90,
     height: 63,
-    className: "h-9 w-auto object-contain",
+    className: "h-7 w-auto object-contain sm:h-8",
   },
   {
     src: "/payments/especes.webp",
@@ -49,7 +49,7 @@ const paymentLogos = [
     alt: "Especes",
     width: 105,
     height: 105,
-    className: "h-[60px] w-auto object-contain",
+    className: "h-9 w-auto object-contain sm:h-10",
   },
 ];
 
@@ -86,6 +86,13 @@ function formatHourValue(timeValue) {
 
 function formatHourRange(startTime, endTime) {
   return `${formatHourValue(startTime)}-${formatHourValue(endTime)}`;
+}
+
+function parseHighlightedIngredients(value) {
+  return String(value || "")
+    .split(/\r?\n/)
+    .map((entry) => entry.trim())
+    .filter(Boolean);
 }
 
 export default function Home() {
@@ -316,20 +323,27 @@ const truckTourSchedule = useMemo(
       "Online ordering, quick pickup, baked to order"
     )
   );
-  const highlightedIngredientsText = getLocalizedSiteText(
+  const highlightedIngredientsFrText = getLocalizedSiteText(
     siteSettings.home?.highlightedIngredients,
-    language,
-    DEFAULT_SITE_SETTINGS.home.highlightedIngredients[language] ||
-      DEFAULT_SITE_SETTINGS.home.highlightedIngredients.fr
+    "fr",
+    DEFAULT_SITE_SETTINGS.home.highlightedIngredients.fr
   );
-  const highlightedIngredients = useMemo(
-    () =>
-      String(highlightedIngredientsText || "")
-        .split(/\r?\n/)
-        .map((entry) => entry.trim())
-        .filter(Boolean),
-    [highlightedIngredientsText]
+  const highlightedIngredientsEnText = getLocalizedSiteText(
+    siteSettings.home?.highlightedIngredients,
+    "en",
+    DEFAULT_SITE_SETTINGS.home.highlightedIngredients.en
   );
+  const highlightedIngredients = useMemo(() => {
+    const frenchLines = parseHighlightedIngredients(highlightedIngredientsFrText);
+    const englishLines = parseHighlightedIngredients(highlightedIngredientsEnText);
+
+    if (language !== "en") return frenchLines;
+
+    const lineCount = Math.max(frenchLines.length, englishLines.length);
+    return Array.from({ length: lineCount }, (_value, index) => {
+      return englishLines[index] || frenchLines[index] || "";
+    }).filter(Boolean);
+  }, [highlightedIngredientsEnText, highlightedIngredientsFrText, language]);
 
   const trustHighlights = useMemo(
     () => [
@@ -635,7 +649,7 @@ const truckTourSchedule = useMemo(
                         height={logo.height}
                         loading="lazy"
                         decoding="async"
-                        className="h-7 w-auto object-contain sm:h-8"
+                        className={logo.className}
                       />
                     </picture>
                   </div>
