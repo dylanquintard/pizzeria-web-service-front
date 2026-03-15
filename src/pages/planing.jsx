@@ -51,6 +51,13 @@ function formatAddress(location) {
   return [location.addressLine1, cityLine].filter(Boolean).join(", ");
 }
 
+function getRangeSortValue(range) {
+  const [startLabel = ""] = String(range || "").split("-");
+  const normalized = startLabel.replace("H", ":");
+  const [hours = "99", minutes = "99"] = normalized.split(":");
+  return `${hours.padStart(2, "0")}:${minutes.padStart(2, "0")}`;
+}
+
 export default function TourneeCamion() {
   const { tr } = useLanguage();
   const [weeklySettings, setWeeklySettings] = useState([]);
@@ -114,7 +121,9 @@ export default function TourneeCamion() {
 
         const locationName = getLocationDisplayName(location, tr("Emplacement", "Location"));
         const address = formatAddress(location);
-        const locationKey = normalizeText(locationName) || String(service.locationId || "");
+        const locationKey =
+          normalizeText(address) ||
+          `${String(service.locationId || "")}-${normalizeText(locationName)}`;
 
         if (!map.has(locationKey)) {
           map.set(locationKey, {
@@ -151,13 +160,17 @@ export default function TourneeCamion() {
         ...entry,
         addresses: [...entry.addresses],
         slotsByDay: ORDERED_DAYS.reduce((accumulator, dayKey) => {
-          accumulator[dayKey] = [...entry.slotsByDay[dayKey]].sort((left, right) =>
-            String(left).localeCompare(String(right))
+          accumulator[dayKey] = [...entry.slotsByDay[dayKey]].sort(
+            (left, right) => getRangeSortValue(left).localeCompare(getRangeSortValue(right))
           );
           return accumulator;
         }, {}),
       }))
-      .sort((left, right) => left.locationName.localeCompare(right.locationName, "fr"));
+      .sort((left, right) => {
+        const leftAddress = left.addresses[0] || "";
+        const rightAddress = right.addresses[0] || "";
+        return leftAddress.localeCompare(rightAddress, "fr") || left.locationName.localeCompare(right.locationName, "fr");
+      });
   }, [weeklySettings, tr]);
 
   const visibleCities = useMemo(() => {
@@ -254,7 +267,7 @@ export default function TourneeCamion() {
                           {tr(DAY_LABELS[dayKey]?.fr || dayKey, DAY_LABELS[dayKey]?.en || dayKey)}
                         </span>
                         <span className="text-right text-stone-100">
-                          {hours.length > 0 ? hours.join(" / ") : tr("Ferme", "Closed")}
+                          {hours.length > 0 ? hours.join(" . ") : tr("Ferme", "Closed")}
                         </span>
                       </li>
                     );
