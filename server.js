@@ -472,13 +472,13 @@ function buildSeoMeta(pathname, cache) {
       image: defaultImage,
     },
     "/menu": {
-      title: `Menu pizzas napolitaines | ${siteName}`,
+      title: `Menu | ${siteName}`,
       description:
         `Consultez la carte ${siteName}: pizzas napolitaines artisanales, ingredients italiens et cuisson au four a bois et gaz.`,
       image: defaultImage,
     },
     "/planing": {
-      title: `Horaires & deplacements du camion pizza | ${siteName}`,
+      title: `Horaires | ${siteName}`,
       description:
         "Retrouvez les horaires d'ouvertures, emplacements et deplacements du camion pizza napolitain.",
       image: defaultImage,
@@ -610,7 +610,7 @@ function buildSeoMeta(pathname, cache) {
 
   if (PREFIX_SPA_ROUTES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`))) {
     return {
-      title: `Backoffice | ${siteName}`,
+      title: `Admin | ${siteName}`,
       description: `Interface d'administration ${siteName}.`,
       robots: "noindex,nofollow",
       ogType: "website",

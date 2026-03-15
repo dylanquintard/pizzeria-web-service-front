@@ -4,8 +4,10 @@ import { getPublicWeeklySettings } from "../api/timeslot.api";
 import { getLocations } from "../api/location.api";
 import PageFaqSection from "../components/common/PageFaqSection";
 import { useLanguage } from "../context/LanguageContext";
+import { useSiteSettings } from "../context/SiteSettingsContext";
 import { buildBaseFoodEstablishmentJsonLd } from "../seo/jsonLd";
 import { getCityPath } from "../seo/localLandingContent";
+import { DEFAULT_SITE_SETTINGS } from "../site/siteSettings";
 import { getLocationDisplayName } from "../utils/location";
 import { Link } from "react-router-dom";
 
@@ -60,6 +62,7 @@ function getRangeSortValue(range) {
 
 export default function TourneeCamion() {
   const { tr } = useLanguage();
+  const { settings } = useSiteSettings();
   const [weeklySettings, setWeeklySettings] = useState([]);
   const [locations, setLocations] = useState([]);
 
@@ -202,9 +205,10 @@ export default function TourneeCamion() {
     return [...new Set([...fromSchedule, ...fromLocations])].sort((a, b) => a.localeCompare(b, "fr"));
   }, [scheduleByLocation, locations]);
 
-  const title = tr(
-    "Horaires d'ouvertures camion pizza | Emplacements en Moselle",
-    "Pizza truck opening hours | Locations in Moselle"
+  const siteName = settings.siteName || DEFAULT_SITE_SETTINGS.siteName;
+  const resolvedTitle = tr(
+    `Horaires | ${siteName}`,
+    `Horaires | ${siteName}`
   );
   const description = tr(
     "Retrouvez les emplacements du camion pizza napolitaine en Moselle et autour de Thionville, avec horaires de passage hebdomadaires.",
@@ -214,12 +218,12 @@ export default function TourneeCamion() {
   return (
     <div className="section-shell space-y-8 pb-20 pt-10">
       <SeoHead
-        title={title}
+        title={resolvedTitle}
         description={description}
         pathname="/planing"
         jsonLd={buildBaseFoodEstablishmentJsonLd({
           pagePath: "/planing",
-          pageName: title,
+          pageName: resolvedTitle,
           description,
         })}
       />

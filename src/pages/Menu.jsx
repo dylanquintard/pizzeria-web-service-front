@@ -129,8 +129,8 @@ export default function Menu() {
     <div className="section-shell space-y-10 pb-20 pt-12 sm:pt-14">
       <SeoHead
         title={tr(
-          `Menu pizza napolitaine | ${siteName}`,
-          `Neapolitan pizza menu | ${siteName}`
+          `Menu | ${siteName}`,
+          `Menu | ${siteName}`
         )}
         description={tr(
           `Consultez le menu pizza napolitaine artisanal de ${siteName} en Moselle. Recettes, ingredients et prix.`,
