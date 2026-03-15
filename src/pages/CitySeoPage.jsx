@@ -50,6 +50,12 @@ function formatHourRange(startTime, endTime) {
   return `${formatHourValue(startTime)}-${formatHourValue(endTime)}`;
 }
 
+function formatAddress(location) {
+  if (!location) return "";
+  const cityLine = `${location.postalCode || ""} ${location.city || ""}`.trim();
+  return [location.addressLine1, cityLine].filter(Boolean).join(", ");
+}
+
 function getSeoLocationLabel(location) {
   return String(location?.name || location?.city || "").trim();
 }
@@ -160,6 +166,7 @@ export default function CitySeoPage({ forcedCitySlug = "" }) {
   }, [location.search]);
   const [weeklySettings, setWeeklySettings] = useState([]);
   const [seoCatalog, setSeoCatalog] = useState([]);
+  const [locations, setLocations] = useState([]);
   const [allowedLoaded, setAllowedLoaded] = useState(false);
 
   useEffect(() => {
@@ -174,6 +181,26 @@ export default function CitySeoPage({ forcedCitySlug = "" }) {
       .catch(() => {
         if (!cancelled) {
           setWeeklySettings([]);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    getLocations({ active: true })
+      .then((data) => {
+        if (!cancelled) {
+          setLocations(Array.isArray(data) ? data : []);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setLocations([]);
         }
       });
 
@@ -223,6 +250,11 @@ export default function CitySeoPage({ forcedCitySlug = "" }) {
   const locationBuckets = useMemo(() => {
     const map = new Map();
     const source = Array.isArray(weeklySettings) ? weeklySettings : [];
+    const locationsById = new Map(
+      (Array.isArray(locations) ? locations : [])
+        .map((location) => [Number(location?.id), location])
+        .filter(([locationId]) => Number.isFinite(locationId) && locationId > 0)
+    );
 
     for (const dayEntry of source) {
       const services =
@@ -239,7 +271,11 @@ export default function CitySeoPage({ forcedCitySlug = "" }) {
             : [];
 
       for (const service of services) {
-        const label = getSeoLocationLabel(service?.location);
+        const locationId = Number(service?.locationId || dayEntry?.locationId);
+        const location =
+          service?.location ||
+          (Number.isFinite(locationId) && locationId > 0 ? locationsById.get(locationId) : null);
+        const label = getSeoLocationLabel(location);
         const slug = slugifyCity(label);
         if (!slug) continue;
 
@@ -253,8 +289,9 @@ export default function CitySeoPage({ forcedCitySlug = "" }) {
 
         const dayLabel = DAY_LABELS[dayEntry?.dayOfWeek] || dayEntry?.dayOfWeek || "";
         const hours = formatHourRange(service?.startTime, service?.endTime);
-        const locationName = service?.location?.name || "Emplacement";
-        const dedupeKey = `${locationName}|${dayLabel}|${hours}`;
+        const locationName = location?.name || location?.city || "Emplacement";
+        const address = formatAddress(location);
+        const dedupeKey = `${locationName}|${address}|${dayLabel}|${hours}`;
         const bucket = map.get(slug);
         const alreadyExists = bucket.entries.some((entry) => entry.key === dedupeKey);
 
@@ -262,6 +299,7 @@ export default function CitySeoPage({ forcedCitySlug = "" }) {
           bucket.entries.push({
             key: dedupeKey,
             locationName,
+            address,
             dayLabel,
             hours,
           });
@@ -270,7 +308,7 @@ export default function CitySeoPage({ forcedCitySlug = "" }) {
     }
 
     return [...map.values()].sort((a, b) => a.label.localeCompare(b.label, "fr"));
-  }, [weeklySettings]);
+  }, [locations, weeklySettings]);
 
   const catalogBySlug = useMemo(() => {
     const map = new Map();
@@ -458,6 +496,9 @@ export default function CitySeoPage({ forcedCitySlug = "" }) {
             {currentBucket.entries.slice(0, 6).map((entry) => (
               <li key={entry.key} className="rounded-xl border border-white/15 bg-white/5 p-4 text-sm text-stone-200">
                 <p className="font-semibold text-white">{entry.locationName}</p>
+                {entry.address ? (
+                  <p className="mt-1 text-xs text-stone-300">{entry.address}</p>
+                ) : null}
                 <p className="mt-1 text-xs text-stone-300">
                   {entry.dayLabel} - {entry.hours}
                 </p>

@@ -93,6 +93,17 @@ export default function TourneeCamion() {
     };
   }, []);
 
+  const locationsById = useMemo(() => {
+    const map = new Map();
+    for (const location of Array.isArray(locations) ? locations : []) {
+      const locationId = Number(location?.id);
+      if (Number.isFinite(locationId) && locationId > 0) {
+        map.set(locationId, location);
+      }
+    }
+    return map;
+  }, [locations]);
+
   const scheduleByLocation = useMemo(() => {
     const map = new Map();
     const source = Array.isArray(weeklySettings) ? weeklySettings : [];
@@ -116,14 +127,17 @@ export default function TourneeCamion() {
             : [];
 
       for (const service of services) {
-        const location = service?.location;
+        const locationId = Number(service?.locationId || entry?.locationId);
+        const location =
+          service?.location ||
+          (Number.isFinite(locationId) && locationId > 0 ? locationsById.get(locationId) : null);
         if (!location) continue;
 
         const locationName = getLocationDisplayName(location, tr("Emplacement", "Location"));
         const address = formatAddress(location);
         const locationKey =
           normalizeText(address) ||
-          `${String(service.locationId || "")}-${normalizeText(locationName)}`;
+          `${String(locationId || "")}-${normalizeText(locationName)}`;
 
         if (!map.has(locationKey)) {
           map.set(locationKey, {
@@ -169,9 +183,12 @@ export default function TourneeCamion() {
       .sort((left, right) => {
         const leftAddress = left.addresses[0] || "";
         const rightAddress = right.addresses[0] || "";
-        return leftAddress.localeCompare(rightAddress, "fr") || left.locationName.localeCompare(right.locationName, "fr");
+        return (
+          leftAddress.localeCompare(rightAddress, "fr") ||
+          left.locationName.localeCompare(right.locationName, "fr")
+        );
       });
-  }, [weeklySettings, tr]);
+  }, [locationsById, weeklySettings, tr]);
 
   const visibleCities = useMemo(() => {
     const fromSchedule = scheduleByLocation
