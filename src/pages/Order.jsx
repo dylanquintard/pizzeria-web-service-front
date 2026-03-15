@@ -287,7 +287,7 @@ function ProductCustomizerModal({
     setOpenCustomizationSectionKey((prev) =>
       prev || customizationSections[0]?.key || ""
     );
-    setStep(removableIngredients.length > 0 ? "remove" : "customize");
+    setStep("customize");
   };
 
   const handleConfirmFromCurrentStep = () => {
@@ -336,12 +336,16 @@ function ProductCustomizerModal({
               <button
                 type="button"
                 onClick={() => {
-                  if (currentBaseIngredient || availableBaseIngredients.length > 0) {
+                  if (
+                    currentBaseIngredient ||
+                    availableBaseIngredients.length > 0 ||
+                    removableIngredients.length > 0
+                  ) {
                     setStep("base");
                     return;
                   }
                   setOpenCustomizationSectionKey(customizationSections[0]?.key || "");
-                  setStep(removableIngredients.length > 0 ? "remove" : "customize");
+                  setStep("customize");
                 }}
                 className="inline-flex items-center justify-center rounded-full border border-stone-300 bg-white px-5 py-3 text-sm font-bold uppercase tracking-wide text-stone-800 transition hover:bg-stone-100"
               >
@@ -376,7 +380,7 @@ function ProductCustomizerModal({
         {step === "base" ? (
           <div className="mt-5 rounded-3xl border border-stone-200 bg-white p-5">
             <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-ember">
-              {tr("Etape 2", "Step 2")}
+              {tr("Etape 1", "Step 1")}
             </p>
             <p className="text-base font-semibold text-stone-900">
               {tr(
@@ -391,79 +395,145 @@ function ProductCustomizerModal({
               )}
             </p>
 
-            <div className="mt-4 space-y-3">
-              {!currentBaseIngredient && availableBaseIngredients.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-3 text-sm text-stone-500">
-                  {tr(
-                    "Aucun element de base n'est configure pour ce plat. Vous pouvez continuer.",
-                    "No base element is configured for this dish. You can continue."
-                  )}
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-4 text-emerald-950">
-                    <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-emerald-700">
-                      {tr("Ingredient de base", "Base ingredient")}
-                    </p>
-                    {selectedBaseIngredient ? (
-                      <div className="mt-3 flex items-center justify-between gap-3">
-                        <div>
-                          <p className="text-base font-semibold">{selectedBaseIngredient.name}</p>
-                          <p className="mt-1 text-xs font-medium uppercase tracking-[0.16em] text-emerald-700">
-                            {tr("Element actuellement selectionne", "Currently selected element")}
-                          </p>
-                        </div>
-                        <span className="rounded-full bg-emerald-600 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-white">
-                          {tr("Actif", "Active")}
-                        </span>
-                      </div>
-                    ) : (
-                      <p className="mt-3 text-sm text-emerald-800">
-                        {tr("Aucun ingredient de base disponible.", "No base ingredient available.")}
-                      </p>
+            <div className="mt-4 grid gap-5 lg:grid-cols-2 lg:items-start">
+              <div className="space-y-3">
+                {!currentBaseIngredient && availableBaseIngredients.length === 0 ? (
+                  <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-3 text-sm text-stone-500">
+                    {tr(
+                      "Aucun element de base n'est configure pour ce plat. Vous pouvez continuer.",
+                      "No base element is configured for this dish. You can continue."
                     )}
                   </div>
-
-                  <div className="border-t border-dashed border-stone-300 pt-3">
-                    <p className="text-sm text-stone-600">
-                      {tr(
-                        "Si vous remplacez un element de base, il sera retire puis remplace sans surcout.",
-                        "If you replace a base element, it will be removed and replaced with no extra charge."
-                      )}
-                    </p>
-
-                    <div className="mt-3 space-y-2">
-                      {alternativeBaseIngredients.length > 0 ? (
-                        alternativeBaseIngredients.map((ingredient) => (
-                          <button
-                            key={ingredient.id}
-                            type="button"
-                            onClick={() => setSelectedBaseIngredientId(String(ingredient.id))}
-                            className="flex w-full items-center justify-between rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-left text-rose-900 transition hover:bg-rose-100"
-                          >
-                            <div>
-                              <p className="text-sm font-semibold">{ingredient.name}</p>
-                              <p className="mt-1 text-xs font-medium uppercase tracking-[0.16em] text-rose-700">
-                                {tr("Cliquer pour remplacer la base", "Click to replace the base")}
-                              </p>
-                            </div>
-                            <span className="rounded-full bg-rose-600 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-white">
-                              {tr("Disponible", "Available")}
-                            </span>
-                          </button>
-                        ))
-                      ) : (
-                        <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-3 text-sm text-stone-500">
-                          {tr(
-                            "Aucune autre base disponible pour cette pizza.",
-                            "No other base is available for this pizza."
-                          )}
+                ) : (
+                  <div className="space-y-3">
+                    <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-4 text-emerald-950">
+                      <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-emerald-700">
+                        {tr("Ingredient de base", "Base ingredient")}
+                      </p>
+                      {selectedBaseIngredient ? (
+                        <div className="mt-3 flex items-center justify-between gap-3">
+                          <div>
+                            <p className="text-base font-semibold">{selectedBaseIngredient.name}</p>
+                            <p className="mt-1 text-xs font-medium uppercase tracking-[0.16em] text-emerald-700">
+                              {tr("Element actuellement selectionne", "Currently selected element")}
+                            </p>
+                          </div>
+                          <span className="rounded-full bg-emerald-600 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-white">
+                            {tr("Actif", "Active")}
+                          </span>
                         </div>
+                      ) : (
+                        <p className="mt-3 text-sm text-emerald-800">
+                          {tr("Aucun ingredient de base disponible.", "No base ingredient available.")}
+                        </p>
                       )}
                     </div>
+
+                    <div className="border-t border-dashed border-stone-300 pt-3">
+                      <p className="text-sm text-stone-600">
+                        {tr(
+                          "Si vous remplacez un element de base, il sera retire puis remplace sans surcout.",
+                          "If you replace a base element, it will be removed and replaced with no extra charge."
+                        )}
+                      </p>
+
+                      <div className="mt-3 space-y-2">
+                        {alternativeBaseIngredients.length > 0 ? (
+                          alternativeBaseIngredients.map((ingredient) => (
+                            <button
+                              key={ingredient.id}
+                              type="button"
+                              onClick={() => setSelectedBaseIngredientId(String(ingredient.id))}
+                              className="flex w-full items-center justify-between rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-left text-rose-900 transition hover:bg-rose-100"
+                            >
+                              <div>
+                                <p className="text-sm font-semibold">{ingredient.name}</p>
+                                <p className="mt-1 text-xs font-medium uppercase tracking-[0.16em] text-rose-700">
+                                  {tr("Cliquer pour remplacer la base", "Click to replace the base")}
+                                </p>
+                              </div>
+                              <span className="rounded-full bg-rose-600 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-white">
+                                {tr("Disponible", "Available")}
+                              </span>
+                            </button>
+                          ))
+                        ) : (
+                          <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-3 text-sm text-stone-500">
+                            {tr(
+                              "Aucune autre base disponible pour cette pizza.",
+                              "No other base is available for this pizza."
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
+                )}
+              </div>
+
+              <div className="space-y-3">
+                <div>
+                  <p className="text-base font-semibold text-stone-900">
+                    {tr(
+                      "Retirer des ingredients de votre pizza",
+                      "Remove ingredients from your pizza"
+                    )}
+                  </p>
+                  <p className="mt-2 text-sm text-stone-500">
+                    {tr(
+                      "Les ingredients lies a la pizza sont actifs en vert. Touchez un ingredient pour le retirer : il passera en rouge.",
+                      "Ingredients linked to the pizza are active in green. Tap an ingredient to remove it: it will turn red."
+                    )}
+                  </p>
                 </div>
-              )}
+
+                <div className="space-y-2">
+                  {removableIngredients.length > 0 ? (
+                    removableIngredients.map((ingredient) => {
+                      const isRemoved = removedIngredients.some((entry) => entry.id === ingredient.id);
+                      return (
+                        <button
+                          key={ingredient.id}
+                          type="button"
+                          onClick={() => onRemovedChange(ingredient, !isRemoved)}
+                          className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left transition ${
+                            isRemoved
+                              ? "border-rose-200 bg-rose-50 text-rose-900 hover:bg-rose-100"
+                              : "border-emerald-200 bg-emerald-50 text-emerald-950 hover:bg-emerald-100"
+                          }`}
+                        >
+                          <div>
+                            <p className="text-sm font-semibold">{ingredient.name}</p>
+                            <p
+                              className={`mt-1 text-xs font-medium uppercase tracking-[0.16em] ${
+                                isRemoved ? "text-rose-700" : "text-emerald-700"
+                              }`}
+                            >
+                              {isRemoved
+                                ? tr("Ingredient retire", "Ingredient removed")
+                                : tr("Ingredient conserve", "Ingredient kept")}
+                            </p>
+                          </div>
+                          <span
+                            className={`rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-white ${
+                              isRemoved ? "bg-rose-600" : "bg-emerald-600"
+                            }`}
+                          >
+                            {isRemoved ? tr("Retire", "Removed") : tr("Actif", "Active")}
+                          </span>
+                        </button>
+                      );
+                    })
+                  ) : (
+                    <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-3 text-sm text-stone-500">
+                      {tr(
+                        "Aucun ingredient lie a cette pizza n'est disponible pour le retrait.",
+                        "No linked ingredient is available for removal on this pizza."
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
             <div className="mt-5 flex items-center justify-between gap-3 border-t border-stone-200 pt-4">
@@ -483,98 +553,11 @@ function ProductCustomizerModal({
               </button>
             </div>
           </div>
-        ) : step === "remove" ? (
-          <div className="mt-5 rounded-3xl border border-stone-200 bg-white p-5">
-            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-ember">
-              {tr("Etape 3", "Step 3")}
-            </p>
-            <p className="text-base font-semibold text-stone-900">
-              {tr(
-                "Retirer des ingredients de votre pizza",
-                "Remove ingredients from your pizza"
-              )}
-            </p>
-            <p className="mt-2 text-sm text-stone-500">
-              {tr(
-                "Les ingredients lies a la pizza sont actifs en vert. Touchez un ingredient pour le retirer : il passera en rouge.",
-                "Ingredients linked to the pizza are active in green. Tap an ingredient to remove it: it will turn red."
-              )}
-            </p>
-
-            <div className="mt-4 space-y-2">
-              {removableIngredients.length > 0 ? (
-                removableIngredients.map((ingredient) => {
-                  const isRemoved = removedIngredients.some((entry) => entry.id === ingredient.id);
-                  return (
-                    <button
-                      key={ingredient.id}
-                      type="button"
-                      onClick={() => onRemovedChange(ingredient, !isRemoved)}
-                      className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left transition ${
-                        isRemoved
-                          ? "border-rose-200 bg-rose-50 text-rose-900 hover:bg-rose-100"
-                          : "border-emerald-200 bg-emerald-50 text-emerald-950 hover:bg-emerald-100"
-                      }`}
-                    >
-                      <div>
-                        <p className="text-sm font-semibold">{ingredient.name}</p>
-                        <p
-                          className={`mt-1 text-xs font-medium uppercase tracking-[0.16em] ${
-                            isRemoved ? "text-rose-700" : "text-emerald-700"
-                          }`}
-                        >
-                          {isRemoved
-                            ? tr("Ingredient retire", "Ingredient removed")
-                            : tr("Ingredient conserve", "Ingredient kept")}
-                        </p>
-                      </div>
-                      <span
-                        className={`rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-white ${
-                          isRemoved ? "bg-rose-600" : "bg-emerald-600"
-                        }`}
-                      >
-                        {isRemoved ? tr("Retire", "Removed") : tr("Actif", "Active")}
-                      </span>
-                    </button>
-                  );
-                })
-              ) : (
-                <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-3 text-sm text-stone-500">
-                  {tr(
-                    "Aucun ingredient lie a cette pizza n'est disponible pour le retrait.",
-                    "No linked ingredient is available for removal on this pizza."
-                  )}
-                </div>
-              )}
-            </div>
-
-            <div className="mt-5 flex items-center justify-between gap-3 border-t border-stone-200 pt-4">
-              <button
-                type="button"
-                onClick={() => setStep(currentBaseIngredient || availableBaseIngredients.length > 0 ? "base" : "intro")}
-                className="rounded-full border border-stone-300 px-4 py-2 text-sm font-semibold text-stone-600 transition hover:bg-stone-100"
-              >
-                {tr("Retour", "Back")}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setOpenCustomizationSectionKey((prev) =>
-                    prev || customizationSections[0]?.key || ""
-                  );
-                  setStep("customize");
-                }}
-                className="rounded-full bg-ember px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-white transition hover:bg-tomato"
-              >
-                {tr("Continuer ->", "Continue ->")}
-              </button>
-            </div>
-          </div>
         ) : step === "customize" ? (
           <div className="mt-5 space-y-5">
             <div>
               <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-ember">
-                {tr("Etape 4", "Step 4")}
+                {tr("Etape 3", "Step 3")}
               </p>
               <p className="mt-2 text-base font-semibold text-stone-900">
                 {tr("Ajouter des ingredients et verifier le recap", "Add ingredients and review the summary")}
@@ -779,8 +762,6 @@ function ProductCustomizerModal({
           <div className="text-sm text-stone-500">
             {step === "customize"
               ? tr("Les modifications seront ajoutees a cette pizza.", "Customizations will be added to this pizza.")
-              : step === "remove"
-                ? tr("Retirez uniquement les ingredients que vous ne souhaitez pas garder.", "Remove only the ingredients you do not want to keep.")
               : step === "base"
                 ? tr("La base peut etre remplacee sans surcout.", "The base can be replaced with no extra charge.")
                 : tr("Version standard de la pizza.", "Standard pizza version.")}
