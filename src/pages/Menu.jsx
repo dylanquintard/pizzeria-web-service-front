@@ -1,87 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { getCategories } from "../api/category.api";
 import { useLanguage } from "../context/LanguageContext";
 import { useSiteSettings } from "../context/SiteSettingsContext";
 import { getAllProductsClient } from "../api/user.api";
 import PageFaqSection from "../components/common/PageFaqSection";
+import MenuBoard from "../components/menu/MenuBoard";
 import SeoHead from "../components/seo/SeoHead";
 import { buildBaseFoodEstablishmentJsonLd } from "../seo/jsonLd";
 import { DEFAULT_SITE_SETTINGS } from "../site/siteSettings";
-
-function formatPrice(value) {
-  const numeric = Number(value);
-  return Number.isNaN(numeric) ? value : numeric.toFixed(2);
-}
-
-function normalizeText(value) {
-  return String(value || "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
-}
-
-function getCategoryWeight(category) {
-  return category.items?.length || category.products?.length || 1;
-}
-
-function buildMenuColumns(categories) {
-  if (!categories?.length) {
-    return { left: [], right: [] };
-  }
-
-  const left = categories.slice(0, 2);
-  const right = [];
-
-  let leftWeight = left.reduce((sum, category) => sum + getCategoryWeight(category), 0);
-  let rightWeight = 0;
-
-  for (const category of categories.slice(2)) {
-    const weight = getCategoryWeight(category);
-
-    if (rightWeight <= leftWeight) {
-      right.push(category);
-      rightWeight += weight;
-    } else {
-      left.push(category);
-      leftWeight += weight;
-    }
-  }
-
-  return { left, right };
-}
-
-function CategorySection({ group }) {
-  return (
-    <section className="rounded-3xl border border-white/10 bg-charcoal/35 p-4 sm:p-7">
-      <div className="mb-4 border-b border-white/10 pb-3">
-        <h3 className="font-display text-2xl uppercase tracking-[0.08em] text-crust sm:text-4xl">{group.title}</h3>
-        {group.description && <p className="mt-1 text-sm text-stone-400">{group.description}</p>}
-      </div>
-
-      <div>
-        {group.items.map((product) => (
-          <article key={product.id} className="border-b border-white/10 py-3 last:border-b-0 sm:py-4">
-            <div className="flex flex-wrap items-start gap-2 sm:gap-3">
-              <h4 className="min-w-0 flex-1 text-sm font-semibold uppercase tracking-wide text-white sm:text-lg">{product.name}</h4>
-              <div className="mt-3 hidden h-px flex-1 border-t border-dashed border-stone-500/70 sm:block" />
-              <span className="whitespace-nowrap text-xs font-extrabold uppercase tracking-wide text-saffron sm:text-base">
-                {formatPrice(product.basePrice)} EUR
-              </span>
-            </div>
-
-            {product.description && <p className="mt-1 text-sm text-stone-300">{product.description}</p>}
-
-            {product.ingredients?.length > 0 && (
-              <p className="mt-2 text-[10px] uppercase tracking-[0.1em] text-stone-400 sm:text-xs sm:tracking-[0.14em]">
-                {product.ingredients.map((pi) => pi.ingredient.name).join(" - ")}
-              </p>
-            )}
-          </article>
-        ))}
-      </div>
-    </section>
-  );
-}
 
 export default function Menu() {
   const { tr } = useLanguage();
@@ -121,47 +47,6 @@ export default function Menu() {
       cancelled = true;
     };
   }, [tr]);
-
-  const groupedByCategory = useMemo(() => {
-    const grouped = categories.map((category) => ({
-      key: `category-${category.id}`,
-      title: category.name,
-      description: category.description,
-      items: products.filter((product) => product.categoryId === category.id),
-    }));
-
-    const uncategorized = products.filter((product) => !product.categoryId);
-    if (uncategorized.length > 0) {
-      grouped.push({
-        key: "category-uncategorized",
-        title: tr("Autres", "Others"),
-        description: "",
-        items: uncategorized,
-      });
-    }
-
-    if (grouped.length === 0 && products.length > 0) {
-      grouped.push({
-        key: "category-default",
-        title: tr("Carte", "Menu"),
-        description: "",
-        items: products,
-      });
-    }
-
-    const visibleGroups = grouped.filter((bucket) => bucket.items.length > 0);
-
-    return visibleGroups
-      .map((bucket, index) => ({ bucket, index }))
-      .sort((left, right) => {
-        const leftPriority = normalizeText(left.bucket.title).includes("pizza") ? 0 : 1;
-        const rightPriority = normalizeText(right.bucket.title).includes("pizza") ? 0 : 1;
-        if (leftPriority !== rightPriority) return leftPriority - rightPriority;
-        return left.index - right.index;
-      })
-      .map(({ bucket }) => bucket);
-  }, [products, categories, tr]);
-  const menuColumns = useMemo(() => buildMenuColumns(groupedByCategory), [groupedByCategory]);
 
   const siteName = settings.siteName || DEFAULT_SITE_SETTINGS.siteName;
 
@@ -222,24 +107,13 @@ export default function Menu() {
         </p>
       </header>
 
-      <div className="space-y-8 lg:hidden">
-        {groupedByCategory.map((group) => (
-          <CategorySection key={group.key} group={group} />
-        ))}
-      </div>
-
-      <div className="hidden grid-cols-2 gap-8 lg:grid lg:items-start">
-        <div className="space-y-8">
-          {menuColumns.left.map((group) => (
-            <CategorySection key={group.key} group={group} />
-          ))}
-        </div>
-        <div className="space-y-8">
-          {menuColumns.right.map((group) => (
-            <CategorySection key={group.key} group={group} />
-          ))}
-        </div>
-      </div>
+      <MenuBoard
+        products={products}
+        categories={categories}
+        tr={tr}
+        variant="default"
+        emptyMessage={tr("Aucun plat disponible.", "No dish available.")}
+      />
 
       <PageFaqSection
         pathname="/menu"
