@@ -49,3 +49,13 @@ test("sitemap endpoint stays available with local fallback", async () => {
     assert.match(xml, /<loc>.*<\/loc>/i);
   });
 });
+
+test("robots endpoint points to backend sitemap source", async () => {
+  await withServer(async (baseUrl) => {
+    const response = await fetch(`${baseUrl}/robots.txt`);
+    assert.equal(response.status, 200);
+    assert.match(String(response.headers.get("content-type") || ""), /text\/plain/i);
+    const content = await response.text();
+    assert.match(content, /Sitemap:\s+https:\/\/api-alban\.eazytoolz\.site\/sitemap\.xml/i);
+  });
+});

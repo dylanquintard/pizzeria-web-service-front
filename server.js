@@ -215,6 +215,26 @@ function buildBackendOriginUrl() {
   return apiBase.replace(/\/api$/i, "");
 }
 
+function buildRobotsTxt() {
+  const backendOrigin = buildBackendOriginUrl();
+  const sitemapUrl = backendOrigin
+    ? `${backendOrigin}/sitemap.xml`
+    : "https://api-alban.eazytoolz.site/sitemap.xml";
+
+  return [
+    "# https://www.robotstxt.org/robotstxt.html",
+    "User-agent: *",
+    "Disallow: /admin",
+    "Disallow: /login",
+    "Disallow: /register",
+    "Disallow: /order",
+    "Disallow: /profile",
+    "Disallow: /userorders",
+    `Sitemap: ${sitemapUrl}`,
+    "",
+  ].join("\n");
+}
+
 function buildApiUrl(pathname) {
   const apiBase = buildBackendApiBaseUrl();
   if (!apiBase) return "";
@@ -897,6 +917,15 @@ app.use((req, res, next) => {
 
   next();
 });
+
+app.get("/robots.txt", (_req, res) => {
+  return res
+    .status(200)
+    .type("text/plain; charset=utf-8")
+    .set("Cache-Control", "public, max-age=300")
+    .send(buildRobotsTxt());
+});
+
 app.use(express.static(BUILD_DIR, { index: false, maxAge: "7d" }));
 
 app.get("/healthz", (_req, res) => {
