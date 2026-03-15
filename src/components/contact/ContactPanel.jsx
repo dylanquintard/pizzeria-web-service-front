@@ -1,6 +1,5 @@
 import { useContext, useEffect, useState } from "react";
 import { sendContactEmail } from "../../api/contact.api";
-import { INSTAGRAM_URL } from "../../config/env";
 import { AuthContext } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
 import { useSiteSettings } from "../../context/SiteSettingsContext";
@@ -79,7 +78,7 @@ export default function ContactPanel({ sectionId, sectionClassName = "" }) {
   const email = String(settings.contact?.email || "").trim();
   const address = String(settings.contact?.address || "").trim();
   const mapsUrl = String(settings.contact?.mapsUrl || "").trim();
-  const instagramUrl = String(settings.social?.instagramUrl || INSTAGRAM_URL).trim();
+  const instagramUrl = String(settings.social?.instagramUrl || "").trim();
   const facebookUrl = String(settings.social?.facebookUrl || "").trim();
   const tiktokUrl = String(settings.social?.tiktokUrl || "").trim();
   const serviceArea = getLocalizedSiteText(settings.contact?.serviceArea, language, "").trim();

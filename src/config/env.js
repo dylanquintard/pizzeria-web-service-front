@@ -44,9 +44,6 @@ export const SITE_URL = configuredSiteUrl || runtimeSiteUrl || fallbackSiteUrl;
 
 export const REALTIME_STREAM_URL = `${API_BASE_URL}/realtime/stream`;
 
-export const INSTAGRAM_URL =
-  normalizeUrl(process.env.REACT_APP_INSTAGRAM_URL) || "https://instagram.com";
-
 export const BRAND_LOGO_URL =
   normalizeBrandLogoUrl(process.env.REACT_APP_BRAND_LOGO_URL) || "/logo.webp";
 

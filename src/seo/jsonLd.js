@@ -1,4 +1,4 @@
-import { BRAND_LOGO_URL, INSTAGRAM_URL, SITE_URL } from "../config/env";
+import { BRAND_LOGO_URL, SITE_URL } from "../config/env";
 
 function normalizeBaseUrl(value) {
   return String(value || "").trim().replace(/\/+$/, "");
@@ -53,7 +53,7 @@ export function buildBaseFoodEstablishmentJsonLd({
   const resolvedImage =
     buildAbsoluteUrl(image, normalizedSiteUrl) || buildAbsoluteUrl(BRAND_LOGO_URL, normalizedSiteUrl);
   const resolvedAddress = toPostalAddress(address);
-  const sameAs = buildSocialLinks([INSTAGRAM_URL, ...socialUrls]);
+  const sameAs = buildSocialLinks(socialUrls);
   const contactPoint = [];
 
   if (String(phone || "").trim()) {
