@@ -756,13 +756,15 @@ function ProductCustomizerModal({
                 ? tr("La base peut etre remplacee sans surcout.", "The base can be replaced with no extra charge.")
                 : tr("Version standard de la pizza.", "Standard pizza version.")}
           </div>
-          <button
-            type="button"
-            onClick={handleConfirmFromCurrentStep}
-            className="rounded-full bg-ember px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-tomato"
-          >
-            {tr("Ajouter au panier", "Add to cart")}
-          </button>
+          {step !== "base" && step !== "remove" ? (
+            <button
+              type="button"
+              onClick={handleConfirmFromCurrentStep}
+              className="rounded-full bg-ember px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-tomato"
+            >
+              {tr("Ajouter au panier", "Add to cart")}
+            </button>
+          ) : null}
         </div>
       </div>
     </div>
