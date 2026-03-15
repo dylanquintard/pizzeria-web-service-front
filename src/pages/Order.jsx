@@ -255,6 +255,15 @@ function ProductCustomizerModal({
     );
   }, [groupedExtras]);
 
+  const currentPizzaPrice = useMemo(() => {
+    const basePrice = Number(product?.basePrice || 0);
+    const extrasTotal = (Array.isArray(selectedExtras) ? selectedExtras : []).reduce(
+      (sum, ingredient) => sum + Number(ingredient?.price || 0),
+      0
+    );
+    return basePrice + extrasTotal;
+  }, [product?.basePrice, selectedExtras]);
+
   const syncBaseChanges = () => {
     if (hasBaseReplacement) {
       onBaseChangesChange({
@@ -649,6 +658,15 @@ function ProductCustomizerModal({
                 {tr("Recap des modifications", "Customization summary")}
               </p>
               <div className="space-y-3">
+                <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-stone-500">
+                    {tr("Prix actuel", "Current price")}
+                  </p>
+                  <p className="mt-2 text-sm font-semibold text-stone-900">
+                    {formatPrice(currentPizzaPrice)}
+                  </p>
+                </div>
+
                 <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
                   <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-stone-500">
                     {tr("Base du plat", "Dish base")}
