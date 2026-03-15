@@ -237,6 +237,18 @@ function ProductCustomizerModal({
     selectedBaseIngredient &&
     String(selectedBaseIngredient.id) !== String(currentBaseIngredient.id);
 
+  useEffect(() => {
+    if (!hasBaseReplacement || !currentBaseIngredient) return;
+
+    const isCurrentBaseInRemovedList = (Array.isArray(removedIngredients) ? removedIngredients : []).some(
+      (entry) => String(entry?.id) === String(currentBaseIngredient.id)
+    );
+
+    if (isCurrentBaseInRemovedList) {
+      onRemovedChange(currentBaseIngredient, false);
+    }
+  }, [hasBaseReplacement, currentBaseIngredient, removedIngredients, onRemovedChange]);
+
   const alternativeBaseIngredients = useMemo(
     () =>
       displayedBaseIngredients.filter(
@@ -467,26 +479,40 @@ function ProductCustomizerModal({
                   {removableIngredients.length > 0 ? (
                     removableIngredients.map((ingredient) => {
                       const isRemoved = removedIngredients.some((entry) => entry.id === ingredient.id);
+                      const isLockedOriginalBase =
+                        Boolean(hasBaseReplacement) &&
+                        Boolean(currentBaseIngredient) &&
+                        String(ingredient.id) === String(currentBaseIngredient.id);
+                      const isDisplayedAsRemoved = isRemoved || isLockedOriginalBase;
                       return (
                         <button
                           key={ingredient.id}
                           type="button"
-                          onClick={() => onRemovedChange(ingredient, !isRemoved)}
+                          onClick={() => {
+                            if (isLockedOriginalBase) return;
+                            onRemovedChange(ingredient, !isRemoved);
+                          }}
+                          disabled={isLockedOriginalBase}
                           className={`flex min-h-[60px] w-full items-center justify-between rounded-2xl border px-3 py-2 text-left transition ${
-                            isRemoved
-                              ? "border-rose-200 bg-rose-50 text-rose-900 hover:bg-rose-100"
+                            isDisplayedAsRemoved
+                              ? "border-rose-200 bg-rose-50 text-rose-900"
                               : "border-emerald-200 bg-emerald-50 text-emerald-950 hover:bg-emerald-100"
-                          }`}
+                          } ${isLockedOriginalBase ? "cursor-not-allowed opacity-95" : ""}`}
                         >
                           <div>
                             <p className="text-[13px] font-semibold">{ingredient.name}</p>
+                            {isLockedOriginalBase ? (
+                              <p className="mt-1 text-[10px] font-medium uppercase tracking-[0.12em] text-rose-700">
+                                {tr("Verrouille : base d'origine remplacee", "Locked: original base replaced")}
+                              </p>
+                            ) : null}
                           </div>
                           <span
                             className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-white ${
-                              isRemoved ? "bg-rose-600" : "bg-emerald-600"
+                              isDisplayedAsRemoved ? "bg-rose-600" : "bg-emerald-600"
                             }`}
                           >
-                            {isRemoved ? tr("Retire", "Removed") : tr("Actif", "Active")}
+                            {isDisplayedAsRemoved ? tr("Retire", "Removed") : tr("Actif", "Active")}
                           </span>
                         </button>
                       );
