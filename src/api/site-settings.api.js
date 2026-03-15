@@ -1,12 +1,22 @@
 import api, { authConfig } from "./http";
 
+function withCacheBust(config = {}) {
+  return {
+    ...config,
+    params: {
+      ...(config.params || {}),
+      _ts: Date.now(),
+    },
+  };
+}
+
 export const getPublicSiteSettings = async () => {
-  const response = await api.get("/site-settings/public");
+  const response = await api.get("/site-settings/public", withCacheBust());
   return response.data;
 };
 
 export const getAdminSiteSettings = async (token) => {
-  const response = await api.get("/site-settings/admin", authConfig(token));
+  const response = await api.get("/site-settings/admin", withCacheBust(authConfig(token)));
   return response.data;
 };
 

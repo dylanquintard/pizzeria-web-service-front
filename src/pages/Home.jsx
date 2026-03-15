@@ -707,9 +707,9 @@ const truckTourSchedule = useMemo(
               )}
             </p>
             <ul className="mt-4 grid gap-2 text-sm text-stone-200 sm:grid-cols-2">
-              {highlightedIngredients.map((ingredient) => (
+              {highlightedIngredients.map((ingredient, index) => (
                 <li
-                  key={ingredient}
+                  key={`${ingredient}-${index}`}
                   className="rounded-lg border border-white/20 bg-stone-200/20 px-3 py-2"
                 >
                   {ingredient}

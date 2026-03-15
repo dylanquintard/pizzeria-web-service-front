@@ -147,10 +147,32 @@ function LocalizedField({ label, value, onChange, multiline = false }) {
   );
 }
 
+function parseMultilineEntries(value) {
+  return String(value || "")
+    .split(/\r?\n/)
+    .map((entry) => entry.trim());
+}
+
+function mergeTranslatedMultilineValue(previousValue, translatedValue) {
+  const frenchLines = parseMultilineEntries(translatedValue?.fr ?? previousValue?.fr);
+  const englishLines = parseMultilineEntries(translatedValue?.en ?? previousValue?.en);
+  const lineCount = Math.max(frenchLines.length, englishLines.length);
+
+  return {
+    fr: frenchLines.join("\n").trim(),
+    en: Array.from({ length: lineCount }, (_value, index) => {
+      return englishLines[index] || frenchLines[index] || "";
+    })
+      .filter(Boolean)
+      .join("\n")
+      .trim(),
+  };
+}
+
 export default function SiteInfoAdmin() {
   const { token, user, loading: authLoading } = useContext(AuthContext);
   const { tr } = useLanguage();
-  const { settings: publicSettings, applySettings } = useSiteSettings();
+  const { settings: publicSettings, applySettings, refresh } = useSiteSettings();
 
   const [form, setForm] = useState(() => createFormFromSettings(publicSettings));
   const [loading, setLoading] = useState(false);
@@ -399,6 +421,7 @@ export default function SiteInfoAdmin() {
 
       const saved = await updateSiteSettings(token, payload);
       applySettings(saved);
+      await refresh();
       setForm(createFormFromSettings(saved));
       setMessage(tr("Section enregistree.", "Section saved."));
       setMessageType("success");
@@ -457,6 +480,13 @@ export default function SiteInfoAdmin() {
           next.home = {
             ...prev.home,
             ...(translated.home || {}),
+            highlightedIngredients:
+              translated.home?.highlightedIngredients !== undefined
+                ? mergeTranslatedMultilineValue(
+                    prev.home.highlightedIngredients,
+                    translated.home.highlightedIngredients
+                  )
+                : prev.home.highlightedIngredients,
           };
           break;
         case "announcement":
