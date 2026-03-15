@@ -274,22 +274,6 @@ function HighlightedIngredientsManager({
           </div>
         )}
       </div>
-
-      <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
-        <p className="text-xs uppercase tracking-[0.2em] text-saffron">
-          {tr("Apercu accueil", "Home preview")}
-        </p>
-        <ul className="mt-4 grid gap-2 text-sm text-stone-200 sm:grid-cols-2">
-          {items.map((ingredient, index) => (
-            <li
-              key={`${ingredient}-preview-${index}`}
-              className="rounded-lg border border-white/20 bg-stone-200/20 px-3 py-2"
-            >
-              {ingredient}
-            </li>
-          ))}
-        </ul>
-      </div>
     </div>
   );
 }
@@ -297,7 +281,7 @@ function HighlightedIngredientsManager({
 export default function SiteInfoAdmin() {
   const { token, user, loading: authLoading } = useContext(AuthContext);
   const { tr } = useLanguage();
-  const { settings: publicSettings, applySettings, refresh } = useSiteSettings();
+  const { settings: publicSettings, applySettings } = useSiteSettings();
 
   const [form, setForm] = useState(() => createFormFromSettings(publicSettings));
   const [loading, setLoading] = useState(false);
@@ -624,10 +608,21 @@ export default function SiteInfoAdmin() {
       }
 
       const saved = await updateSiteSettings(token, payload);
-      const persistedSettings = await getAdminSiteSettings(token);
-      applySettings(persistedSettings);
-      await refresh();
-      setForm(createFormFromSettings(persistedSettings));
+      const shouldKeepLocalSectionState =
+        sectionId === "home" || sectionId === "announcement";
+      const nextSettings = shouldKeepLocalSectionState
+        ? mergeSiteSettings({
+            ...mergeSiteSettings(saved),
+            home: sectionId === "home" ? mergeSiteSettings(form).home : mergeSiteSettings(saved).home,
+            announcement:
+              sectionId === "announcement"
+                ? mergeSiteSettings(form).announcement
+                : mergeSiteSettings(saved).announcement,
+          })
+        : mergeSiteSettings(saved);
+
+      applySettings(nextSettings);
+      setForm(createFormFromSettings(nextSettings));
       setMessage(tr("Section enregistree.", "Section saved."));
       setMessageType("success");
     } catch (err) {
