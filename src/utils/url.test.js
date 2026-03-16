@@ -1,4 +1,5 @@
 import {
+  getGalleryThumbnailUrl,
   isAbsoluteHttpUrl,
   sanitizeAbsoluteHttpUrl,
   sanitizeInternalOrAbsoluteHttpUrl,
@@ -30,4 +31,19 @@ test("sanitizeInternalOrAbsoluteHttpUrl allows internal routes and absolute http
     "https://example.com/contact"
   );
   expect(sanitizeInternalOrAbsoluteHttpUrl("javascript:alert(1)")).toBe("");
+});
+
+test("getGalleryThumbnailUrl returns the thumbnail variant when possible", () => {
+  expect(getGalleryThumbnailUrl("/uploads/gallery/gallery-123.webp")).toBe(
+    "/uploads/gallery/thumbs/gallery-123.webp"
+  );
+  expect(getGalleryThumbnailUrl("https://api.example.com/uploads/gallery/gallery-123.webp")).toBe(
+    "https://api.example.com/uploads/gallery/thumbs/gallery-123.webp"
+  );
+  expect(getGalleryThumbnailUrl("https://api.example.com/uploads/gallery/thumbs/gallery-123.webp")).toBe(
+    "https://api.example.com/uploads/gallery/thumbs/gallery-123.webp"
+  );
+  expect(getGalleryThumbnailUrl("https://cdn.example.com/logo.webp")).toBe(
+    "https://cdn.example.com/logo.webp"
+  );
 });

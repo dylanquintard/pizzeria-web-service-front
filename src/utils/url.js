@@ -41,3 +41,25 @@ export function sanitizeInternalOrAbsoluteHttpUrl(value) {
   }
   return sanitizeAbsoluteHttpUrl(normalized);
 }
+
+export function getGalleryThumbnailUrl(value) {
+  const normalized = normalizeInput(value).replace(/\\/g, "/");
+  if (!normalized) return "";
+
+  if (normalized.includes("/gallery/thumbs/gallery-")) {
+    return normalized;
+  }
+
+  if (normalized.includes("/uploads/gallery/gallery-")) {
+    return normalized.replace(
+      "/uploads/gallery/gallery-",
+      "/uploads/gallery/thumbs/gallery-"
+    );
+  }
+
+  if (normalized.includes("/gallery/gallery-")) {
+    return normalized.replace("/gallery/gallery-", "/gallery/thumbs/gallery-");
+  }
+
+  return normalized;
+}

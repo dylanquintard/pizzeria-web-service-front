@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
 import { useSiteSettings } from "../../context/SiteSettingsContext";
 import { DEFAULT_SITE_SETTINGS, getLocalizedSiteText } from "../../site/siteSettings";
-import { sanitizeAbsoluteHttpUrl } from "../../utils/url";
+import { getGalleryThumbnailUrl, sanitizeAbsoluteHttpUrl } from "../../utils/url";
 
 function InstagramIcon(props) {
   return (
@@ -42,6 +42,7 @@ export default function SiteFooter() {
     "All rights reserved."
   ).trim();
   const headerLogoUrl = String(settings.seo?.headerLogoUrl || "").trim();
+  const footerLogoUrl = getGalleryThumbnailUrl(headerLogoUrl) || headerLogoUrl;
   const phone = String(settings.contact?.phone || "").trim();
   const email = String(settings.contact?.email || "").trim();
   const serviceArea = getLocalizedSiteText(settings.contact?.serviceArea, language, "").trim();
@@ -92,8 +93,10 @@ export default function SiteFooter() {
             <p className="text-xs uppercase tracking-[0.24em] text-saffron">{siteName}</p>
             {headerLogoUrl ? (
               <img
-                src={headerLogoUrl}
+                src={footerLogoUrl}
                 alt={siteName}
+                width={520}
+                height={112}
                 className="mt-3 h-14 w-auto object-contain"
                 loading="lazy"
                 decoding="async"

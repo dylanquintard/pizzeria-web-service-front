@@ -40,7 +40,7 @@ export default function BlogArticle({ forcedSlug = "" }) {
     ? rawLogoUrl.startsWith("http")
       ? rawLogoUrl
       : `${canonicalSiteUrl}${rawLogoUrl.startsWith("/") ? rawLogoUrl : `/${rawLogoUrl}`}`
-    : `${canonicalSiteUrl}/logo.webp`;
+    : `${canonicalSiteUrl}/favicon.ico`;
 
   const [article, setArticle] = useState(null);
   const [loading, setLoading] = useState(true);

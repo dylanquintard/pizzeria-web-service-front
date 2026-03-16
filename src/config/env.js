@@ -64,6 +64,5 @@ export const SITE_URL = configuredSiteUrl || runtimeSiteUrl || fallbackSiteUrl;
 export const REALTIME_STREAM_URL = `${API_BASE_URL}/realtime/stream`;
 
 export const BRAND_LOGO_URL =
-  normalizeBrandLogoUrl(readClientEnv("VITE_BRAND_LOGO_URL", "REACT_APP_BRAND_LOGO_URL")) ||
-  "/logo.webp";
+  normalizeBrandLogoUrl(readClientEnv("VITE_BRAND_LOGO_URL", "REACT_APP_BRAND_LOGO_URL"));
 

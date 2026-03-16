@@ -1,15 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, lazy, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { getCategories } from "../api/category.api";
 import { getPublicGallery } from "../api/gallery.api";
 import { getPublicWeeklySettings } from "../api/timeslot.api";
 import { getAllProductsClient } from "../api/user.api";
-import PageFaqSection from "../components/common/PageFaqSection";
-import ContactPanel from "../components/contact/ContactPanel";
-import MenuBoard from "../components/menu/MenuBoard";
-import PublicReviewsSection from "../components/reviews/PublicReviewsSection";
 import SeoHead from "../components/seo/SeoHead";
-import TrustHighlightsSection from "../components/trust/TrustHighlightsSection";
 import { useLanguage } from "../context/LanguageContext";
 import { useSiteSettings } from "../context/SiteSettingsContext";
 import { useTheme } from "../context/ThemeContext";
@@ -68,6 +63,14 @@ const HERO_IMAGE_LIMIT = 5;
 const MOBILE_HERO_MEDIA_QUERY = "(max-width: 1023px)";
 const MOBILE_USER_AGENT_REGEX =
   /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
+const MENU_BOARD_MIN_HEIGHT_CLASS = "min-h-[680px]";
+const CONTENT_SECTION_MIN_HEIGHT_CLASS = "min-h-[220px]";
+
+const PageFaqSection = lazy(() => import("../components/common/PageFaqSection"));
+const ContactPanel = lazy(() => import("../components/contact/ContactPanel"));
+const MenuBoard = lazy(() => import("../components/menu/MenuBoard"));
+const PublicReviewsSection = lazy(() => import("../components/reviews/PublicReviewsSection"));
+const TrustHighlightsSection = lazy(() => import("../components/trust/TrustHighlightsSection"));
 
 function getInitialIsMobileViewport() {
   if (typeof window === "undefined") {
@@ -113,6 +116,62 @@ function parseHighlightedIngredients(value) {
     .split(/\r?\n/)
     .map((entry) => entry.trim())
     .filter(Boolean);
+}
+
+function DeferredSection({
+  children,
+  minHeightClass = CONTENT_SECTION_MIN_HEIGHT_CLASS,
+  rootMargin = "350px",
+}) {
+  const containerRef = useRef(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    if (isVisible) return undefined;
+    if (typeof window === "undefined") {
+      setIsVisible(true);
+      return undefined;
+    }
+    if (typeof window.IntersectionObserver !== "function") {
+      setIsVisible(true);
+      return undefined;
+    }
+
+    const target = containerRef.current;
+    if (!target) {
+      setIsVisible(true);
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      {
+        root: null,
+        rootMargin,
+        threshold: 0.01,
+      }
+    );
+
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [isVisible, rootMargin]);
+
+  return (
+    <div ref={containerRef}>
+      {isVisible ? (
+        <Suspense fallback={<div className={minHeightClass} aria-hidden="true" />}>
+          {children}
+        </Suspense>
+      ) : (
+        <div className={minHeightClass} aria-hidden="true" />
+      )}
+    </div>
+  );
 }
 
 export default function Home() {
@@ -581,13 +640,18 @@ const truckTourSchedule = useMemo(
               </span>
             </div>
 
-            <MenuBoard
-              products={products}
-              categories={categories}
-              tr={tr}
-              variant="compact"
-              emptyMessage={tr("Le menu sera disponible ici.", "The menu will be available here.")}
-            />
+            <DeferredSection
+              minHeightClass={MENU_BOARD_MIN_HEIGHT_CLASS}
+              rootMargin="220px"
+            >
+              <MenuBoard
+                products={products}
+                categories={categories}
+                tr={tr}
+                variant="compact"
+                emptyMessage={tr("Le menu sera disponible ici.", "The menu will be available here.")}
+              />
+            </DeferredSection>
           </div>
 
           <div className="space-y-5 xl:sticky xl:top-28">
@@ -843,30 +907,38 @@ const truckTourSchedule = useMemo(
         </div>
       </section>
 
-      <PublicReviewsSection />
+      <DeferredSection minHeightClass={CONTENT_SECTION_MIN_HEIGHT_CLASS} rootMargin="380px">
+        <PublicReviewsSection />
+      </DeferredSection>
 
-      <TrustHighlightsSection
-        eyebrow={tr("Ce qui fait revenir", "Why people come back")}
-        title={tr("Une pizza claire, un retrait fluide, un service mobile serieux", "Clear pizza, smooth pickup, serious mobile service")}
-        intro={tr(
-          "Sans inventer de faux avis, on met en avant les points de confiance qui comptent le plus pour un client local avant de commander.",
-          "Without inventing fake reviews, we highlight the trust points that matter most to local customers before they order."
-        )}
-        items={trustHighlights}
-      />
+      <DeferredSection minHeightClass={CONTENT_SECTION_MIN_HEIGHT_CLASS} rootMargin="380px">
+        <TrustHighlightsSection
+          eyebrow={tr("Ce qui fait revenir", "Why people come back")}
+          title={tr("Une pizza claire, un retrait fluide, un service mobile serieux", "Clear pizza, smooth pickup, serious mobile service")}
+          intro={tr(
+            "Sans inventer de faux avis, on met en avant les points de confiance qui comptent le plus pour un client local avant de commander.",
+            "Without inventing fake reviews, we highlight the trust points that matter most to local customers before they order."
+          )}
+          items={trustHighlights}
+        />
+      </DeferredSection>
 
-      <ContactPanel sectionId="contact" sectionClassName="section-shell" />
+      <DeferredSection minHeightClass={CONTENT_SECTION_MIN_HEIGHT_CLASS} rootMargin="380px">
+        <ContactPanel sectionId="contact" sectionClassName="section-shell" />
+      </DeferredSection>
 
-      <PageFaqSection
-        pathname="/"
-        className="section-shell"
-        eyebrow={tr("Questions frequentes", "Frequently asked questions")}
-        title={tr("Ce qu'il faut savoir avant de commander", "What to know before ordering")}
-        intro={tr(
-          "Voici les reponses les plus utiles pour commander rapidement et recuperer votre pizza sans surprise.",
-          "Here are the most useful answers to order quickly and pick up your pizza without surprises."
-        )}
-      />
+      <DeferredSection minHeightClass={CONTENT_SECTION_MIN_HEIGHT_CLASS} rootMargin="420px">
+        <PageFaqSection
+          pathname="/"
+          className="section-shell"
+          eyebrow={tr("Questions frequentes", "Frequently asked questions")}
+          title={tr("Ce qu'il faut savoir avant de commander", "What to know before ordering")}
+          intro={tr(
+            "Voici les reponses les plus utiles pour commander rapidement et recuperer votre pizza sans surprise.",
+            "Here are the most useful answers to order quickly and pick up your pizza without surprises."
+          )}
+        />
+      </DeferredSection>
     </div>
   );
 }

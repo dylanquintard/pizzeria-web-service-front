@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import SiteAnnouncement from "./SiteAnnouncement";
 import { AuthContext } from "../../context/AuthContext";
@@ -9,6 +9,7 @@ import { useTheme } from "../../context/ThemeContext";
 import { BRAND_LOGO_URL } from "../../config/env";
 import { getAdminNavLinks } from "../../navigation/adminLinks";
 import { DEFAULT_SITE_SETTINGS } from "../../site/siteSettings";
+import { getGalleryThumbnailUrl } from "../../utils/url";
 
 const MOBILE_VIEWPORT_QUERY = "(max-width: 767px)";
 
@@ -133,6 +134,10 @@ export default function Header() {
   );
   const configuredLogoUrl = String(siteSettings.seo?.headerLogoUrl || "").trim();
   const headerLogoUrl = configuredLogoUrl || BRAND_LOGO_URL;
+  const headerLogoPreferredUrl = useMemo(
+    () => getGalleryThumbnailUrl(headerLogoUrl) || headerLogoUrl,
+    [headerLogoUrl]
+  );
   const shouldEagerLoadLogo = !isNarrowViewport && location.pathname === "/";
 
   const closeMobileMenus = () => {
@@ -259,7 +264,7 @@ export default function Header() {
             {headerLogoUrl && !hasLogoError ? (
               // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
               <img
-                src={headerLogoUrl}
+                src={headerLogoPreferredUrl}
                 alt={siteSettings.siteName || DEFAULT_SITE_SETTINGS.siteName}
                 width={520}
                 height={112}
@@ -267,7 +272,17 @@ export default function Header() {
                 loading={shouldEagerLoadLogo ? "eager" : "lazy"}
                 fetchPriority={shouldEagerLoadLogo ? "high" : "auto"}
                 decoding="async"
-                onError={() => setHasLogoError(true)}
+                onError={(event) => {
+                  if (
+                    headerLogoPreferredUrl !== headerLogoUrl &&
+                    event.currentTarget.dataset.fallbackApplied !== "true"
+                  ) {
+                    event.currentTarget.dataset.fallbackApplied = "true";
+                    event.currentTarget.src = headerLogoUrl;
+                    return;
+                  }
+                  setHasLogoError(true);
+                }}
               />
             ) : (
               <span className="text-sm font-semibold uppercase tracking-[0.2em] text-saffron">

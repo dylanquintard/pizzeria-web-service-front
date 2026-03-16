@@ -19,7 +19,7 @@ import { LanguageProvider, useLanguage } from "./context/LanguageContext";
 import { SiteSettingsProvider } from "./context/SiteSettingsContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import Home from "./pages/Home";
-import { slugifyCity } from "./seo/localLandingContent";
+import { slugifyCity } from "./utils/slugifyCity";
 
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const EditProduct = lazy(() => import("./pages/EditProduct"));
@@ -58,6 +58,41 @@ const Users = lazy(() => import("./pages/Users"));
 const UserOrders = lazy(() => import("./pages/UsersOrders"));
 const VerifyEmail = lazy(() => import("./pages/VerifyEmail"));
 
+const APP_STYLE_ROUTE_PREFIXES = ["/admin", "/order"];
+const APP_STYLE_EXACT_ROUTES = [
+  "/login",
+  "/forgot-password",
+  "/reset-password",
+  "/register",
+  "/verify-email",
+  "/profile",
+  "/userorders",
+];
+
+let appStyleImportPromise = null;
+
+function routeNeedsAppStyles(pathname) {
+  const normalizedPath = String(pathname || "").toLowerCase();
+  if (!normalizedPath) return false;
+
+  if (APP_STYLE_ROUTE_PREFIXES.some((prefix) => normalizedPath.startsWith(prefix))) {
+    return true;
+  }
+
+  return APP_STYLE_EXACT_ROUTES.includes(normalizedPath);
+}
+
+function ensureAppStylesLoaded() {
+  if (!appStyleImportPromise) {
+    appStyleImportPromise = import("./styles/tailwind-app.css");
+  }
+  return appStyleImportPromise;
+}
+
+if (typeof window !== "undefined" && routeNeedsAppStyles(window.location.pathname)) {
+  ensureAppStylesLoaded();
+}
+
 const PrivateRoute = ({ children }) => {
   const { token, loading } = useContext(AuthContext);
   const { tr } = useLanguage();
@@ -80,6 +115,11 @@ const AppLayout = () => {
   const location = useLocation();
   const navigationType = useNavigationType();
   const isAdminRoute = location.pathname.startsWith("/admin");
+
+  useEffect(() => {
+    if (!routeNeedsAppStyles(location.pathname)) return;
+    ensureAppStylesLoaded();
+  }, [location.pathname]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
